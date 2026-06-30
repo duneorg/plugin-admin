@@ -294,8 +294,10 @@ export function createAdminPlugin(
       initAdminContext(adminContext);
 
       // Expose adminContext on the bootstrap result so serve.ts can wire the
-      // job scheduler into it after mount() returns.
-      bootstrap.adminContext = adminContext;
+      // job scheduler into it after mount() returns. BootstrapResult types
+      // this loosely (Record<string, unknown>) since core has no concrete
+      // AdminContext type — plugin-admin owns the actual shape.
+      bootstrap.adminContext = adminContext as unknown as Record<string, unknown>;
 
       // Ensure a default admin user exists on first run.
       const result = await users.ensureDefaultAdmin();

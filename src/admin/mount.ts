@@ -66,7 +66,8 @@ export async function mountDuneAdmin(
   adminCtxOverride?: import("./context.ts").AdminContext,
 ): Promise<void> {
   const { config, pluginPublicRoutes } = ctx;
-  const adminContext = adminCtxOverride ?? ctx.adminContext;
+  const adminContext = adminCtxOverride ??
+    (ctx.adminContext as import("./context.ts").AdminContext | null);
   const adminPrefix = config.admin?.path ?? "/admin";
 
   // ── Admin panel ─────────────────────────────────────────────────────────────
