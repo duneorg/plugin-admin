@@ -1,0 +1,27 @@
+name: Publish to JSR
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # Insurance against hung publishes (the 2026-06 JSR incident, jsr-io/jsr
+    # #1448, is fixed — but a killed job after upload is harmless, so keep a
+    # cap). If a run is cancelled/killed, verify via the version's meta.json
+    # on jsr.io rather than the job status.
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write  # required for JSR OIDC auth
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - run: deno publish
