@@ -11,6 +11,7 @@
     "./admin/auth/provider": "./src/admin/auth/provider.ts"
   },
   "imports": {
+    "jsr:@dune/core/": "jsr:@dune/core@^0.24/",
     "@dune/core": "jsr:@dune/core@^0.24",
     "@dune/core/hooks": "jsr:@dune/core@^0.24/hooks",
     "@dune/core/config": "jsr:@dune/core@^0.24/config",
