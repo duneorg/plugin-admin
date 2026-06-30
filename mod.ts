@@ -15,34 +15,34 @@
  */
 
 import { join } from "@std/path";
-import type { DunePlugin, MountApi } from "jsr:@dune/core/hooks";
-import type { DuneConfig } from "jsr:@dune/core/config";
-import type { StorageAdapter } from "jsr:@dune/core/storage";
+import type { DunePlugin, MountApi } from "@dune/core/hooks";
+import type { DuneConfig } from "@dune/core/config";
+import type { StorageAdapter } from "@dune/core/storage";
 import { createUserManager } from "./src/admin/auth/users.ts";
 import { createSessionManager } from "./src/admin/auth/sessions.ts";
-import { createSessionStore } from "jsr:@dune/core/session";
+import { createSessionStore } from "@dune/core/session";
 import { createAuthMiddleware } from "./src/admin/auth/middleware.ts";
-import { LocalRateLimitStore } from "jsr:@dune/core/security";
+import { LocalRateLimitStore } from "@dune/core/security";
 import { LocalAuthProvider } from "./src/admin/auth/local-provider.ts";
 import type { AuthProvider } from "./src/admin/auth/provider.ts";
-import { createWorkflowEngine } from "jsr:@dune/core/workflow";
-import { createScheduler } from "jsr:@dune/core/workflow";
+import { createWorkflowEngine } from "@dune/core/workflow";
+import { createScheduler } from "@dune/core/workflow";
 import { createSubmissionManager } from "./src/admin/submissions.ts";
-import { createStagingEngine } from "jsr:@dune/core/staging";
+import { createStagingEngine } from "@dune/core/staging";
 import { createCommentManager } from "./src/admin/comments.ts";
 import { createCollabManager } from "./src/collab/mod.ts";
-import { createMachineTranslator } from "jsr:@dune/core/mt";
-import type { MachineTranslator } from "jsr:@dune/core/mt";
-import { AuditLogger } from "jsr:@dune/core/audit";
-import { bootstrapAdminTuples } from "jsr:@dune/core/auth/authz";
-import type { DuneAuthSystem } from "jsr:@dune/core/auth/authz";
-import type { AuthzLocalAdapter } from "jsr:@dune/core/auth/authz-adapter-local";
-import type { AuthzDbAdapter } from "jsr:@dune/core/auth/authz-adapter-db";
+import { createMachineTranslator } from "@dune/core/mt";
+import type { MachineTranslator } from "@dune/core/mt";
+import { AuditLogger } from "@dune/core/audit";
+import { bootstrapAdminTuples } from "@dune/core/auth/authz";
+import type { DuneAuthSystem } from "@dune/core/auth/authz";
+import type { AuthzLocalAdapter } from "@dune/core/auth/authz-adapter-local";
+import type { AuthzDbAdapter } from "@dune/core/auth/authz-adapter-db";
 import { initAdminContext } from "./src/admin/context.ts";
 import type { AdminContext } from "./src/admin/context.ts";
 import { createBlockEditorPlugin } from "./src/admin/block-editor-plugin.tsx";
 import { mountDuneAdmin, getDuneAdminIslands } from "./src/admin/mount.ts";
-import { logger } from "jsr:@dune/core/logger";
+import { logger } from "@dune/core/logger";
 
 /** Options forwarded from bootstrap() to the admin plugin factory. */
 export interface AdminPluginOptions {

@@ -11,7 +11,7 @@
  */
 
 import { join } from "@std/path";
-import { parseUserYaml as parseYaml } from "jsr:@dune/core/security";
+import { parseUserYaml as parseYaml } from "@dune/core/security";
 import type {
   CollabManager,
   CollabManagerOptions,

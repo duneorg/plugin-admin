@@ -4,8 +4,8 @@
 import { h } from "preact";
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";
-import type { JobState } from "jsr:@dune/core/jobs";
-import type { JobScheduler } from "jsr:@dune/core/jobs";
+import type { JobState } from "@dune/core/jobs";
+import type { JobScheduler } from "@dune/core/jobs";
 
 interface PageData {
   jobs: JobState[];

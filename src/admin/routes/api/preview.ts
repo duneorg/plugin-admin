@@ -3,7 +3,7 @@
 import type { AdminState } from "../../types.ts";
 import { requirePermission, serverError, csrfCheck } from "./_utils.ts";
 import type { FreshContext } from "fresh";
-import { sanitizeHtml } from "jsr:@dune/core/security";
+import { sanitizeHtml } from "@dune/core/security";
 
 function htmlResponse(html: string, status = 200): Response {
   return new Response(html, { status, headers: { "Content-Type": "text/html; charset=utf-8" } });

@@ -10,7 +10,7 @@ import type { FreshContext } from "fresh";
 import type { AdminState } from "../types.ts";
 import { verifyPassword, DUMMY_HASH, needsRehash } from "../auth/passwords.ts";
 import { findOrProvisionUser } from "../auth/provisioner.ts";
-import { RateLimiter, clientIp } from "jsr:@dune/core/security";
+import { RateLimiter, clientIp } from "@dune/core/security";
 
 // Module-level fallback limiter — used when no rateLimitStore is injected via
 // AdminContext (single-process deployments, tests, etc.).

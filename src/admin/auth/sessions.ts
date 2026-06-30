@@ -12,10 +12,10 @@
  */
 
 import { encodeHex } from "@std/encoding/hex";
-import type { StorageAdapter } from "jsr:@dune/core/storage";
+import type { StorageAdapter } from "@dune/core/storage";
 import type { AdminSession } from "../types.ts";
-import type { SessionStore } from "jsr:@dune/core/session";
-import { createLocalSessionStore } from "jsr:@dune/core/session";
+import type { SessionStore } from "@dune/core/session";
+import { createLocalSessionStore } from "@dune/core/session";
 
 export type { SessionStore };
 

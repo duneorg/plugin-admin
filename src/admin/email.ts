@@ -12,7 +12,7 @@
 
 // @ts-types="npm:@types/nodemailer@^6"
 import nodemailer from "nodemailer";
-import type { SmtpNotificationConfig } from "jsr:@dune/core/config";
+import type { SmtpNotificationConfig } from "@dune/core/config";
 import type { Submission } from "./submissions.ts";
 
 /**

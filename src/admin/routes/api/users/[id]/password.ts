@@ -2,7 +2,7 @@
 
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../../_utils.ts";
-import { checkPasswordStrength } from "jsr:@dune/core/security";
+import { checkPasswordStrength } from "@dune/core/security";
 import type { FreshContext } from "fresh";
 
 export const handler = {

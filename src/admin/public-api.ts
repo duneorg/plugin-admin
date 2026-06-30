@@ -11,14 +11,14 @@
 import type { AdminContext } from "./context.ts";
 import { sendSubmissionEmail } from "./email.ts";
 import { sendWebhookNotification } from "./webhook.ts";
-import { loadForm } from "jsr:@dune/core/forms";
-import { validateFormSubmission } from "jsr:@dune/core/forms";
-import { checkUpload } from "jsr:@dune/core/security";
-import { checkBodySize } from "jsr:@dune/core/security";
-import { RateLimiter, clientIp } from "jsr:@dune/core/security";
+import { loadForm } from "@dune/core/forms";
+import { validateFormSubmission } from "@dune/core/forms";
+import { checkUpload } from "@dune/core/security";
+import { checkBodySize } from "@dune/core/security";
+import { RateLimiter, clientIp } from "@dune/core/security";
 import { encodeHex } from "@std/encoding/hex";
 import type { SubmissionFile } from "./submissions.ts";
-import type { WebhookNotificationConfig } from "jsr:@dune/core/config";
+import type { WebhookNotificationConfig } from "@dune/core/config";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

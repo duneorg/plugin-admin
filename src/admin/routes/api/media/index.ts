@@ -3,7 +3,7 @@
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../_utils.ts";
 import { dirname } from "@std/path";
-import { isMediaFile } from "jsr:@dune/core/content/path-utils";
+import { isMediaFile } from "@dune/core/content/path-utils";
 import type { FreshContext } from "fresh";
 
 export const handler = {

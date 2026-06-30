@@ -3,7 +3,7 @@
 import type { AdminState } from "../../../types.ts";
 import { json, serverError, csrfCheck, requirePermission } from "../_utils.ts";
 import { dirname, basename } from "@std/path";
-import { parseContentFilename } from "jsr:@dune/core/content/path-utils";
+import { parseContentFilename } from "@dune/core/content/path-utils";
 import type { FreshContext } from "fresh";
 
 function splitFrontmatter(content: string): { fm: string; body: string } {

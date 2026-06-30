@@ -3,30 +3,30 @@
  * Avoids threading all dependencies through Fresh context state.
  */
 
-import type { DuneEngine } from "jsr:@dune/core/engine";
-import type { StorageAdapter } from "jsr:@dune/core/storage";
-import type { DuneConfig } from "jsr:@dune/core/config";
+import type { DuneEngine } from "@dune/core/engine";
+import type { StorageAdapter } from "@dune/core/storage";
+import type { DuneConfig } from "@dune/core/config";
 import type { AuthMiddleware } from "./auth/middleware.ts";
 import type { UserManager } from "./auth/users.ts";
 import type { SessionManager } from "./auth/sessions.ts";
 import type { AuthProvider } from "./auth/provider.ts";
-import type { WorkflowEngine } from "jsr:@dune/core/workflow";
-import type { Scheduler } from "jsr:@dune/core/workflow";
-import type { HistoryEngine } from "jsr:@dune/core/history";
+import type { WorkflowEngine } from "@dune/core/workflow";
+import type { Scheduler } from "@dune/core/workflow";
+import type { HistoryEngine } from "@dune/core/history";
 import type { SubmissionManager } from "./submissions.ts";
-import type { FlexEngine } from "jsr:@dune/core/flex";
-import type { HookRegistry, AdminPageRegistration } from "jsr:@dune/core/hooks";
-import type { ContentEditorPlugin } from "jsr:@dune/core/hooks";
-import type { StagingEngine } from "jsr:@dune/core/staging";
+import type { FlexEngine } from "@dune/core/flex";
+import type { HookRegistry, AdminPageRegistration } from "@dune/core/hooks";
+import type { ContentEditorPlugin } from "@dune/core/hooks";
+import type { StagingEngine } from "@dune/core/staging";
 import type { CommentManager } from "./comments.ts";
 import type { CollabManager } from "../collab/mod.ts";
-import type { InlineEditManager } from "jsr:@dune/core/inline-edit";
-import type { ImageCache } from "jsr:@dune/core/images";
-import type { AuditLogger } from "jsr:@dune/core/audit";
-import type { MetricsCollector } from "jsr:@dune/core/metrics";
-import type { MachineTranslator } from "jsr:@dune/core/mt";
-import type { RateLimitStore } from "jsr:@dune/core/security";
-import type { DuneAuthSystem } from "jsr:@dune/core/auth/authz";
+import type { InlineEditManager } from "@dune/core/inline-edit";
+import type { ImageCache } from "@dune/core/images";
+import type { AuditLogger } from "@dune/core/audit";
+import type { MetricsCollector } from "@dune/core/metrics";
+import type { MachineTranslator } from "@dune/core/mt";
+import type { RateLimitStore } from "@dune/core/security";
+import type { DuneAuthSystem } from "@dune/core/auth/authz";
 
 export type { AdminPageRegistration };
 
@@ -74,7 +74,7 @@ export interface AdminContext {
    * Background job scheduler — present when one or more jobs/*.ts files exist.
    * Exposes listStatus(), getStatus(), and run() for the admin API and UI.
    */
-  jobScheduler?: import("jsr:@dune/core/jobs").JobScheduler;
+  jobScheduler?: import("@dune/core/jobs").JobScheduler;
   /**
    * Plugin-contributed admin pages, collected at bootstrap.
    * The Fresh app registers these as programmatic routes after fsRoutes().

@@ -25,7 +25,7 @@ import { requirePermission, serverError, csrfCheck } from "./_utils.ts";
 import type { FreshContext } from "fresh";
 import { parse as parseYaml } from "@std/yaml";
 import { Marked } from "marked";
-import { sanitizeHtml } from "jsr:@dune/core/security";
+import { sanitizeHtml } from "@dune/core/security";
 
 /** Maximum content size: 500 KB */
 const MAX_BYTES = 500 * 1024;

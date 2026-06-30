@@ -17,8 +17,8 @@
 
 import { join } from "@std/path";
 import { encodeHex } from "@std/encoding/hex";
-import { safeFetch, SsrfBlockedError } from "jsr:@dune/core/security";
-import type { WebhookContentEvent, WebhookEndpointConfig } from "jsr:@dune/core/config";
+import { safeFetch, SsrfBlockedError } from "@dune/core/security";
+import type { WebhookContentEvent, WebhookEndpointConfig } from "@dune/core/config";
 
 // === Types ===
 

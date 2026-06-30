@@ -8,7 +8,7 @@ import { h } from "preact";
 import type { FreshContext } from "fresh";
 import type { AdminState } from "../types.ts";
 import { getNavItems } from "../nav.ts";
-import { isRtl } from "jsr:@dune/core/i18n";
+import { isRtl } from "@dune/core/i18n";
 import { ROLE_PERMISSIONS } from "../types.ts";
 
 export default function AdminLayout(

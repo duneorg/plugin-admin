@@ -4,7 +4,7 @@ import type { AdminState } from "../../types.ts";
 import { requirePermission, serverError } from "./_utils.ts";
 import { h, type ComponentType } from "preact";
 import { render as renderJsxToString } from "preact-render-to-string";
-import { buildPageTitle } from "jsr:@dune/core/content/types";
+import { buildPageTitle } from "@dune/core/content/types";
 import type { FreshContext } from "fresh";
 
 function htmlResponse(html: string, status = 200): Response {

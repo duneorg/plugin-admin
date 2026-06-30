@@ -12,7 +12,7 @@
 import type { FreshContext } from "fresh";
 import type { AdminState } from "../../types.ts";
 import { json, requirePermission } from "./_utils.ts";
-import { PLUGIN_API_VERSION } from "jsr:@dune/core/plugins";
+import { PLUGIN_API_VERSION } from "@dune/core/plugins";
 
 /** Derive Dune package version from the module URL (same logic as CLI). */
 function getDuneVersion(): string {

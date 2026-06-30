@@ -3,9 +3,9 @@
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../_utils.ts";
 import { dirname } from "@std/path";
-import { isMediaFile, dirPathToRoute } from "jsr:@dune/core/content/path-utils";
-import { getMimeType } from "jsr:@dune/core/content/page-loader";
-import { checkBodySize, limitedBody, BodyTooLargeError } from "jsr:@dune/core/security";
+import { isMediaFile, dirPathToRoute } from "@dune/core/content/path-utils";
+import { getMimeType } from "@dune/core/content/page-loader";
+import { checkBodySize, limitedBody, BodyTooLargeError } from "@dune/core/security";
 import type { FreshContext } from "fresh";
 
 export const handler = {

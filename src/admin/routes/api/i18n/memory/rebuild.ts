@@ -4,7 +4,7 @@ import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../../_utils.ts";
 import { loadTM, saveTM, buildTMFromPages } from "../../../../tm.ts";
 import { dirname, basename } from "@std/path";
-import { parseContentFilename } from "jsr:@dune/core/content/path-utils";
+import { parseContentFilename } from "@dune/core/content/path-utils";
 import type { FreshContext } from "fresh";
 
 export const handler = {

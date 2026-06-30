@@ -14,9 +14,9 @@
  *   3. Compare to the X-Dune-Signature header (constant-time comparison)
  */
 
-import type { WebhookNotificationConfig } from "jsr:@dune/core/config";
+import type { WebhookNotificationConfig } from "@dune/core/config";
 import type { Submission } from "./submissions.ts";
-import { safeFetch } from "jsr:@dune/core/security";
+import { safeFetch } from "@dune/core/security";
 
 /** Expand "$VAR" → env variable value. */
 function envExpand(value: string): string {

@@ -6,7 +6,7 @@
  */
 
 import { encodeHex } from "@std/encoding/hex";
-import type { StorageAdapter } from "jsr:@dune/core/storage";
+import type { StorageAdapter } from "@dune/core/storage";
 import type { AdminUser, AdminRole } from "../types.ts";
 import { hashPassword } from "./passwords.ts";
 

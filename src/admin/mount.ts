@@ -36,7 +36,7 @@
 
 // deno-lint-ignore no-explicit-any
 import type { App, Middleware } from "fresh";
-import type { BootstrapResult } from "jsr:@dune/core/bootstrap";
+import type { BootstrapResult } from "@dune/core/bootstrap";
 import { adminIslands, adminLayout, adminMiddleware, adminRoutes } from "./manifest.gen.ts";
 import {
   handleContactSubmission,

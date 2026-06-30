@@ -2,7 +2,7 @@
 
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../../_utils.ts";
-import type { BlueprintField } from "jsr:@dune/core/blueprints";
+import type { BlueprintField } from "@dune/core/blueprints";
 import type { FreshContext } from "fresh";
 
 /**

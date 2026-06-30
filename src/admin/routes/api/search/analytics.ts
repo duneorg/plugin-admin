@@ -2,7 +2,7 @@
 
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError } from "../_utils.ts";
-import { createSearchAnalytics } from "jsr:@dune/core/search";
+import { createSearchAnalytics } from "@dune/core/search";
 import { join } from "@std/path";
 import type { FreshContext } from "fresh";
 

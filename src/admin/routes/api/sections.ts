@@ -3,7 +3,7 @@
 
 import type { AdminState } from "../../types.ts";
 import { requirePermission, json } from "./_utils.ts";
-import { sectionRegistry } from "jsr:@dune/core/sections";
+import { sectionRegistry } from "@dune/core/sections";
 import type { FreshContext } from "fresh";
 
 export const handler = {

@@ -2,12 +2,12 @@
  * Admin system types — users, sessions, permissions, and config.
  */
 
-export type { ContentEditorPlugin } from "jsr:@dune/core/hooks";
+export type { ContentEditorPlugin } from "@dune/core/hooks";
 // AdminSession and AdminRole live in core to break circular deps; import for
 // local use AND re-export so callers importing from admin/types get them.
-import type { AdminSession } from "jsr:@dune/core/session";
+import type { AdminSession } from "@dune/core/session";
 export type { AdminSession };
-import type { AdminRole } from "jsr:@dune/core/config";
+import type { AdminRole } from "@dune/core/config";
 export type { AdminRole };
 
 /** Admin user stored in data/users/ */

@@ -10,7 +10,7 @@ import {
   loadTM,
   saveTM,
 } from "../../src/admin/tm.ts";
-import type { StorageAdapter } from "jsr:@dune/core/storage";
+import type { StorageAdapter } from "@dune/core/storage";
 
 // === extractSegments ===
 

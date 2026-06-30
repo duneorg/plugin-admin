@@ -3,10 +3,10 @@
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
-import { parseUserYaml as parseYaml } from "jsr:@dune/core/security";
-import { validateFrontmatter } from "jsr:@dune/core/blueprints";
+import { parseUserYaml as parseYaml } from "@dune/core/security";
+import { validateFrontmatter } from "@dune/core/blueprints";
 import { fireContentWebhooks } from "../../../../../admin/webhooks.ts";
-import type { PageFrontmatter } from "jsr:@dune/core/content/types";
+import type { PageFrontmatter } from "@dune/core/content/types";
 import type { FreshContext } from "fresh";
 
 async function maybeGitCommit(

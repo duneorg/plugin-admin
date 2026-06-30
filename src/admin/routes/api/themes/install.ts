@@ -2,7 +2,7 @@
 
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
-import { safeFetch } from "jsr:@dune/core/security";
+import { safeFetch } from "@dune/core/security";
 import type { FreshContext } from "fresh";
 
 interface RegistryTheme {

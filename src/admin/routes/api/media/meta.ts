@@ -4,7 +4,7 @@ import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
 import { dirname } from "@std/path";
 import { stringify as stringifyYaml } from "@std/yaml";
-import { parseUserYaml as parseYaml } from "jsr:@dune/core/security";
+import { parseUserYaml as parseYaml } from "@dune/core/security";
 import type { FreshContext } from "fresh";
 
 export const handler = {

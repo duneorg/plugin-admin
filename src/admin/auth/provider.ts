@@ -5,7 +5,7 @@
  * The session/cookie/user-provisioning layer in server.ts is shared across all providers.
  */
 
-import type { AdminRole } from "jsr:@dune/core/config";
+import type { AdminRole } from "@dune/core/config";
 
 /** User attributes returned by an external auth provider after successful authentication. */
 export interface AuthProviderUser {

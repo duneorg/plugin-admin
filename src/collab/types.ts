@@ -6,9 +6,9 @@
  * Collaboration operates on the page body only (content after frontmatter).
  */
 
-import type { StorageAdapter } from "jsr:@dune/core/storage";
-import type { DuneEngine } from "jsr:@dune/core/engine";
-import type { HistoryEngine } from "jsr:@dune/core/history";
+import type { StorageAdapter } from "@dune/core/storage";
+import type { DuneEngine } from "@dune/core/engine";
+import type { HistoryEngine } from "@dune/core/history";
 import type { AdminUser } from "../admin/types.ts";
 
 // ── Operations (Quill Delta format) ──────────────────────────────────────────
