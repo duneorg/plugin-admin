@@ -67,6 +67,10 @@
     "ioredis": "npm:ioredis@^5",
     "polizy": "npm:polizy@^0.2.0"
   },
+  "tasks": {
+    "test": "deno test -A tests/",
+    "gen:admin-manifest": "deno run --allow-read --allow-write scripts/generate-admin-manifest.ts"
+  },
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "preact",

@@ -41,7 +41,7 @@ import type { AuthzDbAdapter } from "jsr:@dune/core/auth/authz-adapter-db";
 import { initAdminContext } from "./src/admin/context.ts";
 import type { AdminContext } from "./src/admin/context.ts";
 import { createBlockEditorPlugin } from "./src/admin/block-editor-plugin.tsx";
-import { mountDuneAdmin } from "./src/admin/mount.ts";
+import { mountDuneAdmin, getDuneAdminIslands } from "./src/admin/mount.ts";
 import { logger } from "jsr:@dune/core/logger";
 
 /** Options forwarded from bootstrap() to the admin plugin factory. */
@@ -85,6 +85,7 @@ export function createAdminPlugin(
     version: "0.24.0",
     description: "Built-in Dune admin panel",
     hooks: {},
+    islandSpecifiers: getDuneAdminIslands(),
 
     async setup(_api) {
       const adminCfg = config.admin ?? {
