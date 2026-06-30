@@ -3,11 +3,12 @@
  */
 
 export type { ContentEditorPlugin } from "jsr:@dune/core/hooks";
-// AdminSession is defined in @dune/core/session to break the circular dep;
-// re-export it here so callers that import from admin/types get it unchanged.
-export type { AdminSession } from "jsr:@dune/core/session";
-// AdminRole is defined in @dune/core/config to avoid plugin-admin ↔ config circular dep.
-export type { AdminRole } from "jsr:@dune/core/config";
+// AdminSession and AdminRole live in core to break circular deps; import for
+// local use AND re-export so callers importing from admin/types get them.
+import type { AdminSession } from "jsr:@dune/core/session";
+export type { AdminSession };
+import type { AdminRole } from "jsr:@dune/core/config";
+export type { AdminRole };
 
 /** Admin user stored in data/users/ */
 export interface AdminUser {

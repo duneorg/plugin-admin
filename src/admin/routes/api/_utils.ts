@@ -202,7 +202,7 @@ export function getClientIp(req: Request): string | null {
 
 export function actorFromAuth(
   authResult: { user?: { id: string; username: string; name: string } | null },
-): import("../../../audit/mod.ts").AuditActor | null {
+): import("jsr:@dune/core/audit").AuditActor | null {
   if (!authResult.user) return null;
   return {
     userId: authResult.user.id,

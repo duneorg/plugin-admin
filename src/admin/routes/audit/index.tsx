@@ -16,8 +16,8 @@ export const handler = {
       return ctx.render(<AuditRoute data={{ entries: [], disabled: true, prefix }} />);
     }
     const eventFilter = ctx.url.searchParams.get("event") ?? "";
-    const q: import("../.././../audit/mod.ts").AuditQuery = { limit: 50 };
-    if (eventFilter) q.event = eventFilter as import("../../../audit/mod.ts").AuditEventType;
+    const q: import("jsr:@dune/core/audit").AuditQuery = { limit: 50 };
+    if (eventFilter) q.event = eventFilter as import("jsr:@dune/core/audit").AuditEventType;
     const result = await auditLogger.query(q);
     return ctx.render(<AuditRoute data={{ entries: result.entries, disabled: false, eventFilter, prefix }} />);
   },

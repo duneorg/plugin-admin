@@ -67,7 +67,6 @@
     "ioredis": "npm:ioredis@^5",
     "polizy": "npm:polizy@^0.2.0"
   },
-  "unstable": ["kv"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "preact",

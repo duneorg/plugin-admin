@@ -74,7 +74,7 @@ export interface AdminContext {
    * Background job scheduler — present when one or more jobs/*.ts files exist.
    * Exposes listStatus(), getStatus(), and run() for the admin API and UI.
    */
-  jobScheduler?: import("../jobs/scheduler.ts").JobScheduler;
+  jobScheduler?: import("jsr:@dune/core/jobs").JobScheduler;
   /**
    * Plugin-contributed admin pages, collected at bootstrap.
    * The Fresh app registers these as programmatic routes after fsRoutes().
