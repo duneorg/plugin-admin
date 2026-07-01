@@ -31,6 +31,7 @@ import type { SearchManager } from "@dune/core/search";
 
 export type { AdminPageRegistration };
 
+/** All services available to admin route handlers via `FreshContext.state.adminContext`. */
 export interface AdminContext {
   engine: DuneEngine;
   search: SearchManager;
@@ -86,10 +87,12 @@ export interface AdminContext {
 
 let _ctx: AdminContext | null = null;
 
+/** Store the admin context singleton. Called once during `mount()`. */
 export function initAdminContext(ctx: AdminContext): void {
   _ctx = ctx;
 }
 
+/** Retrieve the admin context singleton. Throws if called before `mount()`. */
 export function getAdminContext(): AdminContext {
   if (!_ctx) throw new Error("Admin context not initialized");
   return _ctx;
