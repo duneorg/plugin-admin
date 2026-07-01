@@ -51,6 +51,7 @@ import * as r44 from "./routes/api/registry/plugins.ts";
 import * as r45 from "./routes/api/registry/themes.ts";
 import * as r46 from "./routes/api/render-markdown.ts";
 import * as r47 from "./routes/api/search/analytics.ts";
+import * as r47b from "./routes/api/search/engines.ts";
 import * as r48 from "./routes/api/sections.ts";
 import * as r49 from "./routes/api/staging/[path]/index.ts";
 import * as r50 from "./routes/api/staging/[path]/publish.ts";
@@ -162,6 +163,7 @@ export const adminRoutes: AdminRouteEntry[] = [
   { pattern: "/api/registry/themes", mod: r45 },
   { pattern: "/api/render-markdown", mod: r46 },
   { pattern: "/api/search/analytics", mod: r47 },
+  { pattern: "/api/search/engines", mod: r47b },
   { pattern: "/api/sections", mod: r48 },
   { pattern: "/api/staging/:path", mod: r49 },
   { pattern: "/api/staging/:path/publish", mod: r50 },

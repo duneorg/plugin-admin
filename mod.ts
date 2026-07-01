@@ -263,6 +263,7 @@ export function createAdminPlugin(
 
       const adminContext: AdminContext = {
         engine: bootstrap.engine,
+        search: bootstrap.search,
         storage,
         config,
         auth,

@@ -27,11 +27,13 @@ import type { MetricsCollector } from "@dune/core/metrics";
 import type { MachineTranslator } from "@dune/core/mt";
 import type { RateLimitStore } from "@dune/core/security";
 import type { DuneAuthSystem } from "@dune/core/auth/authz";
+import type { SearchManager } from "@dune/core/search";
 
 export type { AdminPageRegistration };
 
 export interface AdminContext {
   engine: DuneEngine;
+  search: SearchManager;
   storage: StorageAdapter;
   config: DuneConfig;
   auth: AuthMiddleware;
