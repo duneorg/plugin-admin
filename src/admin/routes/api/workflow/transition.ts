@@ -30,6 +30,13 @@ export const handler = {
         return json({ error: `Cannot transition from ${currentStatus} to ${newStatus}` }, 400);
       }
 
+      // Allowlist newStatus characters before splicing into raw YAML frontmatter.
+      // A value containing YAML special characters (e.g. a newline) would corrupt
+      // the frontmatter of every page it is applied to.
+      if (!/^[a-zA-Z0-9_-]+$/.test(newStatus)) {
+        return json({ error: "Invalid status value" }, 400);
+      }
+
       const contentDir = config.system.content.dir;
       const filePath = `${contentDir}/${pageIndex.sourcePath}`;
       const raw = new TextDecoder().decode(await storage.read(filePath));

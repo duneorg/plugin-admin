@@ -11,6 +11,11 @@ function isValidLang(lang: unknown, supported: string[]): lang is string {
 
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
+    // Translation memory entries contain translated content segments; require
+    // pages.read permission consistent with other read endpoints.
+    const denied = await requirePermission(ctx, "pages.read");
+    if (denied) return denied;
+
     const { storage, config } = ctx.state.adminContext;
     try {
       const supported = config.system.languages?.supported ?? [];

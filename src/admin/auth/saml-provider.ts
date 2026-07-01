@@ -44,6 +44,13 @@
  *     const { extract } = await sp.parseLoginResponse(idp, "post", {
  *       body: { SAMLResponse: samlResponse },
  *     });
+ *
+ *     // SECURITY: before trusting extract.nameID and extract.attributes, verify:
+ *     // 1. InResponseTo matches the stored AuthnRequest ID (replay prevention)
+ *     // 2. Audience restriction includes this SP's entity ID
+ *     // 3. NotBefore / NotOnOrAfter time bounds are valid
+ *     // samlify validates the signature but NOT these by default — check your version.
+ *
  *     const nameId: string = extract.nameID;
  *     const attrs = extract.attributes ?? {};
  *     const usernameAttr = this.config.usernameAttr ?? "NameID";

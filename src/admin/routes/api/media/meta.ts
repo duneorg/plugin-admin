@@ -23,6 +23,16 @@ export const handler = {
         return json({ error: "pagePath and name required" }, 400);
       }
 
+      // Guard against path traversal — same checks as the parallel DELETE
+      // handler in index.ts. Without this, a crafted pagePath or name could
+      // read/write arbitrary files within the content directory.
+      if (
+        pagePath.includes("..") || pagePath.includes("\0") ||
+        name.includes("..") || name.includes("/") || name.includes("\\") || name.includes("\0")
+      ) {
+        return json({ error: "invalid path" }, 400);
+      }
+
       if (focal !== null && focal !== undefined) {
         if (!Array.isArray(focal) || focal.length !== 2 ||
           typeof focal[0] !== "number" || typeof focal[1] !== "number" ||

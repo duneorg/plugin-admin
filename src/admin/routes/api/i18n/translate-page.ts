@@ -1,8 +1,8 @@
 /** POST /admin/api/i18n/translate-page */
 
 import type { AdminState } from "../../../types.ts";
-import { json, serverError, csrfCheck, requirePermission } from "../_utils.ts";
-import { dirname, basename } from "@std/path";
+import { json, serverError, csrfCheck, requirePermission, validatePagePath } from "../_utils.ts";
+import { basename } from "@std/path";
 import { parseContentFilename } from "@dune/core/content/path-utils";
 import type { FreshContext } from "fresh";
 
@@ -29,15 +29,26 @@ export const handler = {
         return json({ error: "sourcePath and targetLang required" }, 400);
       }
 
+      // Guard against path traversal: validate format first, then confirm the
+      // path exists in the engine's page index so we never access an arbitrary
+      // storage path derived from caller-supplied input.
+      if (!validatePagePath(sourcePath)) {
+        return json({ error: "Invalid path" }, 400);
+      }
+      const pageIndex = engine.pages.find((p) => p.sourcePath === sourcePath);
+      if (!pageIndex) return json({ error: "Source file not found" }, 404);
+
       const supported = config.system.languages?.supported ?? [];
       if (!supported.includes(targetLang)) return json({ error: "Unsupported target language" }, 400);
 
       const defaultLang = config.system.languages?.default ?? "en";
       const contentDir = config.system.content.dir;
 
+      // Derive filePath from the trusted page index record, not the raw body value.
+      const filePath = `${contentDir}/${pageIndex.sourcePath}`;
       let sourceText: string;
       try {
-        sourceText = await storage.readText(`${contentDir}/${sourcePath}`);
+        sourceText = await storage.readText(filePath);
       } catch {
         return json({ error: "Source file not found" }, 404);
       }
@@ -68,10 +79,15 @@ export const handler = {
       const langPattern = supported.join("|");
       const existingLangRegex = new RegExp(`\\.(${langPattern})\\.(md|mdx|tsx)$`);
       let targetPath: string;
-      if (existingLangRegex.test(sourcePath)) {
-        targetPath = sourcePath.replace(existingLangRegex, `.${targetLang}.$2`);
+      if (existingLangRegex.test(pageIndex.sourcePath)) {
+        targetPath = pageIndex.sourcePath.replace(existingLangRegex, `.${targetLang}.$2`);
       } else {
-        targetPath = sourcePath.replace(/\.(md|mdx|tsx)$/, `.${targetLang}.$1`);
+        targetPath = pageIndex.sourcePath.replace(/\.(md|mdx|tsx)$/, `.${targetLang}.$1`);
+      }
+
+      // Validate the computed target path before any write operation.
+      if (!validatePagePath(targetPath)) {
+        return json({ error: "Invalid computed target path" }, 400);
       }
 
       await storage.write(`${contentDir}/${targetPath}`, new TextEncoder().encode(translatedFm + translatedBody));

@@ -45,6 +45,17 @@ export const handler = {
           }
         }
         if (errors.length > 0) return json({ error: `Missing required fields: ${errors.join(", ")}` }, 422);
+
+        // Strip keys not declared in the schema to prevent arbitrary config
+        // injection. An attacker with config.update permission could otherwise
+        // inject keys that themes might later interpolate into HTML without
+        // escaping.
+        const allowedKeys = new Set(Object.keys(schemaRecord));
+        for (const key of Object.keys(body)) {
+          if (!allowedKeys.has(key)) {
+            delete body[key];
+          }
+        }
       }
 
       const dataDir = config.admin?.dataDir ?? "data";

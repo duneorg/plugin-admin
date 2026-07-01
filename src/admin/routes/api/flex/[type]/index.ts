@@ -4,13 +4,20 @@ import type { AdminState } from "../../../../types.ts";
 import { json, serverError, csrfCheck, requirePermission } from "../../_utils.ts";
 import type { FreshContext } from "fresh";
 
+const SAFE_SEGMENT_RE = /^[a-zA-Z0-9_-]{1,64}$/;
+
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
     const denied = await requirePermission(ctx, "pages.read");
     if (denied) return denied;
     const { flex } = ctx.state.adminContext;
     if (!flex) return json({ error: "Flex Objects not enabled" }, 501);
-    const type = decodeURIComponent(ctx.params.type);
+
+    const type = decodeURIComponent(ctx.params.type ?? "");
+    if (!SAFE_SEGMENT_RE.test(type)) {
+      return json({ error: "Invalid type" }, 400);
+    }
+
     const schemas = await flex.loadSchemas();
     if (!schemas[type]) return json({ error: "Unknown type" }, 404);
     const records = await flex.list(type);
@@ -24,7 +31,12 @@ export const handler = {
     if (denied) return denied;
     const { flex } = ctx.state.adminContext;
     if (!flex) return json({ error: "Flex Objects not enabled" }, 501);
-    const type = decodeURIComponent(ctx.params.type);
+
+    const type = decodeURIComponent(ctx.params.type ?? "");
+    if (!SAFE_SEGMENT_RE.test(type)) {
+      return json({ error: "Invalid type" }, 400);
+    }
+
     const schemas = await flex.loadSchemas();
     const schema = schemas[type];
     if (!schema) return json({ error: "Unknown type" }, 404);

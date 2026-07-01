@@ -37,11 +37,28 @@ export const handler = {
       if (role !== undefined) updates.role = role;
       if (enabled !== undefined) updates.enabled = Boolean(enabled);
 
+      // Prevent demotion or disabling of the last enabled admin.
+      // Without this guard an admin could lose all admin access with no
+      // recovery path via the admin panel.
+      const wouldDemote = role !== undefined && role !== "admin";
+      const wouldDisable = enabled !== undefined && !enabled;
+      const targetUser = await users.getById(userId);
+      if (targetUser?.role === "admin" && (wouldDemote || wouldDisable)) {
+        const allUsers = await users.list();
+        const remainingAdmins = allUsers.filter(
+          (u) => u.role === "admin" && u.enabled && u.id !== userId,
+        ).length;
+        if (remainingAdmins === 0) {
+          const action = wouldDemote ? "demote" : "disable";
+          return json({ error: `Cannot ${action} the last admin account` }, 409);
+        }
+      }
+
       // Sync authz tuples. Read the current user record once for both checks.
       // Done before the store update so the current role is still readable.
       const { authz } = ctx.state.adminContext;
       if (authz && (role !== undefined || enabled !== undefined)) {
-        const existing = await users.getById(userId);
+        const existing = targetUser;
         if (existing) {
           if (role !== undefined) {
             // Role change: revoke old relation, grant new one.
@@ -115,6 +132,20 @@ export const handler = {
       if (authResult.user?.id === userId) {
         return json({ error: "Cannot delete your own account" }, 400);
       }
+
+      // Prevent removing the last enabled admin — doing so would lock everyone
+      // out of the admin panel with no recovery path via the UI.
+      const targetUser = await users.getById(userId);
+      if (targetUser?.role === "admin") {
+        const allUsers = await users.list();
+        const remainingAdmins = allUsers.filter(
+          (u) => u.role === "admin" && u.enabled && u.id !== userId,
+        ).length;
+        if (remainingAdmins === 0) {
+          return json({ error: "Cannot delete the last admin account" }, 409);
+        }
+      }
+
       // Remove all authz tuples for the deleted user so no stale permissions remain.
       const { authz } = ctx.state.adminContext;
       if (authz) {

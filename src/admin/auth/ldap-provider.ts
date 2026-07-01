@@ -23,7 +23,9 @@
  *       const bindPw = expandEnv(this.config.bindPassword ?? "");
  *       await client.bind(this.config.bindDn, bindPw);
  *       const { searchEntries } = await client.search(this.config.baseDn, {
- *         filter: `(${usernameAttr}=${creds.username})`,
+ *         // IMPORTANT: escape username to prevent LDAP injection (CWE-90)
+ *         // import { escape as ldapEscape } from "npm:ldapts";
+ *         filter: `(${usernameAttr}=${ldapEscape(creds.username)})`,
  *         attributes: ["dn", emailAttr, nameAttr, "memberOf"],
  *       });
  *       if (!searchEntries.length) return null;
