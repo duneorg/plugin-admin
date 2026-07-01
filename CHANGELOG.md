@@ -5,6 +5,44 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [0.25.0] — 2026-07-01
+
+### Added
+
+- **Search admin UI (`/admin/search`).** New `SearchPanel` island and route
+  exposing the search engine toggle API introduced in `@dune/core` 0.25.
+  Shows all registered engines with a radio-select to switch the active engine
+  and a parallel-mode checkbox when multiple engines are registered. Visible to
+  any user with the `config.read` permission. Nav entry added to the Settings
+  group in the sidebar.
+
+- **Search engine toggle API (`GET` / `PATCH /admin/api/search/engines`).** Lists
+  registered search engines, the active engine, and parallel mode. `PATCH` switches
+  the active engine or toggles parallel mode at runtime without a restart.
+  Backed by `AdminContext.search` (`SearchManager` from `@dune/core` 0.25).
+
+- **TSX format gating and warning badge.** `POST /admin/api/pages` now rejects
+  `format: "tsx"` for roles not listed in `config.system.content.allowTsxFormat`
+  (default `["admin"]`). The page editor shows a "trusted author only" warning
+  badge when editing a TSX-format page.
+
+- **Playwright E2E test suite.** Five spec files in `tests/e2e/` cover the admin
+  panel's critical paths in a real Chromium browser: auth (login/logout),
+  pages (CRUD), workflow (status picker), media (library + upload), users
+  (creation/role/disable), and settings (config page load/save). Global setup
+  starts a `dune serve` subprocess against a fixture site. Run with
+  `deno task test:e2e:install && deno task test:e2e`.
+
+### Changed
+
+- `AdminContext.search` is now typed as `SearchManager` (extends `SearchEngine`)
+  instead of `SearchEngine`. Backwards-compatible: all `SearchEngine` methods are
+  present; `register()`, `setActiveEngine()`, `activeEngineName()`, etc. are new.
+
+- Requires `@dune/core@^0.25`.
+
+---
+
 ## [0.24.1] — 2026-07-01
 
 ### Security
