@@ -5,6 +5,23 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [0.25.1] — 2026-07-01
+
+### Security
+
+- **Translate-page path validation** — sourcePath is now validated against the page index before use
+- **Workflow schedule hardening** — sourcePath and action are validated against an allowlist before scheduling
+- **Media metadata traversal guard** — media metadata endpoint now rejects paths that escape the media root
+- **Flex route param allowlist** — flex type and id route parameters are allowlisted before storage path construction
+- **Translation memory permission** — translation memory GET endpoint now requires `pages.read` permission
+- **Workflow transition status allowlist** — newStatus characters are allowlisted before frontmatter splice
+- **Theme config key stripping** — extra keys are stripped from theme config PUT request body
+- **Submission file content-type** — content-type is re-derived from the filename rather than trusted from the request
+- **Last admin account protection** — deletion and demotion of the last admin account are now prevented
+- **LDAP injection fix; SAML validation** — LDAP provider hardens against injection; SAML provider adds validation requirements
+
+---
+
 ## [0.25.0] — 2026-07-01
 
 ### Added
