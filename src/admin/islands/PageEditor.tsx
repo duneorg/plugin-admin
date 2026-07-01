@@ -130,6 +130,15 @@ export default function PageEditor({ pagePath, prefix }: Props) {
           <a href={`${prefix}/pages`} class="btn btn-sm btn-outline">← Pages</a>
           <span class="editor-title">{String(fm.title ?? page.title)}</span>
           <span class={`badge badge-${page.format}`}>{page.format}</span>
+          {page.format === "tsx" && (
+            <span
+              class="badge badge-warning"
+              title="TSX pages execute server-side Deno code. Only trusted admin-role authors should edit these files."
+              style="background:#f6ad55;color:#744210;cursor:help"
+            >
+              ⚠ trusted author only
+            </span>
+          )}
         </div>
         <div class="toolbar-right">
           <button class="btn btn-sm btn-outline" onClick={() => setShowPreview((v) => !v)}>

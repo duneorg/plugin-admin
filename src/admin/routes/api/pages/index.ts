@@ -39,6 +39,16 @@ export const handler = {
         return json({ error: "Invalid page path: must not contain '..' or absolute segments" }, 400);
       }
 
+      if (format === "tsx") {
+        const allowedRoles: string[] = config.system.content.allowTsxFormat ?? ["admin"];
+        const userRole = authResult.user?.role ?? "";
+        if (allowedRoles.length === 0 || !allowedRoles.includes(userRole)) {
+          return json({
+            error: "TSX format requires admin role. TSX pages execute server-side code and must be created by trusted authors.",
+          }, 403);
+        }
+      }
+
       const ext = format === "mdx" ? ".mdx" : format === "tsx" ? ".tsx" : ".md";
       // Serialize frontmatter via @std/yaml to ensure correct quoting/
       // escaping of special characters in title (regression fix for prior
