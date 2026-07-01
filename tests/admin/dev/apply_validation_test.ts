@@ -300,14 +300,14 @@ Deno.test("dev/apply: plugin.install accepts valid jsr spec in dry_run mode", as
   assertEquals(results[0].errors, []);
 });
 
-Deno.test("dev/apply: plugin.install accepts npm spec", async () => {
+Deno.test("dev/apply: plugin.install rejects npm spec (only pinned jsr: allowed)", async () => {
   const res = await callApply({
     dry_run: true,
     changes: [{ op: "plugin.install", spec: "npm:some-dune-plugin" }],
   });
   const results = res.results as { status: string; errors: string[] }[];
-  assertEquals(results[0].errors, []);
-  assertEquals(results[0].status, "would_create");
+  assertEquals(results[0].status, "error");
+  assertEquals(results[0].errors.some((e: string) => e.includes("pinned jsr:")), true);
 });
 
 Deno.test("dev/apply: plugin.install rejects missing spec", async () => {

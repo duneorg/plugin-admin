@@ -2,11 +2,14 @@
 
 import { join } from "@std/path";
 import type { AdminState } from "../../../types.ts";
-import { json } from "../_utils.ts";
+import { json, requirePermission } from "../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
+    const denied = await requirePermission(ctx, "config.read");
+    if (denied) return denied;
+
     if (Deno.env.get("DUNE_ENV") !== "dev") {
       return json({ error: "Email preview is only available in development mode" }, 404);
     }

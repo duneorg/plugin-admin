@@ -84,10 +84,13 @@ interface ChangeResult {
   errors: string[];
 }
 
-// Valid plugin spec patterns — file: is intentionally excluded; local paths
-// could point outside the site root and would be written into site.yaml and
-// loaded on next restart. Use jsr:, npm:, or https: instead.
-const PLUGIN_SPEC_RE = /^(jsr:|npm:|https:\/\/).+/;
+// Only allow pinned jsr: specifiers for plugin.install — same constraint as
+// POST /admin/api/plugins/install. npm: and https: are rejected: npm: without
+// a version allows arbitrary version resolution on next restart, and https:
+// with no domain allowlist is a direct supply-chain RCE vector (arbitrary URL
+// → executed as Deno module on restart).
+const PLUGIN_SPEC_RE =
+  /^jsr:@?[a-z0-9_.-]+\/[a-zA-Z0-9_.-]+@\d+\.\d+\.\d+(?:[-+][a-zA-Z0-9_.-]+)?(?:\/.*)?$/;
 
 /** Set a nested value on obj using dot-notation key. Mutates in place. */
 function setDeepKey(obj: Record<string, unknown>, key: string, value: unknown): void {
@@ -175,7 +178,7 @@ function validateChange(change: Change): string[] {
     if (typeof change.spec !== "string" || !change.spec.trim()) {
       errors.push("spec (string) is required for op=plugin.install");
     } else if (!PLUGIN_SPEC_RE.test(change.spec)) {
-      errors.push(`spec "${change.spec}" must start with jsr:, npm:, https://, or file:`);
+      errors.push(`spec "${change.spec}" must be a pinned jsr: specifier (e.g. jsr:@scope/name@1.2.3)`);
     }
   }
 
