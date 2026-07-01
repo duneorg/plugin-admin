@@ -73,7 +73,7 @@ export function createSessionManager(config: SessionManagerConfig): SessionManag
     return createLocalSessionStore({
       storage: config.storage,
       sessionsDir: config.sessionsDir ?? ".dune/admin/sessions",
-      lifetime,
+      lifetimeMs: lifetime * 1000,
     });
   })();
 
