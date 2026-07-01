@@ -1,2 +1,7 @@
 .DS_Store
 *.DS_Store
+
+# Playwright E2E
+tests/e2e/fixtures/.server.pid
+test-results/
+playwright-report/

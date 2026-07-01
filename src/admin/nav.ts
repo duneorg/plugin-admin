@@ -31,6 +31,7 @@ const coreNavItems: NavItem[] = [
   { label: "Plugins", path: "/plugins", icon: "puzzle", group: "settings", order: 70, adminOnly: true },
   { label: "Themes", path: "/themes", icon: "palette", group: "settings", order: 80, adminOnly: true },
   { label: "Marketplace", path: "/marketplace", icon: "shopping-bag", group: "settings", order: 90, adminOnly: true },
+  { label: "Search", path: "/search", icon: "search", group: "settings", order: 95, permission: "config.read" },
   { label: "Config", path: "/config", icon: "settings", group: "settings", order: 100, permission: "config.read" },
   { label: "Audit Log", path: "/audit", icon: "shield", group: "system", order: 110, adminOnly: true },
   { label: "Metrics", path: "/metrics", icon: "bar-chart", group: "system", order: 120, adminOnly: true },
