@@ -6,6 +6,15 @@ Provides the full web-based content management interface: page tree, block edito
 
 > **Pre-1.0** — Ships as part of Dune's standard distribution. Extracted from `@dune/core` in v0.24 to allow headless deployments and custom admin implementations.
 
+### Theme registry (`src/admin/registry/themes.json`)
+
+Each entry requires `slug`, `name`, and either:
+
+- **`jsr`** — pinned JSR specifier (e.g. `jsr:@dune/theme-paper@1.0.0`). Installs via `themes:` in `site.yaml` + `deno.json` (preferred).
+- **`downloadUrl`** — HTTPS ZIP URL. Extracts to `themes/{slug}/` (legacy).
+
+Optional: `sha256` (ZIP integrity), `demoUrl`, `screenshotUrl`, `tags`, `compatibleWith`.
+
 ## Usage
 
 The plugin is auto-registered by `@dune/core` bootstrap unless explicitly disabled. No configuration is required for the default setup.

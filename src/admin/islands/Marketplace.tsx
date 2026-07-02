@@ -28,7 +28,8 @@ interface ThemeEntry {
   description: string;
   author: string;
   version: string;
-  downloadUrl: string;
+  jsr?: string;
+  downloadUrl?: string;
   demoUrl?: string;
   screenshotUrl?: string | null;
   tags?: string[];
@@ -118,7 +119,8 @@ export default function Marketplace({ prefix, initialTab }: Props) {
   }
 
   async function installTheme(entry: ThemeEntry) {
-    if (!confirm(`Install theme "${entry.name}" from ${entry.downloadUrl}?`)) {
+    const source = entry.jsr ?? entry.downloadUrl ?? entry.slug;
+    if (!confirm(`Install theme "${entry.name}" (${source})?`)) {
       return;
     }
     setInstalling(entry.slug);
@@ -133,13 +135,24 @@ export default function Marketplace({ prefix, initialTab }: Props) {
         },
         body: JSON.stringify({ slug: entry.slug }),
       });
+      const body = await res.json().catch(() => ({})) as {
+        error?: string;
+        reason?: string;
+        method?: string;
+        lockfileNote?: string;
+      };
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        setError((err as { error?: string }).error ?? `HTTP ${res.status}`);
+        setError(body.error ?? `HTTP ${res.status}`);
+        return;
+      }
+      if (body.reason === "already installed") {
+        setInstallMsg(`Theme "${entry.name}" is already registered on this site.`);
         return;
       }
       setInstallMsg(
-        `Theme "${entry.name}" installed. Switch to it in Configuration → Theme.`,
+        body.method === "jsr"
+          ? `Theme "${entry.name}" registered in site.yaml. ${body.lockfileNote ?? "Restart to load."}`
+          : `Theme "${entry.name}" installed to themes/${entry.slug}/. Switch to it in Configuration → Theme.`,
       );
     } finally {
       setInstalling(null);

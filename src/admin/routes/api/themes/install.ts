@@ -3,14 +3,33 @@
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
 import { safeFetch } from "@dune/core/security";
+import type { StorageAdapter } from "@dune/core/storage";
+import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
 import type { FreshContext } from "fresh";
 
 interface RegistryTheme {
   slug: string;
   name?: string;
+  /** Pinned JSR specifier — preferred install path (no ZIP download). */
+  jsr?: string;
   downloadUrl?: string;
   /** Optional SHA-256 of the theme ZIP, hex-encoded. */
   sha256?: string;
+}
+
+interface ThemePackageEntry {
+  name: string;
+  src: string;
+}
+
+const PINNED_JSR_RE =
+  /^jsr:@?[a-z0-9_.-]+\/[a-zA-Z0-9_.-]+@\d+\.\d+\.\d+(?:[-+][a-zA-Z0-9_.-]+)?(?:\/.*)?$/;
+
+function importKeyForThemeSpecifier(spec: string): string {
+  let s = spec.replace(/^jsr:/, "");
+  const atIdx = s.lastIndexOf("@");
+  if (atIdx > 0) s = s.slice(0, atIdx);
+  return s;
 }
 
 async function loadRegistry(): Promise<RegistryTheme[]> {
@@ -31,6 +50,100 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
     .join("");
 }
 
+async function installJsrTheme(
+  storage: StorageAdapter,
+  slug: string,
+  jsr: string,
+): Promise<{ alreadyInstalled: boolean }> {
+  const siteRaw = await storage.readText("config/site.yaml").catch(() => "");
+  const site = (parseYaml(siteRaw || "") ?? {}) as Record<string, unknown>;
+  const existing = Array.isArray(site.themes)
+    ? site.themes as ThemePackageEntry[]
+    : [];
+
+  const alreadyInstalled = existing.some((e) => e.name === slug || e.src === jsr);
+  if (alreadyInstalled) return { alreadyInstalled: true };
+
+  existing.push({ name: slug, src: jsr });
+  site.themes = existing;
+  await storage.write(
+    "config/site.yaml",
+    new TextEncoder().encode(stringifyYaml(site).trimEnd() + "\n"),
+  );
+
+  try {
+    const denoRaw = await storage.readText("deno.json");
+    const denoJson = JSON.parse(denoRaw) as Record<string, unknown>;
+    const imports = (denoJson.imports ?? {}) as Record<string, string>;
+    const key = importKeyForThemeSpecifier(jsr);
+    if (!imports[key]) {
+      imports[key] = jsr;
+      denoJson.imports = imports;
+      await storage.write(
+        "deno.json",
+        new TextEncoder().encode(JSON.stringify(denoJson, null, 2) + "\n"),
+      );
+    }
+  } catch {
+    // Site has no deno.json — operator adds import manually.
+  }
+
+  return { alreadyInstalled: false };
+}
+
+async function installZipTheme(
+  storage: StorageAdapter,
+  slug: string,
+  entry: RegistryTheme,
+): Promise<{ filesWritten: number }> {
+  if (typeof entry.downloadUrl !== "string") {
+    throw new Error(`Theme "${slug}" has no downloadUrl`);
+  }
+
+  let fetchResp: Response;
+  try {
+    fetchResp = await safeFetch(entry.downloadUrl, {
+      headers: { "User-Agent": "Dune-CMS/1.0 theme-installer" },
+    });
+  } catch (err) {
+    throw new Error(
+      `Refusing theme download: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+  if (!fetchResp.ok) {
+    throw new Error(`Failed to fetch theme ZIP: HTTP ${fetchResp.status}`);
+  }
+
+  const zipBytes = new Uint8Array(await fetchResp.arrayBuffer());
+  if (entry.sha256) {
+    const got = await sha256Hex(zipBytes);
+    if (got.toLowerCase() !== entry.sha256.toLowerCase()) {
+      throw new Error(
+        `Theme integrity check failed: expected ${entry.sha256}, got ${got}`,
+      );
+    }
+  }
+
+  const { ZipReader, Uint8ArrayReader, Uint8ArrayWriter } = await import("@zip-js/zip-js");
+  const zipReader = new ZipReader(new Uint8ArrayReader(zipBytes));
+  const entries = await zipReader.getEntries();
+
+  const destPrefix = `themes/${slug}/`;
+  let filesWritten = 0;
+
+  for (const zipEntry of entries) {
+    if (zipEntry.directory) continue;
+    let filename = zipEntry.filename.replace(/^[^/]+\//, "");
+    if (filename.includes("..") || filename.startsWith("/")) continue;
+    const data = await zipEntry.getData!(new Uint8ArrayWriter());
+    await storage.write(`${destPrefix}${filename}`, data);
+    filesWritten++;
+  }
+
+  await zipReader.close();
+  return { filesWritten };
+}
+
 export const handler = {
   async POST(ctx: FreshContext<AdminState>) {
     const csrf = csrfCheck(ctx);
@@ -40,10 +153,6 @@ export const handler = {
 
     const { storage } = ctx.state.adminContext;
     try {
-      // Caller-supplied downloadUrl is no longer trusted — themes are
-      // resolved exclusively by slug against the local registry. This
-      // closes a vector where any user with config.update could install
-      // an arbitrary HTTPS ZIP from any host.
       const { slug } = await ctx.req.json() as { slug?: string };
 
       if (!slug || typeof slug !== "string" || !/^[a-z0-9][a-z0-9_-]*$/.test(slug)) {
@@ -52,57 +161,39 @@ export const handler = {
 
       const registry = await loadRegistry();
       const entry = registry.find((t) => t.slug === slug);
-      if (!entry || typeof entry.downloadUrl !== "string") {
+      if (!entry) {
         return json({ error: `Theme "${slug}" not found in local registry` }, 404);
       }
 
-      // Even though the URL comes from a trusted local registry, run the
-      // SSRF guard (via safeFetch, which also pins the resolved IP) so a
-      // registry typo can't be a foothold and so an operator who packages a
-      // custom registry can't accidentally host their feed at an internal
-      // address.
-      let fetchResp: Response;
-      try {
-        fetchResp = await safeFetch(entry.downloadUrl, {
-          headers: { "User-Agent": "Dune-CMS/1.0 theme-installer" },
-        });
-      } catch (err) {
-        return json({ error: `Refusing theme download: ${err instanceof Error ? err.message : String(err)}` }, 400);
-      }
-      if (!fetchResp.ok) {
-        return json({ error: `Failed to fetch theme ZIP: HTTP ${fetchResp.status}` }, 502);
-      }
-
-      const zipBytes = new Uint8Array(await fetchResp.arrayBuffer());
-      // Verify SHA-256 if the registry pinned one. Pinned hashes block a
-      // compromised CDN or upstream from substituting a malicious ZIP.
-      if (entry.sha256) {
-        const got = await sha256Hex(zipBytes);
-        if (got.toLowerCase() !== entry.sha256.toLowerCase()) {
+      if (entry.jsr) {
+        if (typeof entry.jsr !== "string" || !PINNED_JSR_RE.test(entry.jsr)) {
           return json({
-            error: `Theme integrity check failed: expected ${entry.sha256}, got ${got}`,
+            error: `Registry entry for "${slug}" has invalid jsr specifier (must be pinned)`,
           }, 502);
         }
+
+        const { alreadyInstalled } = await installJsrTheme(storage, slug, entry.jsr);
+        if (alreadyInstalled) {
+          return json({ installed: false, reason: "already installed", slug, jsr: entry.jsr });
+        }
+
+        console.log(`  📦 Registered theme package "${slug}" (${entry.jsr}) in site.yaml`);
+        return json({
+          success: true,
+          slug,
+          jsr: entry.jsr,
+          method: "jsr",
+          lockfileNote: "Run dune lockfile:sync and restart the server to load the theme.",
+        });
       }
-      const { ZipReader, Uint8ArrayReader, Uint8ArrayWriter } = await import("@zip-js/zip-js");
-      const zipReader = new ZipReader(new Uint8ArrayReader(zipBytes));
-      const entries = await zipReader.getEntries();
 
-      const destPrefix = `themes/${slug}/`;
-      let filesWritten = 0;
-
-      for (const entry of entries) {
-        if (entry.directory) continue;
-        let filename = entry.filename.replace(/^[^/]+\//, "");
-        if (filename.includes("..") || filename.startsWith("/")) continue;
-        const data = await entry.getData!(new Uint8ArrayWriter());
-        await storage.write(`${destPrefix}${filename}`, data);
-        filesWritten++;
+      if (typeof entry.downloadUrl === "string") {
+        const { filesWritten } = await installZipTheme(storage, slug, entry);
+        console.log(`  📦 Installed theme "${slug}" (${filesWritten} files)`);
+        return json({ success: true, slug, filesWritten, method: "zip" });
       }
 
-      await zipReader.close();
-      console.log(`  📦 Installed theme "${slug}" (${filesWritten} files)`);
-      return json({ success: true, slug, filesWritten });
+      return json({ error: `Theme "${slug}" has no jsr or downloadUrl in registry` }, 404);
     } catch (err) {
       return serverError(err);
     }
