@@ -175,7 +175,7 @@ export function createAdminPlugin(
           : undefined,
         storage,
         sessionsDir: `${runtimeDir}/sessions`,
-        lifetime: adminCfg.sessionLifetime,
+        lifetimeMs: adminCfg.sessionLifetime * 1000,
       });
 
       const sessions = createSessionManager({

@@ -3,6 +3,8 @@
  *
  * Providers handle step 1+2 of the login flow (verify identity, return user attributes).
  * The session/cookie/user-provisioning layer in server.ts is shared across all providers.
+ *
+ * @module
  */
 
 import type { AdminRole } from "@dune/core/config";

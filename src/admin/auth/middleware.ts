@@ -1,5 +1,7 @@
 /**
  * Auth middleware — extract session from cookies, validate, check permissions.
+ *
+ * @module
  */
 
 import type { SessionManager } from "./sessions.ts";

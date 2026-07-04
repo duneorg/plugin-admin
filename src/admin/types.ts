@@ -1,5 +1,7 @@
 /**
  * Admin system types — users, sessions, permissions, and config.
+ *
+ * @module
  */
 
 export type { ContentEditorPlugin } from "@dune/core/hooks";

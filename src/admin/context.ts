@@ -1,6 +1,8 @@
 /**
  * Admin context singleton — initialized once at bootstrap, imported by route files.
  * Avoids threading all dependencies through Fresh context state.
+ *
+ * @module
  */
 
 import type { DuneEngine } from "@dune/core/engine";

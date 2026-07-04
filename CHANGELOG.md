@@ -5,6 +5,35 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [1.0.0] — 2026-07-05
+
+First stable release. No breaking changes from 0.25.1 — the major bump marks
+the package's public API as stable going forward, per semver.
+
+### Added
+
+- **JSR registry theme installs.** When a marketplace registry entry includes
+  a pinned `jsr` field, installing the theme now registers it in `site.yaml`
+  `themes:` and `deno.json` instead of downloading a ZIP.
+
+### Fixed
+
+- **Session store received seconds where core 0.26 expects milliseconds.**
+  Both call sites that build a session store (`createSessionStore` and the
+  legacy `createLocalSessionStore` path in `sessions.ts`) now convert
+  `sessionLifetime` to `lifetimeMs` explicitly, matching `@dune/core`'s
+  session API since its 0.26 rename.
+- **Four entrypoints had a top-of-file doc comment but no `@module` tag** —
+  `context.ts`, `types.ts`, `auth/middleware.ts`, `auth/provider.ts`. JSR's
+  doc-coverage check only recognizes a module doc when tagged `@module`; all
+  six package entrypoints now pass.
+
+### Changed
+
+- Requires `@dune/core@^0.26`.
+
+---
+
 ## [0.25.1] — 2026-07-01
 
 ### Security
