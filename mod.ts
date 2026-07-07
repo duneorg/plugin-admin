@@ -237,20 +237,6 @@ export function createAdminPlugin(
         submissionsDir: `${dataDir}/submissions`,
       });
 
-      // ── authz tuple bootstrap ─────────────────────────────────────────────────
-      if (bootstrap.authz && bootstrap.authzAdapter) {
-        try {
-          const allAdminUsers = await users.list();
-          const enabledAdminUsers = allAdminUsers.filter((u) => u.enabled !== false);
-          await bootstrapAdminTuples(bootstrap.authz, bootstrap.authzAdapter, enabledAdminUsers);
-        } catch (err) {
-          console.warn(
-            "[dune/authz] Admin authz bootstrap failed, falling back to ROLE_PERMISSIONS:",
-            err,
-          );
-        }
-      }
-
       // ── Default content editor ────────────────────────────────────────────────
       if (!adminServices.contentEditor) {
         adminServices.contentEditor = createBlockEditorPlugin();
@@ -307,6 +293,22 @@ export function createAdminPlugin(
         console.log(`\n  🔑 Default admin created — username: admin`);
         console.log(`     Password written to: ${result.passwordFile}`);
         console.log(`     Read it, then delete the file and change your password.\n`);
+      }
+
+      // ── authz tuple bootstrap ─────────────────────────────────────────────────
+      // Runs after ensureDefaultAdmin() so a freshly-created default admin's
+      // tuple gets registered too, instead of being locked out on first run.
+      if (bootstrap.authz && bootstrap.authzAdapter) {
+        try {
+          const allAdminUsers = await users.list();
+          const enabledAdminUsers = allAdminUsers.filter((u) => u.enabled !== false);
+          await bootstrapAdminTuples(bootstrap.authz, bootstrap.authzAdapter, enabledAdminUsers);
+        } catch (err) {
+          console.warn(
+            "[dune/authz] Admin authz bootstrap failed, falling back to ROLE_PERMISSIONS:",
+            err,
+          );
+        }
       }
 
       // ── Mount admin Fresh routes ──────────────────────────────────────────────
