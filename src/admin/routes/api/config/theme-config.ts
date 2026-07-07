@@ -24,7 +24,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "config.update");
     if (denied) return denied;
 
-    const { engine, storage, config } = ctx.state.adminContext;
+    const { engine, storage, config, hooks } = ctx.state.adminContext;
     try {
       const body = await ctx.req.json() as Record<string, unknown>;
       const manifest = engine.themes.theme.manifest;
@@ -60,12 +60,30 @@ export const handler = {
 
       const dataDir = config.admin?.dataDir ?? "data";
       const themeConfigPath = `${dataDir}/theme-config.json`;
-      await storage.write(themeConfigPath, new TextEncoder().encode(JSON.stringify(body, null, 2)));
+      const themeName = engine.config.theme.name;
+
+      // Read-modify-write: the file is namespaced by theme name so saving
+      // the active theme's config doesn't discard settings for other themes
+      // (e.g. after switching themes and back).
+      let all: Record<string, unknown> = {};
+      try {
+        const existingRaw = await storage.readText(themeConfigPath);
+        const parsed = JSON.parse(existingRaw) as Record<string, unknown>;
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) all = parsed;
+      } catch {
+        // No existing file, or malformed — start fresh
+      }
+      all[themeName] = body;
+      await storage.write(themeConfigPath, new TextEncoder().encode(JSON.stringify(all, null, 2)));
 
       Object.assign(engine.themeConfig, body);
       for (const key of Object.keys(engine.themeConfig)) {
         if (!(key in body)) delete engine.themeConfig[key];
       }
+
+      // Rendered pages may have cached the previous theme config values —
+      // drop the in-process page cache so the new settings show up immediately.
+      if (hooks) await hooks.fire("onCacheInvalidate", {});
 
       return json({ saved: true });
     } catch (err) {
