@@ -224,6 +224,8 @@ export const adminIslands: string[] = [
   "PageTree.tsx",
   "RevisionHistory.tsx",
   "SearchPanel.tsx",
+  "ThemeConfigEditor.tsx",
+  "ThemeSwitcher.tsx",
   "TranslationMemory.tsx",
   "UserManager.tsx",
   "WorkflowPanel.tsx",
