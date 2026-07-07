@@ -6,6 +6,14 @@ import { dirname } from "@std/path";
 import { isMediaFile } from "@dune/core/content/path-utils";
 import type { FreshContext } from "fresh";
 
+function mimeToCategory(mimeType: string): string {
+  if (mimeType.startsWith("image/")) return "image";
+  if (mimeType.startsWith("video/")) return "video";
+  if (mimeType.startsWith("audio/")) return "audio";
+  if (mimeType === "application/pdf" || mimeType.startsWith("text/") || mimeType === "application/zip") return "document";
+  return "other";
+}
+
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
     const denied = await requirePermission(ctx, "media.read");
@@ -14,14 +22,25 @@ export const handler = {
     const { engine } = ctx.state.adminContext;
     try {
       const items: Array<{
-        name: string; url: string; type: string; size: number; pagePath: string; meta: Record<string, unknown>;
+        name: string; url: string; type: string; contentType: string;
+        size: number; page: string; focalX?: number; focalY?: number;
       }> = [];
 
       for (const pageIndex of engine.pages) {
         try {
           const page = await engine.loadPage(pageIndex.sourcePath);
           for (const media of page.media) {
-            items.push({ name: media.name, url: media.url, type: media.type, size: media.size, pagePath: pageIndex.sourcePath, meta: media.meta });
+            const focal = Array.isArray(media.meta?.focal) ? media.meta.focal as [number, number] : null;
+            items.push({
+              name: media.name,
+              url: media.url,
+              type: mimeToCategory(media.type),
+              contentType: media.type,
+              size: media.size,
+              page: pageIndex.sourcePath,
+              focalX: focal ? focal[0] : undefined,
+              focalY: focal ? focal[1] : undefined,
+            });
           }
         } catch { /* skip unloadable pages */ }
       }

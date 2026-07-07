@@ -8,6 +8,10 @@
 import { h } from "preact";
 import { useState, useEffect, useCallback } from "preact/hooks";
 
+function getCsrf(): string {
+  return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? "";
+}
+
 interface EngineState {
   active: string;
   engines: string[];
@@ -50,7 +54,7 @@ export default function SearchPanel({ prefix }: Props) {
     try {
       const res = await fetch(apiUrl, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
         body: JSON.stringify(body),
       });
       if (!res.ok) {

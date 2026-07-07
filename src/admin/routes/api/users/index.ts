@@ -11,9 +11,12 @@ export const handler = {
     const denied = await requirePermission(ctx, "users.read");
     if (denied) return denied;
     const { users } = ctx.state.adminContext;
+    const authResult = ctx.state.auth;
     try {
       const all = await users.list();
-      return json({ items: all.map(toUserInfo), total: all.length });
+      const currentUserId = authResult.user?.id ?? "";
+      const isAdmin = authResult.user?.role === "admin";
+      return json({ users: all.map(toUserInfo), total: all.length, currentUserId, isAdmin });
     } catch (err) {
       return serverError(err);
     }

@@ -95,7 +95,7 @@ export default function MediaLibrary({ prefix }: Props) {
     await fetch(`${apiBase}/media`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
-      body: JSON.stringify({ url: selected.url }),
+      body: JSON.stringify({ pagePath: selected.page, name: selected.name }),
     });
     setSelected(null);
     await loadMedia();
@@ -124,7 +124,7 @@ export default function MediaLibrary({ prefix }: Props) {
       await fetch(`${apiBase}/media/meta`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
-        body: JSON.stringify({ url: selected.url, focalX, focalY }),
+        body: JSON.stringify({ pagePath: selected.page, name: selected.name, focal: [focalX, focalY] }),
       });
       setSelected((prev) => prev ? { ...prev, focalX, focalY } : prev);
     } finally {

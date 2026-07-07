@@ -55,8 +55,8 @@ export default function UserManager({ prefix }: Props) {
     setLoading(true);
     try {
       const res = await fetch(`${apiBase}/users`);
-      const d = await res.json() as { users: AdminUser[]; currentUserId: string; isAdmin: boolean };
-      setUsers(d.users ?? []);
+      const d = await res.json() as { users: AdminUser[]; currentUserId: string; isAdmin: boolean; items?: AdminUser[] };
+      setUsers(d.users ?? d.items ?? []);
       setCurrentUserId(d.currentUserId ?? "");
       setIsAdmin(d.isAdmin ?? false);
     } finally {
@@ -246,7 +246,7 @@ export default function UserManager({ prefix }: Props) {
                 <select value={fRole} onChange={(e) => setFRole((e.target as HTMLSelectElement).value)}>
                   <option value="admin">Admin</option>
                   <option value="editor">Editor</option>
-                  <option value="viewer">Viewer</option>
+                  <option value="author">Author</option>
                 </select>
               </div>
               <div class="form-group">
@@ -284,7 +284,7 @@ export default function UserManager({ prefix }: Props) {
                   <select value={fRole} onChange={(e) => setFRole((e.target as HTMLSelectElement).value)}>
                     <option value="admin">Admin</option>
                     <option value="editor">Editor</option>
-                    <option value="viewer">Viewer</option>
+                    <option value="author">Author</option>
                   </select>
                 </div>
               )}
