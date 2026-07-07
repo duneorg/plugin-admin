@@ -6,18 +6,44 @@
  * Unauthenticated requests are redirected to the login page (except /login itself).
  */
 
-import type { FreshContext } from "fresh";
+import type { FreshContext, Middleware } from "fresh";
+import { csp } from "fresh";
 import type { AdminState } from "../types.ts";
 
 const PUBLIC_PATHS = new Set(["/login", "/login/logout"]);
 
 /**
- * Headers applied to every admin response. The CSP is intentionally tight:
- * - 'self' for default and scripts (with 'wasm-unsafe-eval' for sharp/preact-runtime
- *   scenarios where wasm is needed)
- * - 'unsafe-inline' on style-src because Fresh emits some inline styles
- * - frame-ancestors 'none' to defeat clickjacking
- * - data: + blob: on img-src for media previews
+ * Nonce-based CSP for rendered admin pages. Fresh auto-stamps a per-request
+ * nonce onto every inline <script>/<style> tag it emits (island hydration
+ * boot script, sidebar toggle, etc.) — a script-src with no 'unsafe-inline'
+ * or matching nonce silently blocks all of it, which is why admin islands
+ * never hydrated. `csp({ useNonce: true })` is Fresh's own middleware
+ * (@fresh/core's `src/middlewares/csp.ts`): it reads the nonce Fresh
+ * attached to the rendered Response and swaps the 'unsafe-inline'
+ * placeholder below for 'nonce-<value>' in the directives that carry it.
+ */
+const adminCsp: Middleware<AdminState> = csp<AdminState>({
+  useNonce: true,
+  csp: [
+    "default-src 'self'",
+    "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self' data:",
+    "connect-src 'self' ws: wss:",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+  ],
+});
+
+/**
+ * Headers applied to every admin response. CSP is set here only as a static
+ * fallback for synthetic early-return responses (redirects, 403s) that never
+ * reach Fresh's renderer and so never carry a nonce; the normal render path
+ * gets its CSP from `adminCsp` above (see `withSecurityHeaders`'s
+ * has-check, which skips a header already present).
  */
 const SECURITY_HEADERS: Record<string, string> = {
   "Content-Security-Policy": [
@@ -113,6 +139,6 @@ export async function handler(
     }
   }
 
-  const res = await ctx.next();
+  const res = await adminCsp(ctx);
   return withSecurityHeaders(res);
 }
