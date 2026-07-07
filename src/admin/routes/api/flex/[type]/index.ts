@@ -43,7 +43,7 @@ export const handler = {
     try {
       const body = await ctx.req.json() as Record<string, unknown>;
       const record = await flex.create(type, schema, body);
-      return json({ record }, 201);
+      return json({ id: record._id, record }, 201);
     } catch (err) {
       if (Array.isArray(err)) return json({ error: "Validation failed", validationErrors: err }, 422);
       return serverError(err);

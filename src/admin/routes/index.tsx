@@ -20,6 +20,7 @@ export const handler = {
     };
     const recent = pages.slice(0, 10).map((p) => ({
       route: p.route,
+      sourcePath: p.sourcePath,
       title: p.title,
       format: p.format,
       published: p.published,
@@ -52,7 +53,7 @@ export default function Dashboard(
         <tbody>
           {recent.map((p) => (
             <tr key={String(p.route)}>
-              <td><a href={`${prefix}/pages/edit?path=${encodeURIComponent(String(p.route))}`}><code>{String(p.route)}</code></a></td>
+              <td><a href={`${prefix}/pages/edit?path=${encodeURIComponent(String(p.sourcePath))}`}><code>{String(p.route)}</code></a></td>
               <td>{String(p.title || "—")}</td>
               <td><span class={`badge badge-${p.format}`}>{String(p.format)}</span></td>
               <td>{p.published ? "Published" : "Draft"}</td>

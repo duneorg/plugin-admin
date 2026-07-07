@@ -11,7 +11,7 @@ export const handler = {
     const { engine } = ctx.state.adminContext;
     try {
       const themes = await engine.getAvailableThemes();
-      return json({ themes, current: engine.config.theme.name });
+      return json({ available: themes, current: engine.config.theme.name });
     } catch (err) {
       return serverError(err);
     }

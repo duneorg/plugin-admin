@@ -22,7 +22,7 @@ export const handler = {
 
     return json({
       sourcePath: pagePath,
-      status,
+      currentStatus: status,
       allowedTransitions: transitionObjects.map((t) => t.to),
       transitions: transitionObjects.map((t) => ({ to: t.to, label: t.label ?? t.to })),
       stages: workflow.stages,

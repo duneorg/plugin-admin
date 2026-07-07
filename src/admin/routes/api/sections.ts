@@ -10,6 +10,6 @@ export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
     const denied = await requirePermission(ctx, "pages.read");
     if (denied) return denied;
-    return json(sectionRegistry.all());
+    return json({ sections: sectionRegistry.all() });
   },
 };

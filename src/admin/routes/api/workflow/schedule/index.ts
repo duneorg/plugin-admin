@@ -20,9 +20,9 @@ export const handler = {
     const authResult = ctx.state.auth;
     try {
       const body = await ctx.req.json();
-      const { sourcePath, action, scheduledAt } = body;
+      const { path: sourcePath, action, scheduledAt } = body;
       if (!sourcePath || !action || !scheduledAt) {
-        return json({ error: "sourcePath, action, and scheduledAt are required" }, 400);
+        return json({ error: "path, action, and scheduledAt are required" }, 400);
       }
 
       // Validate sourcePath format and confirm it exists in the engine's page

@@ -18,8 +18,8 @@ export const handler = {
     const authResult = ctx.state.auth;
     try {
       const body = await ctx.req.json();
-      const { sourcePath, status: newStatus } = body;
-      if (!sourcePath || !newStatus) return json({ error: "sourcePath and status are required" }, 400);
+      const { path: sourcePath, to: newStatus } = body;
+      if (!sourcePath || !newStatus) return json({ error: "path and to are required" }, 400);
 
       const pageIndex = engine.pages.find((p) => p.sourcePath === sourcePath);
       if (!pageIndex) return json({ error: "Page not found" }, 404);

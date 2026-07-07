@@ -110,7 +110,7 @@ export default function ConfigEditor({ prefix }: Props) {
       const res = await fetch(`${apiBase}/config/theme`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
-        body: JSON.stringify({ theme: selectedTheme }),
+        body: JSON.stringify({ name: selectedTheme }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
