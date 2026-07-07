@@ -5,6 +5,36 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [1.0.1] — 2026-07-07
+
+### Fixed
+
+Wide batch of admin UI/API field-shape mismatches and broken links, found by
+exercising every admin feature end-to-end:
+
+- **Pages**: edit/history links used the wrong URL prefix and field
+  (`route` instead of `sourcePath`), new-page creation didn't send the
+  required `path`, and page save used the wrong content field name.
+- **Revision history**: island read the wrong response field; the API's
+  path parser broke on URL-encoded slashes in the source path.
+- **Users**: list endpoint returned the wrong shape (always showed empty);
+  role picker offered an invalid role.
+- **Site config**: save silently 405'd — the PUT handler was missing.
+- **Media library**: upload always 400'd (wrong field name, missing
+  `pagePath`); delete and focal-point save sent the wrong body shape; list
+  response was missing category/contentType/page fields.
+- **Search**: PATCH request was missing its CSRF header.
+- **Dashboard, sections, workflow, theme switcher, flex records**: several
+  field-name mismatches between the admin UI and its own API routes
+  (`status`/`currentStatus`, `theme`/`name`, `themes`/`available`,
+  `id`/`_id`, bare array vs `{ sections }`).
+- **Theme config**: `select`/`toggle`/`color` field types rendered as plain
+  text inputs; saving one theme's config silently discarded another
+  theme's settings in `data/theme-config.json` (now namespaced by theme
+  name); the in-process page cache is now invalidated after a save.
+- **Audit log**: target column rendered `[object Object]` instead of
+  `type:id`.
+
 ## [1.0.0] — 2026-07-05
 
 First stable release. No breaking changes from 0.25.1 — the major bump marks
