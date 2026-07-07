@@ -50,7 +50,9 @@ export default function ConfigEditor({ prefix }: Props) {
   const [themeMsg, setThemeMsg] = useState("");
 
   // Theme config
-  const [themeConfigSchema, setThemeConfigSchema] = useState<Record<string, { type: string; label: string; default?: unknown }>>({});
+  const [themeConfigSchema, setThemeConfigSchema] = useState<
+    Record<string, { type: string; label: string; default?: unknown; options?: string[] }>
+  >({});
   const [themeConfig, setThemeConfig] = useState<Record<string, unknown>>({});
   const [savingThemeConfig, setSavingThemeConfig] = useState(false);
   const [themeConfigSaved, setThemeConfigSaved] = useState(false);
@@ -68,7 +70,9 @@ export default function ConfigEditor({ prefix }: Props) {
         setConfig(cfg);
         setThemes(thm);
         setSelectedTheme(thm.current);
-        setThemeConfigSchema(tc.schema as Record<string, { type: string; label: string; default?: unknown }> ?? {});
+        setThemeConfigSchema(
+          tc.schema as Record<string, { type: string; label: string; default?: unknown; options?: string[] }> ?? {},
+        );
         setThemeConfig(tc.config ?? {});
       })
       .catch((e) => setError(String(e)))
@@ -318,7 +322,7 @@ export default function ConfigEditor({ prefix }: Props) {
                     value={String(themeConfig[key] ?? field.default ?? "")}
                     onInput={(e) => setThemeConfig((c) => ({ ...c, [key]: (e.target as HTMLTextAreaElement).value }))}
                   />
-                ) : field.type === "checkbox" ? (
+                ) : field.type === "checkbox" || field.type === "toggle" ? (
                   <label>
                     <input
                       type="checkbox"
@@ -326,6 +330,19 @@ export default function ConfigEditor({ prefix }: Props) {
                       onChange={(e) => setThemeConfig((c) => ({ ...c, [key]: (e.target as HTMLInputElement).checked }))}
                     />
                   </label>
+                ) : field.type === "select" ? (
+                  <select
+                    value={String(themeConfig[key] ?? field.default ?? "")}
+                    onChange={(e) => setThemeConfig((c) => ({ ...c, [key]: (e.target as HTMLSelectElement).value }))}
+                  >
+                    {(field.options ?? []).map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                ) : field.type === "color" ? (
+                  <input
+                    type="color"
+                    value={String(themeConfig[key] ?? field.default ?? "#000000")}
+                    onInput={(e) => setThemeConfig((c) => ({ ...c, [key]: (e.target as HTMLInputElement).value }))}
+                  />
                 ) : (
                   <input
                     type="text"
