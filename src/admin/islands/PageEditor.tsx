@@ -82,7 +82,7 @@ export default function PageEditor({ pagePath, prefix }: Props) {
         method: "PUT",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
         body: JSON.stringify({
-          rawContent,
+          content: rawContent,
           frontmatter: { ...fm, title: fm.title ?? page.title },
         }),
       });

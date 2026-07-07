@@ -38,7 +38,7 @@ export function createBlockEditorPlugin(): ContentEditorPlugin {
         });
       }
       // deno-lint-ignore no-explicit-any
-      const pageIndex = (engine.pages as any[]).find((p) => p.route === pagePath);
+      const pageIndex = (engine.pages as any[]).find((p) => p.sourcePath === pagePath);
       return ctx.render(
         <PageEditorRoute data={{ pagePath, pageIndex, prefix }} />,
       );

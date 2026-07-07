@@ -88,7 +88,8 @@ export const handler = {
         outcome: "success",
       }).catch(() => {});
 
-      return json({ created: true, path: pagePath, file: filePath }, 201);
+      const sourcePath = `${pagePath}/default${ext}`;
+      return json({ created: true, path: pagePath, sourcePath, file: filePath }, 201);
     } catch (err) {
       return serverError(err);
     }

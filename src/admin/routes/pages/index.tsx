@@ -39,7 +39,7 @@ export default function PagesIndex(
       <div class="section-header">
         <h2>Pages</h2>
       </div>
-      <PageTree pages={data.pages} initialQuery={data.q} prefix={data.prefix} />
+      <PageTree pages={data.pages} initialQuery={data.q} prefix={`${data.prefix}/pages`} />
     </div>
   );
 }

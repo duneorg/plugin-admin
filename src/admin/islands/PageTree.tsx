@@ -164,13 +164,19 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
     setCreating(true);
     setCreateError("");
     try {
-      const res = await fetch(`${prefix.replace(/\/pages$/, "")}/api/pages`, {
+      const slug = createTitle.trim().toLowerCase()
+        .replace(/[^\w\s-]/g, "").replace(/[\s_]+/g, "-").replace(/^-+|-+$/g, "") || "page";
+      const parentPath = createParent ? createParent.replace(/^\//, "") : "";
+      const pagePath = parentPath ? `${parentPath}/${slug}` : slug;
+
+      const apiBase = `${prefix.replace(/\/pages$/, "")}/api`;
+      const res = await fetch(`${apiBase}/pages`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
         body: JSON.stringify({
+          path: pagePath,
           title: createTitle.trim(),
           template: createTemplate,
-          parent: createParent || undefined,
         }),
       });
       if (!res.ok) {
@@ -178,8 +184,8 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
         setCreateError((err as { error?: string }).error ?? `HTTP ${res.status}`);
         return;
       }
-      const { route } = await res.json() as { route: string };
-      location.href = `${prefix}/edit?path=${encodeURIComponent(route)}`;
+      const { sourcePath } = await res.json() as { sourcePath: string };
+      location.href = `${prefix}/edit?path=${encodeURIComponent(sourcePath)}`;
     } catch (err) {
       setCreateError(String(err));
     } finally {
@@ -200,7 +206,7 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
     const { page, children } = node;
     const isCollapsed = collapsed.has(page.route);
     const hasChildren = children.length > 0;
-    const editUrl = `${prefix}/edit?path=${encodeURIComponent(page.route)}`;
+    const editUrl = `${prefix}/edit?path=${encodeURIComponent(page.sourcePath)}`;
     const editors = presence.get(page.sourcePath) ?? [];
 
     return (
@@ -223,7 +229,7 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
           <span class="tree-route">{page.route}</span>
           <span class="tree-actions">
             <a href={editUrl} class="btn btn-xs btn-outline">Edit</a>
-            <a href={`${prefix}/history?path=${encodeURIComponent(page.route)}`} class="btn btn-xs btn-outline">History</a>
+            <a href={`${prefix}/history?path=${encodeURIComponent(page.sourcePath)}`} class="btn btn-xs btn-outline">History</a>
           </span>
         </div>
         {hasChildren && !isCollapsed && (
@@ -274,7 +280,7 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
                   return (
                     <tr key={p.route}>
                       <td>
-                        <a href={`${prefix}/edit?path=${encodeURIComponent(p.route)}`}>{p.title || "(untitled)"}</a>
+                        <a href={`${prefix}/edit?path=${encodeURIComponent(p.sourcePath)}`}>{p.title || "(untitled)"}</a>
                         {searchEditors.length > 0 && (
                           <span style="margin-left:6px">
                             <PresenceBadge editors={searchEditors} />
@@ -285,7 +291,7 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
                       <td>{p.format}</td>
                       <td>{p.published ? "published" : "draft"}</td>
                       <td>
-                        <a href={`${prefix}/edit?path=${encodeURIComponent(p.route)}`} class="btn btn-xs btn-outline">Edit</a>
+                        <a href={`${prefix}/edit?path=${encodeURIComponent(p.sourcePath)}`} class="btn btn-xs btn-outline">Edit</a>
                       </td>
                     </tr>
                   );

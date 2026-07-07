@@ -27,7 +27,6 @@ interface Props {
 
 export default function RevisionHistory({ pagePath, prefix }: Props) {
   const apiBase = `${prefix}/api`;
-  const encoded = encodeURIComponent(pagePath);
 
   const [loading, setLoading] = useState(true);
   const [revisions, setRevisions] = useState<Revision[]>([]);
@@ -40,16 +39,16 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
   const [restoreMsg, setRestoreMsg] = useState("");
 
   useEffect(() => {
-    fetch(`${apiBase}/history/${encoded}`)
+    fetch(`${apiBase}/history/${pagePath}`)
       .then((r) => r.json())
-      .then((d: { revisions: Revision[] }) => setRevisions(d.revisions ?? []))
+      .then((d: { items: Revision[] }) => setRevisions(d.items ?? []))
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
   }, [pagePath]);
 
   async function loadView(revNumber: number) {
     setDiffRev(null);
-    const res = await fetch(`${apiBase}/history/${encoded}/${revNumber}`);
+    const res = await fetch(`${apiBase}/history/${pagePath}/${revNumber}`);
     if (!res.ok) return;
     const d = await res.json() as { content: string };
     setViewRev({ number: revNumber, content: d.content });
@@ -57,7 +56,7 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
 
   async function loadDiff(revNumber: number) {
     setViewRev(null);
-    const res = await fetch(`${apiBase}/history/${encoded}/${revNumber}/diff`);
+    const res = await fetch(`${apiBase}/history/${pagePath}/${revNumber}/diff`);
     if (!res.ok) return;
     const d = await res.json() as { lines: DiffLine[] };
     setDiffRev({ number: revNumber, lines: d.lines ?? [] });
@@ -68,7 +67,7 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
     setRestoring(revNumber);
     setRestoreMsg("");
     try {
-      const res = await fetch(`${apiBase}/history/${encoded}/${revNumber}/restore`, {
+      const res = await fetch(`${apiBase}/history/${pagePath}/${revNumber}/restore`, {
         method: "POST",
         headers: { "X-CSRF-Token": getCsrf() },
       });
@@ -79,8 +78,8 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
       }
       setRestoreMsg(`Revision #${revNumber} restored successfully.`);
       // Reload list
-      const updated = await fetch(`${apiBase}/history/${encoded}`).then((r) => r.json());
-      setRevisions((updated as { revisions: Revision[] }).revisions ?? []);
+      const updated = await fetch(`${apiBase}/history/${pagePath}`).then((r) => r.json());
+      setRevisions((updated as { items: Revision[] }).items ?? []);
       setViewRev(null);
       setDiffRev(null);
     } finally {
