@@ -10,7 +10,7 @@ import type { FreshContext, Middleware } from "fresh";
 import { csp } from "fresh";
 import type { AdminState } from "../types.ts";
 
-const PUBLIC_PATHS = new Set(["/login", "/login/logout"]);
+export const PUBLIC_PATHS = new Set(["/login", "/login/logout"]);
 
 /**
  * Nonce-based CSP for rendered admin pages. Fresh auto-stamps a per-request
@@ -85,11 +85,26 @@ function withSecurityHeaders(res: Response): Response {
  * `adminRelative = "login"` (no leading slash), which then failed the
  * PUBLIC_PATHS lookup and trapped users in a redirect loop.
  */
-function normalizePrefix(prefix: string): string {
+export function normalizePrefix(prefix: string): string {
   if (!prefix || prefix === "/") return "/";
   let p = prefix.startsWith("/") ? prefix : "/" + prefix;
   if (p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
   return p;
+}
+
+/**
+ * Strip a (normalized) admin prefix off a pathname to get the admin-relative
+ * path used for PUBLIC_PATHS lookups. Always anchored with a leading slash
+ * and stripped of any trailing slash so lookups are stable regardless of how
+ * the prefix or incoming pathname were formatted.
+ */
+export function toAdminRelative(pathname: string, normalizedPrefix: string): string {
+  let adminRelative = normalizedPrefix === "/" ? pathname : pathname.slice(normalizedPrefix.length);
+  if (!adminRelative.startsWith("/")) adminRelative = "/" + adminRelative;
+  if (adminRelative.length > 1 && adminRelative.endsWith("/")) {
+    adminRelative = adminRelative.slice(0, -1);
+  }
+  return adminRelative;
 }
 
 export async function handler(
@@ -107,13 +122,7 @@ export async function handler(
   const pathname = ctx.url.pathname;
   if (prefix !== "/" && !pathname.startsWith(prefix)) return ctx.next();
 
-  // Strip prefix to get the admin-relative path for public path check.
-  // Always anchor with a leading slash so PUBLIC_PATHS lookups are stable.
-  let adminRelative = prefix === "/" ? pathname : pathname.slice(prefix.length);
-  if (!adminRelative.startsWith("/")) adminRelative = "/" + adminRelative;
-  if (adminRelative.length > 1 && adminRelative.endsWith("/")) {
-    adminRelative = adminRelative.slice(0, -1);
-  }
+  const adminRelative = toAdminRelative(pathname, prefix);
 
   const authResult = await auth.authenticate(ctx.req);
   ctx.state.auth = authResult;

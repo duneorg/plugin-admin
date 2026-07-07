@@ -9,6 +9,7 @@ import type { AdminState } from "../types.ts";
 import { getNavItems } from "../nav.ts";
 import { isRtl } from "@dune/core/i18n";
 import { ROLE_PERMISSIONS } from "../types.ts";
+import { normalizePrefix, PUBLIC_PATHS, toAdminRelative } from "./_middleware.ts";
 
 export default function AdminLayout(
   { Component, state, url }: { Component: () => h.JSX.Element; state: AdminState; url: URL },
@@ -17,6 +18,18 @@ export default function AdminLayout(
   // For non-admin paths, render the component directly without the admin shell.
   const adminCtx = state.adminContext;
   if (!adminCtx || !url.pathname.startsWith(adminCtx.prefix)) {
+    return <Component />;
+  }
+
+  // Public routes (login, logout) render their own standalone document —
+  // login.tsx's LoginPage already emits a complete <html>/<head>/<body>
+  // with its own styles. Wrapping it in the authenticated sidebar/topbar
+  // shell nested a second <html> document inside the admin chrome and, for
+  // unauthenticated visitors, showed the nav filtered as the default
+  // "author" role instead of just not being shown at all.
+  const normalizedPrefix = normalizePrefix(adminCtx.prefix);
+  const publicPathCheck = toAdminRelative(url.pathname, normalizedPrefix);
+  if (PUBLIC_PATHS.has(publicPathCheck)) {
     return <Component />;
   }
 
@@ -270,13 +283,6 @@ function adminCss(rtl: boolean): string {
     /* Section headers */
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .section-header h2 { font-size: 20px; font-weight: 600; }
-
-    /* Login page */
-    .login-body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); }
-    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; width: 100%; max-width: 360px; }
-    .login-header { text-align: center; margin-bottom: 24px; }
-    .login-header h1 { font-size: 28px; margin-bottom: 4px; }
-    .login-header p { color: var(--text-muted); font-size: 14px; }
 
     ${rtl ? `
     /* RTL adjustments */
