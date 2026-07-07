@@ -43,6 +43,7 @@ import type { AdminContext } from "./src/admin/context.ts";
 import { createBlockEditorPlugin } from "./src/admin/block-editor-plugin.tsx";
 import { mountDuneAdmin, getDuneAdminIslands } from "./src/admin/mount.ts";
 import { logger } from "@dune/core/logger";
+import denoJson from "./deno.json" with { type: "json" };
 
 /** Options forwarded from bootstrap() to the admin plugin factory. */
 export interface AdminPluginOptions {
@@ -82,7 +83,7 @@ export function createAdminPlugin(
 
   return {
     name: "dune-admin",
-    version: "0.24.0",
+    version: denoJson.version,
     description: "Built-in Dune admin panel",
     hooks: {},
     islandSpecifiers: getDuneAdminIslands(),
