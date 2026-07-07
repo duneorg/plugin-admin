@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/plugins — installed plugins list */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";

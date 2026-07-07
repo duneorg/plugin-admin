@@ -133,7 +133,7 @@ async function installZipTheme(
 
   for (const zipEntry of entries) {
     if (zipEntry.directory) continue;
-    let filename = zipEntry.filename.replace(/^[^/]+\//, "");
+    const filename = zipEntry.filename.replace(/^[^/]+\//, "");
     if (filename.includes("..") || filename.startsWith("/")) continue;
     const data = await zipEntry.getData!(new Uint8ArrayWriter());
     await storage.write(`${destPrefix}${filename}`, data);

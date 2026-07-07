@@ -5,7 +5,6 @@
  * Talks to /admin/api/workflow/*.
  */
 
-import { h, Fragment } from "preact";
 import { useState, useEffect } from "preact/hooks";
 
 interface Stage {
@@ -181,7 +180,7 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
               const targetStage = status.stages.find((s) => s.id === t.to);
               const tc = stageColor(targetStage, t.to);
               return (
-                <button
+                <button type="button"
                   key={t.to}
                   class="btn btn-sm"
                   style={`background:${tc};color:white;border:none`}
@@ -208,7 +207,7 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
               <span style="color:#f59e0b">⏰</span>
               <span>{sa.action}</span>
               <span style="color:#718096">{new Date(sa.scheduledAt).toLocaleString()}</span>
-              <button
+              <button type="button"
                 class="btn btn-xs btn-outline"
                 style="margin-left:auto"
                 onClick={() => cancelSchedule(sa.id)}
@@ -221,7 +220,7 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
       )}
 
       {/* Schedule button */}
-      <button
+      <button type="button"
         class="btn btn-xs btn-outline"
         style="margin-bottom:0.5rem"
         onClick={() => setShowSchedule((v) => !v)}
@@ -251,7 +250,7 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
               min={new Date().toISOString().slice(0, 16)}
             />
           </div>
-          <button
+          <button type="button"
             class="btn btn-sm btn-primary"
             onClick={scheduleAction_}
             disabled={scheduling || !scheduleDate}

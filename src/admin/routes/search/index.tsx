@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/search — search engine management */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import SearchPanel from "../../islands/SearchPanel.tsx";

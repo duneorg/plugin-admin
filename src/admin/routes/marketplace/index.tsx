@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/marketplace — plugin + theme marketplace */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import Marketplace from "../../islands/Marketplace.tsx";

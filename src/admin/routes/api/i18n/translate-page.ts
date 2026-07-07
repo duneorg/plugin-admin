@@ -2,8 +2,6 @@
 
 import type { AdminState } from "../../../types.ts";
 import { json, serverError, csrfCheck, requirePermission, validatePagePath } from "../_utils.ts";
-import { basename } from "@std/path";
-import { parseContentFilename } from "@dune/core/content/path-utils";
 import type { FreshContext } from "fresh";
 
 function splitFrontmatter(content: string): { fm: string; body: string } {

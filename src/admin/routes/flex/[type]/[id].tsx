@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/flex/:type/:id — flex record editor (also handles "new") */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../../types.ts";
 import FlexEditor from "../../../islands/FlexEditor.tsx";

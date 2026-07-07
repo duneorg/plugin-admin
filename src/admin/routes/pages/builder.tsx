@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/pages/builder?path=... — visual page builder */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import PageBuilder from "../../islands/PageBuilder.tsx";

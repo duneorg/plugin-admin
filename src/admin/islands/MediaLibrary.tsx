@@ -4,7 +4,6 @@
  * copy URL, and delete. Talks to /admin/api/media.
  */
 
-import { h, Fragment } from "preact";
 import { useState, useEffect, useRef } from "preact/hooks";
 
 interface MediaFile {
@@ -198,7 +197,7 @@ export default function MediaLibrary({ prefix }: Props) {
             <option key={p.sourcePath} value={p.sourcePath}>{p.title || p.route}</option>
           ))}
         </select>
-        <button
+        <button type="button"
           class="btn btn-sm btn-primary"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading || !destPagePath}
@@ -284,14 +283,14 @@ export default function MediaLibrary({ prefix }: Props) {
                     </p>
                     <p style="font-size:0.85rem;color:#718096">Click the image to set the focal point.</p>
                     <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
-                      <button
+                      <button type="button"
                         class="btn btn-sm btn-primary"
                         onClick={saveFocal}
                         disabled={savingFocal}
                       >
                         {savingFocal ? "Saving…" : "Save focal point"}
                       </button>
-                      <button
+                      <button type="button"
                         class="btn btn-sm btn-outline"
                         onClick={() => { setFocalX(50); setFocalY(50); }}
                       >
@@ -303,9 +302,9 @@ export default function MediaLibrary({ prefix }: Props) {
               </div>
             </div>
             <div class="form-actions" style="margin-top:1.5rem">
-              <button class="btn btn-outline" onClick={() => setSelected(null)}>Close</button>
-              <button class="btn btn-danger" onClick={deleteFile}>Delete</button>
-              <button class="btn btn-primary" onClick={copyUrl}>Copy URL</button>
+              <button type="button" class="btn btn-outline" onClick={() => setSelected(null)}>Close</button>
+              <button type="button" class="btn btn-danger" onClick={deleteFile}>Delete</button>
+              <button type="button" class="btn btn-primary" onClick={copyUrl}>Copy URL</button>
             </div>
           </div>
         </div>

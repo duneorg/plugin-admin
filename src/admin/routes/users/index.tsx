@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/users — user management */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import UserManager from "../../islands/UserManager.tsx";

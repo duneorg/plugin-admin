@@ -8,7 +8,6 @@
  * third-party editors use.
  */
 
-import { h } from "preact";
 import type { ContentEditorPlugin } from "@dune/core/hooks";
 import PageEditor from "./islands/PageEditor.tsx";
 

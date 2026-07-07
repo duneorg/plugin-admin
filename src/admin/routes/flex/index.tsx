@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/flex — flex object types list */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";

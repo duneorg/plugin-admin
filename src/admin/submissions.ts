@@ -8,8 +8,6 @@
  */
 
 import { encodeHex } from "@std/encoding/hex";
-import { ensureDir } from "@std/fs";
-import { join } from "@std/path";
 import type { StorageAdapter } from "@dune/core/storage";
 
 // === Types ===

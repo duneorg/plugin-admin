@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/ — dashboard */
 
-import { h } from "preact";
 
 import type { AdminState } from "../types.ts";
 import type { FreshContext } from "fresh";

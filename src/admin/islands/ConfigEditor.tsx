@@ -6,7 +6,6 @@
  * and /admin/api/config/theme-config.
  */
 
-import { h, Fragment } from "preact";
 import { useState, useEffect } from "preact/hooks";
 
 interface SiteConfig {
@@ -161,7 +160,7 @@ export default function ConfigEditor({ prefix }: Props) {
       {/* Tabs */}
       <div class="cfg-tabs" style="display:flex;gap:0.5rem;border-bottom:1px solid #e2e8f0;margin-bottom:1.5rem">
         {(["site", "theme", "theme-config"] as Tab[]).map((t) => (
-          <button
+          <button type="button"
             key={t}
             class={`cfg-tab btn btn-sm${tab === t ? " btn-primary" : " btn-outline"}`}
             onClick={() => setTab(t)}
@@ -275,7 +274,7 @@ export default function ConfigEditor({ prefix }: Props) {
           </div>
           {themeMsg && <div class="alert alert-success" style="margin-bottom:1rem">{themeMsg}</div>}
           <div class="form-actions">
-            <button
+            <button type="button"
               class="btn btn-primary"
               onClick={switchTheme}
               disabled={switchingTheme || selectedTheme === themes.current}

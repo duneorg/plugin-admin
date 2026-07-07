@@ -4,7 +4,6 @@
  * Uses /admin/api/history/[...rest] catch-all endpoint.
  */
 
-import { h, Fragment } from "preact";
 import { useState, useEffect } from "preact/hooks";
 
 interface Revision {
@@ -115,14 +114,14 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
                 {rev.message && <div class="revision-message">{rev.message}</div>}
                 {rev.author && <div class="revision-author">by {rev.author}</div>}
                 <div class="revision-actions">
-                  <button
+                  <button type="button"
                     class="btn btn-xs btn-outline"
                     onClick={() => loadView(rev.number)}
                   >
                     View
                   </button>
                   {!isLatest && (
-                    <button
+                    <button type="button"
                       class="btn btn-xs btn-outline"
                       onClick={() => loadDiff(rev.number)}
                     >
@@ -130,7 +129,7 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
                     </button>
                   )}
                   {!isLatest && (
-                    <button
+                    <button type="button"
                       class="btn btn-xs btn-outline"
                       onClick={() => restore(rev.number)}
                       disabled={restoring === rev.number}
@@ -155,7 +154,7 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
           <div>
             <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">
               <h4 style="margin:0">Revision #{viewRev.number}</h4>
-              <button class="btn btn-xs btn-outline" onClick={() => setViewRev(null)}>Close</button>
+              <button type="button" class="btn btn-xs btn-outline" onClick={() => setViewRev(null)}>Close</button>
             </div>
             <pre
               style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:4px;padding:1rem;overflow:auto;font-size:0.85rem;max-height:60vh"
@@ -167,7 +166,7 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
           <div>
             <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">
               <h4 style="margin:0">Diff for revision #{diffRev.number}</h4>
-              <button class="btn btn-xs btn-outline" onClick={() => setDiffRev(null)}>Close</button>
+              <button type="button" class="btn btn-xs btn-outline" onClick={() => setDiffRev(null)}>Close</button>
             </div>
             <pre
               style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:4px;padding:1rem;overflow:auto;font-size:0.85rem;max-height:60vh"

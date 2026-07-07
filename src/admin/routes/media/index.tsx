@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/media — media library */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import MediaLibrary from "../../islands/MediaLibrary.tsx";

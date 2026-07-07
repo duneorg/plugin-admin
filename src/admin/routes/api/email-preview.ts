@@ -17,7 +17,7 @@ export const handler = {
     const runtimeDir = ctx.state.adminContext.config.admin?.runtimeDir ?? ".dune/admin";
     const devEmailDir = join(runtimeDir, "dev-email");
 
-    let entries: Record<string, unknown>[] = [];
+    const entries: Record<string, unknown>[] = [];
 
     try {
       for await (const entry of Deno.readDir(devEmailDir)) {

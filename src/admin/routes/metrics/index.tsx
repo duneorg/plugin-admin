@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/metrics — performance metrics dashboard */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import MetricsDashboard from "../../islands/MetricsDashboard.tsx";

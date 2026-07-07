@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/pages — page tree with search */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import PageTree from "../../islands/PageTree.tsx";

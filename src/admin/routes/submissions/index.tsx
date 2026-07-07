@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/submissions — redirect to first form or show empty state */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";
@@ -26,7 +25,7 @@ export const handler = {
 };
 
 export default function SubmissionsRoute(
-  { data }: { data: { forms: string[]; prefix: string } },
+  _props: { data: { forms: string[]; prefix: string } },
 ) {
   return (
     <div>

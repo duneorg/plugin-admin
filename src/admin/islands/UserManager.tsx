@@ -4,7 +4,6 @@
  * and delete. Talks to /admin/api/users and /admin/api/users/:id.
  */
 
-import { h, Fragment } from "preact";
 import { useState, useEffect } from "preact/hooks";
 
 interface AdminUser {
@@ -35,7 +34,6 @@ export default function UserManager({ prefix }: Props) {
   const [currentUserId, setCurrentUserId] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [modal, setModal] = useState<Modal>(null);
-  const [error, setError] = useState("");
 
   // Form fields
   const [fUsername, setFUsername] = useState("");
@@ -174,7 +172,7 @@ export default function UserManager({ prefix }: Props) {
   return (
     <div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
-        <button class="btn btn-primary btn-sm" onClick={openCreate}>+ New User</button>
+        <button type="button" class="btn btn-primary btn-sm" onClick={openCreate}>+ New User</button>
       </div>
 
       {loading ? (
@@ -202,7 +200,7 @@ export default function UserManager({ prefix }: Props) {
                 <td>{u.email}</td>
                 <td>{u.role}</td>
                 <td>
-                  <button
+                  <button type="button"
                     class={`btn btn-xs ${u.enabled ? "btn-enabled" : "btn-disabled"}`}
                     onClick={() => toggleEnabled(u.id, !u.enabled)}
                   >
@@ -210,10 +208,10 @@ export default function UserManager({ prefix }: Props) {
                   </button>
                 </td>
                 <td>
-                  <button class="btn btn-xs btn-outline" onClick={() => openEdit(u)}>Edit</button>
-                  <button class="btn btn-xs btn-outline" onClick={() => openPassword(u.id, u.username)}>Password</button>
+                  <button type="button" class="btn btn-xs btn-outline" onClick={() => openEdit(u)}>Edit</button>
+                  <button type="button" class="btn btn-xs btn-outline" onClick={() => openPassword(u.id, u.username)}>Password</button>
                   {u.id !== currentUserId && (
-                    <button class="btn btn-xs btn-danger" onClick={() => deleteUser(u.id, u.username)}>Delete</button>
+                    <button type="button" class="btn btn-xs btn-danger" onClick={() => deleteUser(u.id, u.username)}>Delete</button>
                   )}
                 </td>
               </tr>

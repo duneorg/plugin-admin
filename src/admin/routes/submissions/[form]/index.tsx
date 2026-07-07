@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/submissions/:form — submissions list for a form */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../../types.ts";
 import type { FreshContext } from "fresh";

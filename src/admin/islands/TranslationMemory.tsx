@@ -5,7 +5,6 @@
  * Talks to /admin/api/i18n/memory.
  */
 
-import { h, Fragment } from "preact";
 import { useState, useEffect } from "preact/hooks";
 
 interface TMEntry {
@@ -23,7 +22,7 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
   const defaultLang = supportedLanguages[0] ?? "en";
   const otherLangs = supportedLanguages.slice(1);
 
-  const [from, setFrom] = useState(defaultLang);
+  const [from] = useState(defaultLang);
   const [to, setTo] = useState(otherLangs[0] ?? "");
   const [entries, setEntries] = useState<TMEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -121,7 +120,7 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
       <div class="tm-header" style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap">
         <div class="tm-tabs" style="display:flex;gap:0.5rem">
           {otherLangs.map((lang) => (
-            <button
+            <button type="button"
               key={lang}
               class={`btn btn-sm${lang === to ? " btn-primary" : " btn-outline"}`}
               onClick={() => setTo(lang)}
@@ -132,10 +131,10 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
         </div>
         <div style="margin-left:auto;display:flex;align-items:center;gap:0.75rem">
           <span style="color:#718096;font-size:0.9rem">{entries.length} entries</span>
-          <button class="btn btn-sm btn-outline" onClick={() => { setShowAdd(true); setError(""); }}>
+          <button type="button" class="btn btn-sm btn-outline" onClick={() => { setShowAdd(true); setError(""); }}>
             + Add Entry
           </button>
-          <button
+          <button type="button"
             class="btn btn-sm btn-outline"
             onClick={rebuild}
             disabled={rebuilding}
@@ -207,7 +206,7 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
                 <td><pre style="margin:0;white-space:pre-wrap;font-size:0.85rem">{e.source}</pre></td>
                 <td><pre style="margin:0;white-space:pre-wrap;font-size:0.85rem">{e.target}</pre></td>
                 <td>
-                  <button class="btn btn-xs btn-danger" onClick={() => deleteEntry(e.source)}>Delete</button>
+                  <button type="button" class="btn btn-xs btn-danger" onClick={() => deleteEntry(e.source)}>Delete</button>
                 </td>
               </tr>
             ))}

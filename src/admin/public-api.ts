@@ -127,7 +127,7 @@ export async function handleFormSubmission(ctx: AdminContext, req: Request, form
     }
 
     // Collapse multi-value fields to comma-joined strings
-    let fields: Record<string, string> = {};
+    const fields: Record<string, string> = {};
     for (const [k, vs] of Object.entries(multiFields)) {
       fields[k] = vs.join(", ");
     }
@@ -409,7 +409,7 @@ export async function handleContactSubmission(ctx: AdminContext, req: Request): 
     }
 
     // Collapse multi-value fields to comma-joined strings
-    let fields: Record<string, string> = {};
+    const fields: Record<string, string> = {};
     for (const [k, vs] of Object.entries(multiFields)) {
       fields[k] = vs.join(", ");
     }

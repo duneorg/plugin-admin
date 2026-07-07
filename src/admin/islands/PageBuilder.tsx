@@ -5,7 +5,6 @@
  * Saves via PUT /admin/api/pages/:path (sections stored in frontmatter).
  */
 
-import { h, Fragment } from "preact";
 import { useState, useEffect, useRef } from "preact/hooks";
 
 interface SectionField {
@@ -155,11 +154,11 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
           <span class="bld-title">{pageTitle}</span>
         </div>
         <div class="bld-toolbar-right">
-          <button class="btn btn-sm btn-outline" onClick={() => setShowPreview((v) => !v)}>
+          <button type="button" class="btn btn-sm btn-outline" onClick={() => setShowPreview((v) => !v)}>
             {showPreview ? "Hide" : "Preview"}
           </button>
           {dirty && <span class="toolbar-dirty">Unsaved</span>}
-          <button class="btn btn-sm btn-primary" onClick={save} disabled={saving}>
+          <button type="button" class="btn btn-sm btn-primary" onClick={save} disabled={saving}>
             {saving ? "Saving…" : "Save"}
           </button>
         </div>
@@ -170,7 +169,7 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
         <aside class="bld-palette">
           <h4>Sections</h4>
           {defs.map((def) => (
-            <button
+            <button type="button"
               key={def.type}
               class="bld-palette-item"
               onClick={() => addSection(def.type)}
@@ -204,19 +203,19 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
                   <div class="bld-section-header">
                     <span class="bld-section-type">{def?.label ?? sec.type}</span>
                     <div class="bld-section-controls">
-                      <button
+                      <button type="button"
                         class="btn btn-xs btn-outline"
                         onClick={(e) => { e.stopPropagation(); moveSection(sec.id, -1); }}
                         disabled={idx === 0}
                         title="Move up"
                       >↑</button>
-                      <button
+                      <button type="button"
                         class="btn btn-xs btn-outline"
                         onClick={(e) => { e.stopPropagation(); moveSection(sec.id, 1); }}
                         disabled={idx === sections.length - 1}
                         title="Move down"
                       >↓</button>
-                      <button
+                      <button type="button"
                         class="btn btn-xs btn-danger"
                         onClick={(e) => { e.stopPropagation(); removeSection(sec.id); }}
                         title="Remove"

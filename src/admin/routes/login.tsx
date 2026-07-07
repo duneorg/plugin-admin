@@ -5,7 +5,6 @@
  * POST /admin/login/logout — revoke session + redirect to login
  */
 
-import { h } from "preact";
 import type { FreshContext } from "fresh";
 import type { AdminState } from "../types.ts";
 import { verifyPassword, DUMMY_HASH, needsRehash } from "../auth/passwords.ts";
@@ -87,7 +86,7 @@ function sanitizeNext(next: string, prefix: string, requestUrl: URL): string {
 
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
-    const { auth, prefix } = ctx.state.adminContext;
+    const { prefix } = ctx.state.adminContext;
     // Already authenticated → redirect to dashboard
     if (ctx.state.auth?.authenticated) {
       return new Response(null, { status: 302, headers: { Location: `${prefix}/` } });

@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/jobs — background jobs dashboard */
 
-import { h } from "preact";
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";
 import type { JobState } from "@dune/core/jobs";

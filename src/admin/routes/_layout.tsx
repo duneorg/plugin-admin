@@ -4,8 +4,7 @@
  * Applied to all routes under src/admin/routes/ via Fresh 2 layout convention.
  */
 
-import { h } from "preact";
-import type { FreshContext } from "fresh";
+import type { h } from "preact";
 import type { AdminState } from "../types.ts";
 import { getNavItems } from "../nav.ts";
 import { isRtl } from "@dune/core/i18n";
@@ -69,7 +68,7 @@ export default function AdminLayout(
           <aside class="admin-sidebar" id="admin-sidebar">
             <div class="sidebar-brand">
               <a href={`${prefix}/`}>🏜️ Dune</a>
-              <button class="sidebar-close" id="sidebar-close" aria-label="Close menu">✕</button>
+              <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close menu">✕</button>
             </div>
             <nav class="sidebar-nav">
               {groups.map((group) => {
@@ -111,7 +110,7 @@ export default function AdminLayout(
           </aside>
           <main class="admin-main">
             <header class="admin-topbar">
-              <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open menu">☰</button>
+              <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Open menu">☰</button>
               <div class="topbar-right">
                 <span class="topbar-user">{userName}</span>
                 <form method="POST" action={`${prefix}/login/logout`} style="display:inline">

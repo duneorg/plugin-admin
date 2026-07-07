@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/config — site config editor */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import ConfigEditor from "../../islands/ConfigEditor.tsx";

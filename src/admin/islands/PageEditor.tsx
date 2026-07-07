@@ -4,8 +4,7 @@
  * Fetches page data from /admin/api/pages/:path and saves back via PUT.
  */
 
-import { h, Fragment } from "preact";
-import { useState, useEffect, useRef, useCallback } from "preact/hooks";
+import { useState, useEffect, useRef } from "preact/hooks";
 
 interface BpField {
   type: string;
@@ -141,10 +140,10 @@ export default function PageEditor({ pagePath, prefix }: Props) {
           )}
         </div>
         <div class="toolbar-right">
-          <button class="btn btn-sm btn-outline" onClick={() => setShowPreview((v) => !v)}>
+          <button type="button" class="btn btn-sm btn-outline" onClick={() => setShowPreview((v) => !v)}>
             {showPreview ? "Hide preview" : "Preview"}
           </button>
-          <button class="btn btn-sm btn-outline" onClick={() => setSourceMode((v) => !v)}>
+          <button type="button" class="btn btn-sm btn-outline" onClick={() => setSourceMode((v) => !v)}>
             {sourceMode ? "Visual" : "Source"}
           </button>
           <a
@@ -161,7 +160,7 @@ export default function PageEditor({ pagePath, prefix }: Props) {
             History{page.revisionCount ? ` (${page.revisionCount})` : ""}
           </a>
           {dirty && <span class="toolbar-dirty">Unsaved</span>}
-          <button class="btn btn-sm btn-primary" onClick={save} disabled={saving}>
+          <button type="button" class="btn btn-sm btn-primary" onClick={save} disabled={saving}>
             {saving ? "Saving…" : "Save"}
           </button>
         </div>
@@ -268,7 +267,7 @@ export default function PageEditor({ pagePath, prefix }: Props) {
                         Edit
                       </a>
                     ) : (
-                      <button
+                      <button type="button"
                         class="btn btn-xs btn-outline"
                         onClick={() => createTranslation(t.lang)}
                       >

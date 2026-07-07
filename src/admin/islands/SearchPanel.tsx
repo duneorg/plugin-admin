@@ -5,7 +5,6 @@
  * and toggles parallel mode. Talks to /admin/api/search/engines.
  */
 
-import { h } from "preact";
 import { useState, useEffect, useCallback } from "preact/hooks";
 
 function getCsrf(): string {

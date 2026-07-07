@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/pages/history?path=... — revision history */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import RevisionHistory from "../../islands/RevisionHistory.tsx";

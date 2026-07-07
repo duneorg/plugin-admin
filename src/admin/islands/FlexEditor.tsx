@@ -4,8 +4,8 @@
  * Talks to /admin/api/flex/:type and /admin/api/flex/:type/:id.
  */
 
-import { h, Fragment } from "preact";
-import { useState, useEffect } from "preact/hooks";
+import type { h } from "preact";
+import { useState } from "preact/hooks";
 
 interface FieldDef {
   type: string;

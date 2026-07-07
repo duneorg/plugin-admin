@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/email-preview — dev-mode intercepted email viewer */
 
-import { h } from "preact";
 import { join } from "@std/path";
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";

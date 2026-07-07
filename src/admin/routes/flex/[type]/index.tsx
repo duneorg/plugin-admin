@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/flex/:type — flex records list */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../../types.ts";
 import type { FreshContext } from "fresh";

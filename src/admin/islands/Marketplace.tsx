@@ -5,7 +5,6 @@
  *          /admin/api/plugins/install, /admin/api/themes/install.
  */
 
-import { Fragment, h } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
 interface PluginEntry {
@@ -180,7 +179,7 @@ export default function Marketplace({ prefix, initialTab }: Props) {
       {/* Tabs + search */}
       <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
         <div style="display:flex;gap:0.5rem">
-          <button
+          <button type="button"
             class={`btn btn-sm${
               tab === "plugins" ? " btn-primary" : " btn-outline"
             }`}
@@ -192,7 +191,7 @@ export default function Marketplace({ prefix, initialTab }: Props) {
           >
             Plugins
           </button>
-          <button
+          <button type="button"
             class={`btn btn-sm${
               tab === "themes" ? " btn-primary" : " btn-outline"
             }`}
@@ -289,7 +288,7 @@ export default function Marketplace({ prefix, initialTab }: Props) {
                     </div>
                   )}
                   <div style="display:flex;gap:0.5rem">
-                    <button
+                    <button type="button"
                       class="btn btn-sm btn-primary"
                       onClick={() => installPlugin(p)}
                       disabled={installing === p.name}
@@ -360,7 +359,7 @@ export default function Marketplace({ prefix, initialTab }: Props) {
                       {t.description}
                     </p>
                     <div style="display:flex;gap:0.5rem">
-                      <button
+                      <button type="button"
                         class="btn btn-sm btn-primary"
                         onClick={() => installTheme(t)}
                         disabled={installing === t.slug}

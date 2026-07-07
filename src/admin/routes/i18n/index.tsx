@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/i18n — translation status overview */
 
-import { h } from "preact";
 
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";

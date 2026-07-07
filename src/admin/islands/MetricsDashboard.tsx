@@ -5,7 +5,6 @@
  * Talks to /admin/api/metrics.
  */
 
-import { h, Fragment } from "preact";
 import { useState, useEffect, useCallback } from "preact/hooks";
 
 interface LatencyPercentiles {
@@ -91,7 +90,7 @@ export default function MetricsDashboard({ prefix }: Props) {
     <div class="metrics-wrap">
       {/* Toolbar */}
       <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
-        <button class="btn btn-sm btn-outline" onClick={load}>↻ Refresh</button>
+        <button type="button" class="btn btn-sm btn-outline" onClick={load}>↻ Refresh</button>
         <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem">
           <input
             type="checkbox"

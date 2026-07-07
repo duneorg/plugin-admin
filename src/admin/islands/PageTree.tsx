@@ -1,8 +1,8 @@
 /** @jsxImportSource preact */
 /** Island: page tree with search, create dialog, drag-reorder */
 
-import { h, Fragment } from "preact";
-import { useState, useEffect, useRef } from "preact/hooks";
+import type { h } from "preact";
+import { useState, useEffect } from "preact/hooks";
 
 interface PageItem {
   route: string;
@@ -244,7 +244,7 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
   return (
     <div class="page-tree-wrap">
       <div class="page-tree-toolbar">
-        <button class="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>
+        <button type="button" class="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>
           + New Page
         </button>
         <div class="tree-search-form">
