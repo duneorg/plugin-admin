@@ -18,6 +18,12 @@ interface MediaFile {
   focalY?: number;
 }
 
+interface PageOption {
+  sourcePath: string;
+  route: string;
+  title: string;
+}
+
 interface Props {
   prefix: string;
 }
@@ -38,12 +44,25 @@ export default function MediaLibrary({ prefix }: Props) {
   const [focalX, setFocalX] = useState(50);
   const [focalY, setFocalY] = useState(50);
   const [savingFocal, setSavingFocal] = useState(false);
+  const [pages, setPages] = useState<PageOption[]>([]);
+  const [destPagePath, setDestPagePath] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const focalImgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     loadMedia();
+    loadPages();
   }, []);
+
+  async function loadPages() {
+    try {
+      const res = await fetch(`${apiBase}/pages`);
+      const d = await res.json() as { items: PageOption[] };
+      const items = d.items ?? [];
+      setPages(items);
+      if (items.length > 0) setDestPagePath((prev) => prev || items[0].sourcePath);
+    } catch { /* upload destination picker just stays empty */ }
+  }
 
   async function loadMedia() {
     setLoading(true);
@@ -65,22 +84,27 @@ export default function MediaLibrary({ prefix }: Props) {
   async function upload(e: Event) {
     const input = e.target as HTMLInputElement;
     if (!input.files?.length) return;
+    if (!destPagePath) {
+      setUploadError("Choose a destination page first.");
+      return;
+    }
     setUploading(true);
     setUploadError("");
     try {
-      const fd = new FormData();
       for (const file of Array.from(input.files)) {
-        fd.append("files", file, file.name);
-      }
-      const res = await fetch(`${apiBase}/media/upload`, {
-        method: "POST",
-        headers: { "X-CSRF-Token": getCsrf() },
-        body: fd,
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        setUploadError((err as { error?: string }).error ?? `HTTP ${res.status}`);
-        return;
+        const fd = new FormData();
+        fd.append("file", file, file.name);
+        fd.append("pagePath", destPagePath);
+        const res = await fetch(`${apiBase}/media/upload`, {
+          method: "POST",
+          headers: { "X-CSRF-Token": getCsrf() },
+          body: fd,
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setUploadError((err as { error?: string }).error ?? `HTTP ${res.status}`);
+          return;
+        }
       }
       await loadMedia();
     } finally {
@@ -163,10 +187,21 @@ export default function MediaLibrary({ prefix }: Props) {
           ))}
         </select>
         <span class="media-count">{filtered.length} file{filtered.length !== 1 ? "s" : ""}</span>
+        <select
+          value={destPagePath}
+          onChange={(e) => setDestPagePath((e.target as HTMLSelectElement).value)}
+          disabled={pages.length === 0}
+          title="Destination page for new uploads"
+        >
+          {pages.length === 0 && <option value="">No pages available</option>}
+          {pages.map((p) => (
+            <option key={p.sourcePath} value={p.sourcePath}>{p.title || p.route}</option>
+          ))}
+        </select>
         <button
           class="btn btn-sm btn-primary"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
+          disabled={uploading || !destPagePath}
         >
           {uploading ? "Uploading…" : "Upload"}
         </button>

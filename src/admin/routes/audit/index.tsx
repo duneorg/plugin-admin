@@ -45,7 +45,11 @@ export default function AuditRoute(
               <td style="white-space:nowrap;font-size:12px;color:#718096">{String(e.ts ?? "").replace("T", " ").slice(0, 19)}</td>
               <td><code style="font-size:12px">{String(e.event ?? "")}</code></td>
               <td>{(e.actor as { username?: string })?.username ?? "—"}</td>
-              <td style="font-size:12px">{String(e.target ?? "—")}</td>
+              <td style="font-size:12px">
+                {e.target
+                  ? `${(e.target as { type?: string }).type ?? "?"}:${(e.target as { id?: string }).id ?? "?"}`
+                  : "—"}
+              </td>
               <td style="font-size:12px;color:#718096">{String(e.ip ?? "—")}</td>
               <td><span class={`badge ${e.outcome === "success" ? "badge-success" : "badge-failure"}`}>{String(e.outcome ?? "")}</span></td>
             </tr>
