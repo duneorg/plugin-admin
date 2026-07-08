@@ -10,12 +10,13 @@ import type { FreshContext } from "fresh";
 export const handler = {
   GET(ctx: FreshContext<AdminState>) {
     const { config, prefix } = ctx.state.adminContext;
-    return ctx.render(<ThemesRoute data={{ activeTheme: config.theme.name, prefix }} />);
+    const previewSlug = ctx.url.searchParams.get("preview") ?? undefined;
+    return ctx.render(<ThemesRoute data={{ activeTheme: config.theme.name, prefix, previewSlug }} />);
   },
 };
 
 export default function ThemesRoute(
-  { data }: { data: { activeTheme: string; prefix: string } },
+  { data }: { data: { activeTheme: string; prefix: string; previewSlug?: string } },
 ) {
   return (
     <div>
@@ -25,7 +26,7 @@ export default function ThemesRoute(
       </div>
 
       <div class="cfg-section">
-        <ThemeSwitcher prefix={data.prefix} activeTheme={data.activeTheme} />
+        <ThemeSwitcher prefix={data.prefix} activeTheme={data.activeTheme} previewSlug={data.previewSlug} />
       </div>
 
       <div class="cfg-section">

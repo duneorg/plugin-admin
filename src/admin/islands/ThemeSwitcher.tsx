@@ -14,9 +14,10 @@ interface ThemeInfo {
 interface Props {
   prefix: string;
   activeTheme: string;
+  previewSlug?: string;
 }
 
-export default function ThemeSwitcher({ prefix, activeTheme }: Props) {
+export default function ThemeSwitcher({ prefix, activeTheme, previewSlug }: Props) {
   const apiBase = `${prefix}/api`;
 
   const [loading, setLoading] = useState(true);
@@ -26,12 +27,18 @@ export default function ThemeSwitcher({ prefix, activeTheme }: Props) {
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
 
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewRoute, setPreviewRoute] = useState("/");
+  const [routeDraft, setRouteDraft] = useState("/");
+  const [refreshKey, setRefreshKey] = useState(0);
+
   useEffect(() => {
     fetch(`${apiBase}/config/themes`)
       .then((r) => r.json())
       .then((thm: ThemeInfo) => {
         setThemes(thm);
-        setSelectedTheme(thm.current);
+        setSelectedTheme(previewSlug && thm.available.includes(previewSlug) ? previewSlug : thm.current);
+        if (previewSlug && thm.available.includes(previewSlug)) setPreviewOpen(true);
       })
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
@@ -59,6 +66,15 @@ export default function ThemeSwitcher({ prefix, activeTheme }: Props) {
     }
   }
 
+  function commitRoute() {
+    setPreviewRoute(routeDraft || "/");
+  }
+
+  function previewSrc(): string {
+    const route = previewRoute || "/";
+    return `${apiBase}/theme-preview?theme=${encodeURIComponent(selectedTheme)}&route=${encodeURIComponent(route)}`;
+  }
+
   if (loading) return <div style="padding:1rem;color:#718096">Loading themes…</div>;
 
   return (
@@ -83,9 +99,53 @@ export default function ThemeSwitcher({ prefix, activeTheme }: Props) {
           onClick={switchTheme}
           disabled={switching || selectedTheme === themes.current}
         >
-          {switching ? "Switching…" : "Apply theme"}
+          {switching ? "Switching…" : "Apply this theme"}
+        </button>
+        <button type="button"
+          class="btn btn-outline"
+          onClick={() => setPreviewOpen(true)}
+          disabled={!selectedTheme}
+        >
+          Preview
         </button>
       </div>
+
+      {previewOpen && (
+        <div class="cfg-section" style="margin-top:1.5rem;border:1px solid #e2e8f0;border-radius:6px;padding:1rem">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap">
+            <label style="margin:0;white-space:nowrap">Preview route</label>
+            <input
+              type="text"
+              value={routeDraft}
+              onInput={(e) => setRouteDraft((e.target as HTMLInputElement).value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitRoute();
+              }}
+              onBlur={commitRoute}
+              style="max-width:240px"
+            />
+            <button type="button" class="btn btn-sm" onClick={commitRoute}>Go</button>
+            <button type="button" class="btn btn-sm btn-outline" onClick={() => setRefreshKey((k) => k + 1)}>
+              ↻ Refresh
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline"
+              style="margin-left:auto"
+              onClick={() => setPreviewOpen(false)}
+            >
+              × Close
+            </button>
+          </div>
+          <iframe
+            key={refreshKey}
+            src={previewSrc()}
+            title="Theme preview"
+            style="width:100%;height:600px;border:1px solid var(--border);border-radius:6px;background:#fff"
+          />
+        </div>
+      )}
+
       <div style="margin-top:2rem">
         <h4>Available themes</h4>
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap">

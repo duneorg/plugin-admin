@@ -13,6 +13,14 @@ import type { AdminState } from "../types.ts";
 export const PUBLIC_PATHS = new Set(["/login", "/login/logout"]);
 
 /**
+ * Routes that render inside an admin-owned <iframe> (e.g. the theme preview
+ * panel on /admin/themes) and therefore need `frame-ancestors 'self'` /
+ * `X-Frame-Options: SAMEORIGIN` instead of the default deny-all framing
+ * policy. Every other admin response stays fully non-frameable.
+ */
+const FRAMEABLE_PATHS = new Set(["/api/theme-preview"]);
+
+/**
  * Nonce-based CSP for rendered admin pages. Fresh auto-stamps a per-request
  * nonce onto every inline <script>/<style> tag it emits (island hydration
  * boot script, sidebar toggle, etc.) — a script-src with no 'unsafe-inline'
@@ -22,21 +30,26 @@ export const PUBLIC_PATHS = new Set(["/login", "/login/logout"]);
  * attached to the rendered Response and swaps the 'unsafe-inline'
  * placeholder below for 'nonce-<value>' in the directives that carry it.
  */
-const adminCsp: Middleware<AdminState> = csp<AdminState>({
-  useNonce: true,
-  csp: [
-    "default-src 'self'",
-    "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'",
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
-    "font-src 'self' data:",
-    "connect-src 'self' ws: wss:",
-    "frame-ancestors 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "object-src 'none'",
-  ],
-});
+function buildAdminCsp(frameAncestors: string): Middleware<AdminState> {
+  return csp<AdminState>({
+    useNonce: true,
+    csp: [
+      "default-src 'self'",
+      "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      "font-src 'self' data:",
+      "connect-src 'self' ws: wss:",
+      `frame-ancestors ${frameAncestors}`,
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+    ],
+  });
+}
+
+const adminCsp = buildAdminCsp("'none'");
+const adminCspFrameable = buildAdminCsp("'self'");
 
 /**
  * Headers applied to every admin response. CSP is set here only as a static
@@ -45,29 +58,34 @@ const adminCsp: Middleware<AdminState> = csp<AdminState>({
  * gets its CSP from `adminCsp` above (see `withSecurityHeaders`'s
  * has-check, which skips a header already present).
  */
-const SECURITY_HEADERS: Record<string, string> = {
-  "Content-Security-Policy": [
-    "default-src 'self'",
-    "script-src 'self' 'wasm-unsafe-eval'",
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
-    "font-src 'self' data:",
-    "connect-src 'self' ws: wss:",
-    "frame-ancestors 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "object-src 'none'",
-  ].join("; "),
-  "X-Frame-Options": "DENY",
-  "X-Content-Type-Options": "nosniff",
-  "Referrer-Policy": "same-origin",
-  "Cache-Control": "private, no-store, must-revalidate",
-};
+function buildSecurityHeaders(frameAncestors: string, xFrameOptions: string): Record<string, string> {
+  return {
+    "Content-Security-Policy": [
+      "default-src 'self'",
+      "script-src 'self' 'wasm-unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      "font-src 'self' data:",
+      "connect-src 'self' ws: wss:",
+      `frame-ancestors ${frameAncestors}`,
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+    ].join("; "),
+    "X-Frame-Options": xFrameOptions,
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "same-origin",
+    "Cache-Control": "private, no-store, must-revalidate",
+  };
+}
 
-function withSecurityHeaders(res: Response): Response {
+const SECURITY_HEADERS = buildSecurityHeaders("'none'", "DENY");
+const SECURITY_HEADERS_FRAMEABLE = buildSecurityHeaders("'self'", "SAMEORIGIN");
+
+function withSecurityHeaders(res: Response, frameable = false): Response {
   // Build a new headers object so we don't mutate a frozen response's headers.
   const headers = new Headers(res.headers);
-  for (const [k, v] of Object.entries(SECURITY_HEADERS)) {
+  for (const [k, v] of Object.entries(frameable ? SECURITY_HEADERS_FRAMEABLE : SECURITY_HEADERS)) {
     if (!headers.has(k)) headers.set(k, v);
   }
   return new Response(res.body, {
@@ -123,6 +141,7 @@ export async function handler(
   if (prefix !== "/" && !pathname.startsWith(prefix)) return ctx.next();
 
   const adminRelative = toAdminRelative(pathname, prefix);
+  const frameable = FRAMEABLE_PATHS.has(adminRelative);
 
   const authResult = await auth.authenticate(ctx.req);
   ctx.state.auth = authResult;
@@ -144,10 +163,10 @@ export async function handler(
       onWhat: { type: "app", id: "admin" },
     });
     if (!canAccess) {
-      return withSecurityHeaders(new Response("Forbidden", { status: 403 }));
+      return withSecurityHeaders(new Response("Forbidden", { status: 403 }), frameable);
     }
   }
 
-  const res = await adminCsp(ctx);
-  return withSecurityHeaders(res);
+  const res = await (frameable ? adminCspFrameable : adminCsp)(ctx);
+  return withSecurityHeaders(res, frameable);
 }

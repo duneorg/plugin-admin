@@ -50,10 +50,13 @@ export default function Marketplace({ prefix, initialTab }: Props) {
   );
   const [plugins, setPlugins] = useState<PluginEntry[]>([]);
   const [themes, setThemes] = useState<ThemeEntry[]>([]);
+  const [installedThemes, setInstalledThemes] = useState<string[]>([]);
+  const [activeTheme, setActiveThemeState] = useState("");
   const [loadingPlugins, setLoadingPlugins] = useState(false);
   const [loadingThemes, setLoadingThemes] = useState(false);
   const [search, setSearch] = useState("");
   const [installing, setInstalling] = useState<string | null>(null);
+  const [settingActive, setSettingActive] = useState<string | null>(null);
   const [installMsg, setInstallMsg] = useState("");
   const [error, setError] = useState("");
 
@@ -61,6 +64,21 @@ export default function Marketplace({ prefix, initialTab }: Props) {
     if (tab === "plugins" && plugins.length === 0) loadPlugins();
     if (tab === "themes" && themes.length === 0) loadThemes();
   }, [tab]);
+
+  useEffect(() => {
+    loadInstalledThemes();
+  }, []);
+
+  async function loadInstalledThemes() {
+    try {
+      const res = await fetch(`${apiBase}/config/themes`);
+      const thm = await res.json() as { available: string[]; current: string };
+      setInstalledThemes(thm.available ?? []);
+      setActiveThemeState(thm.current ?? "");
+    } catch {
+      // Installed-themes list is a progressive enhancement; ignore failures.
+    }
+  }
 
   async function loadPlugins() {
     setLoadingPlugins(true);
@@ -151,11 +169,39 @@ export default function Marketplace({ prefix, initialTab }: Props) {
       setInstallMsg(
         body.method === "jsr"
           ? `Theme "${entry.name}" registered in site.yaml. ${body.lockfileNote ?? "Restart to load."}`
-          : `Theme "${entry.name}" installed to themes/${entry.slug}/. Switch to it in Configuration → Theme.`,
+          : `Theme "${entry.name}" installed to themes/${entry.slug}/. It will appear under Installed once the server picks it up.`,
       );
+      await loadInstalledThemes();
     } finally {
       setInstalling(null);
     }
+  }
+
+  async function setActiveTheme(slug: string) {
+    if (slug === activeTheme) return;
+    setSettingActive(slug);
+    setInstallMsg("");
+    setError("");
+    try {
+      const res = await fetch(`${apiBase}/config/theme`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
+        body: JSON.stringify({ name: slug }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setError((err as { error?: string }).error ?? `HTTP ${res.status}`);
+        return;
+      }
+      setActiveThemeState(slug);
+      setInstallMsg(`Theme switched to "${slug}". Changes take effect on next page load.`);
+    } finally {
+      setSettingActive(null);
+    }
+  }
+
+  function registryEntryFor(slug: string): ThemeEntry | undefined {
+    return themes.find((t) => t.slug === slug);
   }
 
   const filteredPlugins = plugins.filter(
@@ -166,12 +212,19 @@ export default function Marketplace({ prefix, initialTab }: Props) {
       p.description.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const matchesSearch = (slug: string, name: string, description: string) =>
+    !search ||
+    slug.toLowerCase().includes(search.toLowerCase()) ||
+    name.toLowerCase().includes(search.toLowerCase()) ||
+    description.toLowerCase().includes(search.toLowerCase());
+
+  const filteredInstalledThemes = installedThemes.filter((slug) => {
+    const entry = registryEntryFor(slug);
+    return matchesSearch(slug, entry?.name ?? slug, entry?.description ?? "");
+  });
+
   const filteredThemes = themes.filter(
-    (t) =>
-      !search ||
-      t.slug.toLowerCase().includes(search.toLowerCase()) ||
-      t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.description.toLowerCase().includes(search.toLowerCase()),
+    (t) => !installedThemes.includes(t.slug) && matchesSearch(t.slug, t.name, t.description),
   );
 
   return (
@@ -312,76 +365,142 @@ export default function Marketplace({ prefix, initialTab }: Props) {
           )
       )}
 
-      {/* Theme grid */}
+      {/* Installed themes */}
       {tab === "themes" && (
-        loadingThemes
-          ? <p style="color:#718096">Loading themes…</p>
-          : filteredThemes.length === 0
-          ? (
-            <p style="color:#718096">
-              {search
-                ? "No themes match your search."
-                : "Theme registry empty."}
-            </p>
-          )
-          : (
-            <div
-              class="marketplace-grid"
-              style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem"
-            >
-              {filteredThemes.map((t) => (
-                <div
-                  key={t.slug}
-                  class="marketplace-card"
-                  style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden"
-                >
-                  {t.screenshotUrl
-                    ? (
-                      <img
-                        src={t.screenshotUrl}
-                        alt={t.name}
-                        style="width:100%;height:160px;object-fit:cover"
-                      />
-                    )
-                    : (
-                      <div style="width:100%;height:160px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;color:#a0aec0;font-size:2rem">
-                        🎨
+        <div style="margin-bottom:2rem">
+          <h4 style="margin-bottom:0.75rem">Installed</h4>
+          {filteredInstalledThemes.length === 0
+            ? (
+              <p style="color:#718096">
+                {search ? "No installed themes match your search." : "No themes installed."}
+              </p>
+            )
+            : (
+              <div
+                class="marketplace-grid"
+                style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem"
+              >
+                {filteredInstalledThemes.map((slug) => {
+                  const entry = registryEntryFor(slug);
+                  const isActive = slug === activeTheme;
+                  return (
+                    <div
+                      key={slug}
+                      class="marketplace-card"
+                      style="border:1px solid #e2e8f0;border-radius:8px;padding:1rem"
+                    >
+                      <div style="display:flex;align-items:flex-start;gap:0.5rem;margin-bottom:0.5rem">
+                        <div style="font-weight:600">{entry?.name ?? slug}</div>
+                        {isActive && (
+                          <span class="badge" style="margin-left:auto">Active</span>
+                        )}
                       </div>
-                    )}
-                  <div style="padding:1rem">
-                    <div style="font-weight:600;margin-bottom:0.25rem">
-                      {t.name}
-                    </div>
-                    <div style="font-size:0.8rem;color:#718096;margin-bottom:0.5rem">
-                      by {t.author} · v{t.version}
-                    </div>
-                    <p style="font-size:0.9rem;color:#4a5568;margin:0 0 0.75rem">
-                      {t.description}
-                    </p>
-                    <div style="display:flex;gap:0.5rem">
-                      <button type="button"
-                        class="btn btn-sm btn-primary"
-                        onClick={() => installTheme(t)}
-                        disabled={installing === t.slug}
-                      >
-                        {installing === t.slug ? "Installing…" : "Install"}
-                      </button>
-                      {t.demoUrl && (
+                      {entry && (
+                        <div style="font-size:0.8rem;color:#718096;margin-bottom:0.5rem">
+                          by {entry.author} · v{entry.version}
+                        </div>
+                      )}
+                      {entry?.description && (
+                        <p style="font-size:0.9rem;color:#4a5568;margin:0 0 0.75rem">
+                          {entry.description}
+                        </p>
+                      )}
+                      <div style="display:flex;gap:0.5rem">
                         <a
-                          href={t.demoUrl}
-                          target="_blank"
-                          rel="noopener"
+                          href={`${prefix}/themes?preview=${encodeURIComponent(slug)}`}
                           class="btn btn-sm btn-outline"
                         >
-                          Demo
+                          Preview
                         </a>
+                        <button type="button"
+                          class="btn btn-sm btn-primary"
+                          onClick={() => setActiveTheme(slug)}
+                          disabled={isActive || settingActive === slug}
+                        >
+                          {settingActive === slug ? "Switching…" : isActive ? "Active" : "Set Active"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+        </div>
+      )}
+
+      {/* Available from registry */}
+      {tab === "themes" && (
+        <div>
+          <h4 style="margin-bottom:0.75rem">Available from registry</h4>
+          {loadingThemes
+            ? <p style="color:#718096">Loading themes…</p>
+            : filteredThemes.length === 0
+            ? (
+              <p style="color:#718096">
+                {search
+                  ? "No registry themes match your search."
+                  : "All registry themes are already installed."}
+              </p>
+            )
+            : (
+              <div
+                class="marketplace-grid"
+                style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem"
+              >
+                {filteredThemes.map((t) => (
+                  <div
+                    key={t.slug}
+                    class="marketplace-card"
+                    style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden"
+                  >
+                    {t.screenshotUrl
+                      ? (
+                        <img
+                          src={t.screenshotUrl}
+                          alt={t.name}
+                          style="width:100%;height:160px;object-fit:cover"
+                        />
+                      )
+                      : (
+                        <div style="width:100%;height:160px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;color:#a0aec0;font-size:2rem">
+                          🎨
+                        </div>
                       )}
+                    <div style="padding:1rem">
+                      <div style="font-weight:600;margin-bottom:0.25rem">
+                        {t.name}
+                      </div>
+                      <div style="font-size:0.8rem;color:#718096;margin-bottom:0.5rem">
+                        by {t.author} · v{t.version}
+                      </div>
+                      <p style="font-size:0.9rem;color:#4a5568;margin:0 0 0.75rem">
+                        {t.description}
+                      </p>
+                      <div style="display:flex;gap:0.5rem;align-items:center">
+                        <button type="button"
+                          class="btn btn-sm btn-primary"
+                          onClick={() => installTheme(t)}
+                          disabled={installing === t.slug}
+                        >
+                          {installing === t.slug ? "Installing…" : "Install"}
+                        </button>
+                        {t.demoUrl && (
+                          <a
+                            href={t.demoUrl}
+                            target="_blank"
+                            rel="noopener"
+                            class="btn btn-sm btn-outline"
+                          >
+                            Demo
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )
+                ))}
+              </div>
+            )}
+        </div>
       )}
     </div>
   );
