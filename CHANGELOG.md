@@ -5,6 +5,46 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [1.1.0] — 2026-07-08
+
+### Added
+
+- **Theme preview UI.** The Themes page can now open an iframe preview of
+  any installed theme against a picked route before switching to it
+  (route picker, refresh, close) — the backing API
+  (`/admin/api/theme-preview`) existed already but had no frontend. The
+  admin middleware's `X-Frame-Options`/`frame-ancestors` lockdown now
+  allowlists just that one endpoint so browsers don't refuse to frame it.
+- **Marketplace themes tab split into Installed / Available from
+  registry**, matching installed themes (with Active badge, Preview, Set
+  Active) against the curated registry separately.
+
+### Fixed
+
+- **Admin islands never hydrated on any page** — the CSP `script-src` had
+  no `'unsafe-inline'`/nonce, so the browser silently blocked every inline
+  script Fresh renders (island hydration boot call, sidebar toggle). Now
+  routed through Fresh's own `csp({ useNonce: true })` middleware so the
+  policy carries the nonce Fresh stamps on each render.
+- **Default admin was 403'd on a fresh site** — authz tuples were
+  bootstrapped before the default admin user existed, so no tuple was ever
+  created for it.
+- **`/admin/login` rendered inside the authenticated sidebar/topbar shell**
+  even when logged out. Now renders standalone.
+- **Plugin self-reported version was hardcoded to `"0.24.0"`**, unrelated
+  to the actual published version, since the file was first written.
+  Now derived from `deno.json` at import time.
+
+### Changed
+
+- **Theme settings consolidated onto the Themes page.** The schema-driven
+  per-theme settings form previously lived as a tab on the Config page
+  (alongside a redundant "active theme" display duplicating the Themes
+  page). Both now live on `/admin/themes`; Config only covers site-level
+  settings.
+
+---
+
 ## [1.0.1] — 2026-07-07
 
 ### Fixed
