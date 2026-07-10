@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-07-05",
+  "updatedAt": "2026-07-10",
   "themes": [
     {
       "slug": "sirocco",
@@ -23,7 +23,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "caravan",
@@ -43,10 +43,10 @@
       "screenshotUrl": "https://themes.getdune.org/caravan/themes/caravan/static/screenshot.png",
       "jsr": "jsr:@dune/theme-caravan@1.0.0",
       "downloadUrl": "https://github.com/duneorg/dune-themes/releases/download/caravan-v1.0.0/caravan-1.0.0.zip",
-      "sha256": "",
+      "sha256": "9983e828049b94e1b0e0528d9f2a7fdeb75178d15c2e08d5326390b17bc2336f",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "fennec",
@@ -69,7 +69,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "nightfall",
@@ -92,7 +92,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "oasis",
@@ -115,7 +115,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "ink",
@@ -139,7 +139,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "gale",
@@ -162,7 +162,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "salon",
@@ -185,7 +185,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "syntax",
@@ -208,7 +208,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "herald",
@@ -231,7 +231,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "lucid",
@@ -254,7 +254,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "manual",
@@ -277,7 +277,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "papermod",
@@ -300,7 +300,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "book",
@@ -323,7 +323,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "starlight",
@@ -346,7 +346,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "blox",
@@ -369,7 +369,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "aerial",
@@ -392,7 +392,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "alpha",
@@ -415,7 +415,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "arcana",
@@ -438,7 +438,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "astral",
@@ -461,7 +461,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "big-picture",
@@ -484,7 +484,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "dimension",
@@ -507,7 +507,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "directive",
@@ -530,7 +530,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "dopetrope",
@@ -553,7 +553,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "editorial",
@@ -576,7 +576,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "escape-velocity",
@@ -599,7 +599,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "ethereal",
@@ -622,7 +622,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "eventually",
@@ -645,7 +645,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "forty",
@@ -668,7 +668,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "fractal",
@@ -691,7 +691,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "future-imperfect",
@@ -714,7 +714,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "halcyonic",
@@ -737,7 +737,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "helios",
@@ -760,7 +760,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "highlights",
@@ -783,7 +783,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "hyperspace",
@@ -806,7 +806,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "landed",
@@ -829,7 +829,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "lens",
@@ -852,7 +852,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "massively",
@@ -875,7 +875,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "minimaxing",
@@ -898,7 +898,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "miniport",
@@ -921,7 +921,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "multiverse",
@@ -944,7 +944,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "paradigm-shift",
@@ -967,7 +967,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "parallelism",
@@ -990,7 +990,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "phantom",
@@ -1013,7 +1013,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "photon",
@@ -1036,7 +1036,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "prologue",
@@ -1059,7 +1059,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "read-only",
@@ -1082,7 +1082,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "solid-state",
@@ -1105,7 +1105,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "spectral",
@@ -1128,7 +1128,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "stellar",
@@ -1151,7 +1151,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "story",
@@ -1174,7 +1174,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "strata",
@@ -1197,7 +1197,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "striped",
@@ -1220,7 +1220,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "strongly-typed",
@@ -1243,7 +1243,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "telephasic",
@@ -1266,7 +1266,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "tessellate",
@@ -1289,7 +1289,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "twenty",
@@ -1312,7 +1312,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "txt",
@@ -1335,7 +1335,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "verti",
@@ -1358,7 +1358,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     },
     {
       "slug": "zerofour",
@@ -1381,7 +1381,7 @@
       "sha256": "",
       "verified": true,
       "downloads": 0,
-      "compatibleWith": "^0.26.0"
+      "compatibleWith": "^0.28.0"
     }
   ]
 }
