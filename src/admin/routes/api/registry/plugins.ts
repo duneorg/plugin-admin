@@ -10,7 +10,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "config.read");
     if (denied) return denied;
     try {
-      const registryUrl = new URL("../../registry/plugins.json", import.meta.url);
+      const registryUrl = new URL("../../../registry/plugins.json", import.meta.url);
       const registry = JSON.parse(await Deno.readTextFile(registryUrl));
       return json(registry);
     } catch {
