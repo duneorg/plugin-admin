@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-07-12",
+  "updatedAt": "2026-07-13",
   "themes": [
     {
       "slug": "sirocco",
@@ -30,7 +30,7 @@
       "name": "Caravan",
       "description": "Sidebar documentation theme inspired by hugo-book — Dune-native, not a port.",
       "author": "Dune Themes",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "MIT",
       "tags": [
         "docs",
@@ -41,9 +41,9 @@
       "inspiredBy": "hugo-book",
       "demoUrl": "https://themes.getdune.org/caravan",
       "screenshotUrl": "https://themes.getdune.org/caravan/themes/caravan/static/screenshot.png",
-      "jsr": "jsr:@dune/theme-caravan@1.1.0",
-      "downloadUrl": "https://github.com/duneorg/dune-themes/releases/download/caravan-v1.1.0/caravan-1.1.0.zip",
-      "sha256": "4519bd7b828cd1a84cab09bc8d0b927cc52872b1b66574a1881fdd63dc14b4a0",
+      "jsr": "jsr:@dune/theme-caravan@1.1.1",
+      "downloadUrl": "https://github.com/duneorg/dune-themes/releases/download/caravan-v1.1.1/caravan-1.1.1.zip",
+      "sha256": "b3087e8f658359cd45b95228124507bf3c0430c0cf1da656bed08c1bb9781455",
       "verified": true,
       "downloads": 0,
       "compatibleWith": "^0.28.0"
