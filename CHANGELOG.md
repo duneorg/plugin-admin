@@ -5,6 +5,18 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [1.1.1] — 2026-07-14
+
+### Fixed
+
+- **Theme registry is now fetched live from `duneorg/dune-themes`**
+  instead of a copy bundled with this package. The bundled copy needed a
+  manual re-sync commit (and a plugin-admin release) after every single
+  theme release — three so far just for one theme. The install handler
+  used the same bundled copy too: a stale `sha256` there would have made
+  installing an updated theme fail its own integrity check. Cached
+  in-process for 5 minutes so this doesn't hit GitHub on every request.
+
 ## [1.1.0] — 2026-07-08
 
 ### Added
