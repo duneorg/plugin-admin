@@ -5,17 +5,8 @@ import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
 import { safeFetch } from "@dune/core/security";
 import type { StorageAdapter } from "@dune/core/storage";
 import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
+import { fetchThemeRegistrySafe, type RegistryTheme } from "../../../theme-registry.ts";
 import type { FreshContext } from "fresh";
-
-interface RegistryTheme {
-  slug: string;
-  name?: string;
-  /** Pinned JSR specifier — preferred install path (no ZIP download). */
-  jsr?: string;
-  downloadUrl?: string;
-  /** Optional SHA-256 of the theme ZIP, hex-encoded. */
-  sha256?: string;
-}
 
 interface ThemePackageEntry {
   name: string;
@@ -33,14 +24,8 @@ function importKeyForThemeSpecifier(spec: string): string {
 }
 
 async function loadRegistry(): Promise<RegistryTheme[]> {
-  try {
-    const registryUrl = new URL("../../../registry/themes.json", import.meta.url);
-    const raw = await Deno.readTextFile(registryUrl);
-    const reg = JSON.parse(raw) as { themes?: RegistryTheme[] };
-    return reg.themes ?? [];
-  } catch {
-    return [];
-  }
+  const reg = await fetchThemeRegistrySafe();
+  return reg.themes ?? [];
 }
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
