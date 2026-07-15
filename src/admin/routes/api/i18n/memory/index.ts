@@ -65,6 +65,9 @@ export const handler = {
   async DELETE(ctx: FreshContext<AdminState>) {
     const csrf = csrfCheck(ctx);
     if (csrf) return csrf;
+    const denied = await requirePermission(ctx, "pages.update");
+    if (denied) return denied;
+
     const { storage, config } = ctx.state.adminContext;
     try {
       const supported = config.system.languages?.supported ?? [];
