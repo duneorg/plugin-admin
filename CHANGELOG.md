@@ -5,6 +5,18 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [1.1.2] — 2026-07-16
+
+### Security
+
+- **Translation-memory DELETE was missing its permission gate.** The
+  `DELETE /admin/api/i18n/memory` handler ran CSRF checks but no
+  `requirePermission` gate, unlike its sibling GET/POST handlers. In
+  fine-grained authz mode, a principal granted `admin.access` +
+  `pages.read` but not `pages.update` could still erase
+  translation-memory entries. Now requires `pages.update`, matching
+  the POST handler.
+
 ## [1.1.1] — 2026-07-14
 
 ### Fixed
