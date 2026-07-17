@@ -5,6 +5,22 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## Unreleased
+
+### Fixed
+
+- **The `@dune/core` dependency range no longer forces a second core
+  instance into the host site's process.** Every import-map entry pinned
+  `^0.27`, which for 0.x versions means exactly 0.27.x — so any site on a
+  newer core loaded a second, older copy of `@dune/core` just for this
+  plugin, doubling module-level singletons (`sectionRegistry`, `logger`,
+  `tracer`) and running admin routes on stale core library code. The
+  range is now `@0` (any 0.x), which Deno unifies with the host site's
+  pinned core version onto a single module instance. The entries are
+  generated from actual source imports via `deno task gen:core-imports`,
+  guaranteeing a uniform range across all of them
+  (`deno task check:core-imports` is the staleness gate).
+
 ## [1.1.2] — 2026-07-16
 
 ### Security
