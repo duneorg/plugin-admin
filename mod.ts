@@ -43,6 +43,8 @@ import type { AdminContext } from "./src/admin/context.ts";
 import { createBlockEditorPlugin } from "./src/admin/block-editor-plugin.tsx";
 import { mountDuneAdmin, getDuneAdminIslands } from "./src/admin/mount.ts";
 import { logger } from "@dune/core/logger";
+import { sectionRegistry } from "@dune/core/sections";
+import type { SectionRegistry } from "@dune/core/sections";
 import denoJson from "./deno.json" with { type: "json" };
 
 /** Options forwarded from bootstrap() to the admin plugin factory. */
@@ -276,6 +278,11 @@ export function createAdminPlugin(
         rateLimitStore,
         pluginPages: pluginPages.length > 0 ? pluginPages : undefined,
         authz: bootstrap.authz,
+        // Cores older than 0.31 don't expose `sections` on BootstrapResult;
+        // fall back to this package's own module singleton, which resolves to
+        // the host's copy anyway once the @0 range unifies the two.
+        sections: (bootstrap as unknown as { sections?: SectionRegistry }).sections ??
+          sectionRegistry,
       };
 
       // Keep the singleton for single-site serve paths (serve.ts, dev.ts).

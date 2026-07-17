@@ -30,6 +30,7 @@ import type { MachineTranslator } from "@dune/core/mt";
 import type { RateLimitStore } from "@dune/core/security";
 import type { DuneAuthSystem } from "@dune/core/auth/authz";
 import type { SearchManager } from "@dune/core/search";
+import type { SectionRegistry } from "@dune/core/sections";
 
 export type { AdminPageRegistration };
 
@@ -80,6 +81,13 @@ export interface AdminContext {
    * Exposes listStatus(), getStatus(), and run() for the admin API and UI.
    */
   jobScheduler?: import("@dune/core/jobs").JobScheduler;
+  /**
+   * Section registry for the Visual Page Builder — the host site's registry
+   * instance, handed through BootstrapResult (core ≥0.31). Route handlers
+   * must read sections from here, not from `@dune/core/sections`' module
+   * singleton, which may belong to a different core copy than the renderer's.
+   */
+  sections: SectionRegistry;
   /**
    * Plugin-contributed admin pages, collected at bootstrap.
    * The Fresh app registers these as programmatic routes after fsRoutes().

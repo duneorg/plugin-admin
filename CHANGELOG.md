@@ -7,6 +7,15 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ## Unreleased
 
+### Changed
+
+- **The sections API now reads the section registry from `AdminContext`**
+  (populated from core's `BootstrapResult.sections`, core ≥0.31) instead
+  of importing `@dune/core/sections`' module-level singleton — so the
+  admin panel always sees the same registry the site's renderer uses,
+  even if module resolution ever splits core into two copies again. Falls
+  back to the module singleton on older cores.
+
 ### Fixed
 
 - **The `@dune/core` dependency range no longer forces a second core
