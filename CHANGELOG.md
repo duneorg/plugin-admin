@@ -5,7 +5,7 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
-## Unreleased
+## [1.1.3] — 2026-07-17
 
 ### Added
 
@@ -45,6 +45,11 @@ This project follows [Semantic Versioning](https://semver.org).
   subpath — the per-subpath entries were never necessary. (Only the
   *other* form, trailing-slash prefix mapping, fails against `jsr:`
   targets; that's what earlier tooling here worked around.)
+- **`polizy` dependency bumped `0.2.0` → `0.6.0`**, matching the same
+  stale-pin fix in `@dune/core`. Not imported directly here (this package
+  only re-exports the `DuneAuthSystem` type), but the pin now tracks
+  core's to avoid two different `polizy` versions resolving in the same
+  workspace.
 
 ## [1.1.2] — 2026-07-16
 
