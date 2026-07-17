@@ -29,16 +29,22 @@ This project follows [Semantic Versioning](https://semver.org).
 ### Fixed
 
 - **The `@dune/core` dependency range no longer forces a second core
-  instance into the host site's process.** Every import-map entry pinned
-  `^0.27`, which for 0.x versions means exactly 0.27.x — so any site on a
-  newer core loaded a second, older copy of `@dune/core` just for this
-  plugin, doubling module-level singletons (`sectionRegistry`, `logger`,
-  `tracer`) and running admin routes on stale core library code. The
-  range is now `@0` (any 0.x), which Deno unifies with the host site's
-  pinned core version onto a single module instance. The entries are
-  generated from actual source imports via `deno task gen:core-imports`,
-  guaranteeing a uniform range across all of them
-  (`deno task check:core-imports` is the staleness gate).
+  instance into the host site's process.** The import map pinned every
+  `@dune/core/*` entry to `^0.27`, which for 0.x versions means exactly
+  0.27.x — so any site on a newer core loaded a second, older copy of
+  `@dune/core` just for this plugin, doubling module-level singletons
+  (`sectionRegistry`, `logger`, `tracer`) and running admin routes on
+  stale core library code. The range is now `@0` (any 0.x), which Deno
+  unifies with the host site's pinned core version onto a single module
+  instance. `deno task check:core-imports` gates it staying that way — it
+  now fails loudly if the range ever drifts, and is the forcing function
+  for the one manual step this needs: switching `@0` to `^1` when core
+  reaches 1.0 (nothing else would notice that transition on its own).
+- **The import map's ~30 per-subpath `@dune/core/*` entries collapsed to
+  one.** A bare `"@dune/core": "jsr:..."` entry auto-expands to every
+  subpath — the per-subpath entries were never necessary. (Only the
+  *other* form, trailing-slash prefix mapping, fails against `jsr:`
+  targets; that's what earlier tooling here worked around.)
 
 ## [1.1.2] — 2026-07-16
 
