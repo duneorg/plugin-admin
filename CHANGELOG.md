@@ -7,6 +7,16 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ## Unreleased
 
+### Added
+
+- **Core-instance handshake exports** (`resolvedCoreSentinel`,
+  `resolvedCoreVersion` on the package root): report which `@dune/core`
+  this package's own dependency resolution landed on. Core ≥0.31 compares
+  the sentinel by reference at boot and warns loudly if the plugin loaded
+  a second copy of core into the process. Read via the namespace object so
+  the plugin still loads cleanly against cores ≤0.30 (both exports are
+  then `undefined`).
+
 ### Changed
 
 - **The sections API now reads the section registry from `AdminContext`**

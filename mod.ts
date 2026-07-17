@@ -45,7 +45,25 @@ import { mountDuneAdmin, getDuneAdminIslands } from "./src/admin/mount.ts";
 import { logger } from "@dune/core/logger";
 import { sectionRegistry } from "@dune/core/sections";
 import type { SectionRegistry } from "@dune/core/sections";
+import * as corePlugins from "@dune/core/plugins";
 import denoJson from "./deno.json" with { type: "json" };
+
+// ── Core-instance handshake ──────────────────────────────────────────────────
+// Re-export the CORE_INSTANCE sentinel and CORE_VERSION that THIS package's
+// @dune/core dependency resolved to. Core's bootstrap() (≥0.31) compares the
+// sentinel by reference against its own to detect two core copies loaded into
+// one process. Accessed via the namespace object, not named imports — named
+// imports of exports that don't exist yet would fail module linking against
+// cores ≤0.30.
+const _core = corePlugins as unknown as {
+  CORE_INSTANCE?: unknown;
+  CORE_VERSION?: string;
+};
+
+/** The `@dune/core` instance sentinel this package resolved. See core's `plugins/mod.ts`. */
+export const resolvedCoreSentinel: unknown = _core.CORE_INSTANCE;
+/** The `@dune/core` version this package resolved. Undefined on cores ≤0.30. */
+export const resolvedCoreVersion: string | undefined = _core.CORE_VERSION;
 
 /** Options forwarded from bootstrap() to the admin plugin factory. */
 export interface AdminPluginOptions {
