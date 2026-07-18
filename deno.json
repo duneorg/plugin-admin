@@ -11,7 +11,7 @@
     "./admin/auth/provider": "./src/admin/auth/provider.ts"
   },
   "imports": {
-    "@dune/core": "jsr:@dune/core@0",
+    "@dune/core": "jsr:@dune/core@0.31",
     "fresh": "jsr:@fresh/core@^2",
     "preact": "npm:preact@^10",
     "preact/hooks": "npm:preact@^10/hooks",

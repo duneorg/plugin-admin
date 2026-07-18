@@ -10,20 +10,39 @@
  * that limitation is real, but the bare-entry auto-expansion sidesteps it
  * entirely).
  *
- * The range still needs a human decision exactly once: at core 1.0, when "0"
- * (any 0.x) stops being valid and must become "^1". Nothing else forces that
- * to happen — deno.json would keep parsing, `deno check` would keep passing
- * against whatever 0.x last got cached, and the range would just quietly stop
- * matching new core releases. `--check` is the tripwire: wire it into
- * `deno task test` or the pre-publish checklist so a stale range fails loudly
- * instead of drifting unnoticed.
+ * CORE_RANGE must be a bounded per-minor pin (e.g. "0.31"), NOT a wide/open
+ * range ("0", "0.x", "*", or any `>=`/compound form — the last two aren't
+ * even valid `jsr:` specifier syntax). Two things rule out going wide:
+ *
+ * 1. JSR validates a published package's `jsr:` subpath imports against the
+ *    OLDEST version satisfying the declared range, not the newest — the
+ *    opposite of what `deno cache`/`deno run` do locally. An unbounded range
+ *    floors at the oldest version ever published; the "0" attempt on
+ *    2026-07-17 floored at 0.6.0 and failed publish because `/mt` didn't
+ *    exist yet: "invalid 'jsr:' dependency subpath: '@dune/core@0/mt',
+ *    resolved to 0.6.0, has no export './mt'". A bounded pin like "0.31"
+ *    floors at 0.31.0, which has every subpath this package uses.
+ * 2. A newly-published core version isn't immediately resolvable by JSR's
+ *    publish pipeline for a dependent package — publishing plugin-admin
+ *    right after a core release has failed before with "Could not find
+ *    version of '@dune/core' that matches specified version constraint"
+ *    (v0.25.0, 2026-07-01) and is the original reason this pin went stale
+ *    for months. `deno publish --dry-run` locally is the readiness probe:
+ *    if it succeeds, the real publish should too.
+ *
+ * Net effect: CORE_RANGE needs a human bump at every core minor this package
+ * wants to track (not just once at 1.0 — that was wrong). `--check` is the
+ * tripwire against forgetting: wire it into `deno task test` or the
+ * pre-publish checklist.
  *
  *   deno task gen:core-imports     — rewrite deno.json
  *   deno task check:core-imports   — fail (exit 1) if deno.json is stale
  */
 
-/** Bump this exactly once, at core 1.0: "0" -> "^1". */
-const CORE_RANGE = "0";
+/** Bump at every core minor this package needs. Bare-minor form (e.g. "0.31")
+ * auto-tracks patch releases within that minor — confirmed via `deno cache`:
+ * "0.28" resolved to the latest 0.28.x, not just 0.28.0. */
+const CORE_RANGE = "0.31";
 
 const DENO_JSON = "deno.json";
 const SCAN_ROOTS = ["mod.ts", "src", "tests"];
