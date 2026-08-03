@@ -5,6 +5,28 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [1.1.4] — 2026-08-04
+
+### Fixed
+
+- **Scheduled publish/unpublish/archive actions never actually executed.**
+  `createScheduler()` has always been called in `mount()`, and the admin
+  panel's `WorkflowPanel` UI plus its three API routes (`schedule/index.ts`,
+  `schedule/[id].ts`, `scheduled/[path].ts`) all worked — you could
+  schedule, cancel, and list pending actions with no errors. But nothing
+  ever called `.start()`/`.tick()` on the scheduler, so a due action was
+  never executed: a page scheduled to publish next Friday would sit there
+  forever, silently. `mount()` now also builds and exposes an
+  `executeScheduledAction` callback on `AdminContext` (extracted from the
+  manual-transition route's existing frontmatter-patching logic, now shared
+  via the new `workflow-actions.ts`), which `dune serve` ≥0.31.6 uses to
+  actually start the scheduler's polling loop. `mount()` itself still
+  doesn't call `.start()` — it also runs during one-shot commands
+  (`dune build`, SSG) where a live polling interval would be wrong; only
+  the long-running server process should own that decision.
+
+---
+
 ## [1.1.3] — 2026-07-17
 
 ### Added
