@@ -27,6 +27,8 @@ import { LocalAuthProvider } from "./src/admin/auth/local-provider.ts";
 import type { AuthProvider } from "./src/admin/auth/provider.ts";
 import { createWorkflowEngine } from "@dune/core/workflow";
 import { createScheduler } from "@dune/core/workflow";
+import type { ScheduledAction } from "@dune/core/workflow";
+import { applyWorkflowTransition, SCHEDULED_ACTION_STATUS } from "./src/admin/workflow-actions.ts";
 import { createSubmissionManager } from "./src/admin/submissions.ts";
 import { createStagingEngine } from "@dune/core/staging";
 import { createCommentManager } from "./src/admin/comments.ts";
@@ -241,6 +243,32 @@ export function createAdminPlugin(
 
       const scheduler = createScheduler({ storage, dataDir: runtimeDir });
 
+      // scheduler on its own only supports CRUD (schedule/cancel/list) — it
+      // never executes anything by itself. Whichever long-running process
+      // owns the actual `scheduler.start()`/`.tick()` polling loop (dune
+      // serve — see src/cli/serve.ts) calls this as the onAction callback
+      // when an action comes due. Exposed via AdminContext rather than
+      // called directly here because mount() also runs during one-shot
+      // commands (dune build, SSG) where starting a polling interval would
+      // be wrong; only serve.ts decides when it's actually safe to start.
+      const executeScheduledAction = async (action: ScheduledAction): Promise<void> => {
+        const newStatus = SCHEDULED_ACTION_STATUS[action.action];
+        if (!newStatus) {
+          logger.warn("scheduler.unknown-action", { action: action.action, sourcePath: action.sourcePath });
+          return;
+        }
+        try {
+          await applyWorkflowTransition({ engine: bootstrap.engine, storage, config, hooks: bootstrap.hooks, workflow }, action.sourcePath, newStatus);
+        } catch (err) {
+          logger.error("scheduler.action-failed", {
+            actionId: action.id,
+            sourcePath: action.sourcePath,
+            action: action.action,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      };
+
       const stagingEngine = createStagingEngine({ storage, runtimeDir });
 
       const commentManager = createCommentManager({ dataDir, runtimeDir });
@@ -280,6 +308,7 @@ export function createAdminPlugin(
         authProvider,
         workflow,
         scheduler,
+        executeScheduledAction,
         history: bootstrap.history,
         submissions: submissionManager,
         flex: bootstrap.flexEngine,

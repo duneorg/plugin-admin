@@ -2,7 +2,7 @@
 
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
-import { fireContentWebhooks } from "../../../../admin/webhooks.ts";
+import { applyWorkflowTransition } from "../../../workflow-actions.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -30,41 +30,17 @@ export const handler = {
         return json({ error: `Cannot transition from ${currentStatus} to ${newStatus}` }, 400);
       }
 
-      // Allowlist newStatus characters before splicing into raw YAML frontmatter.
-      // A value containing YAML special characters (e.g. a newline) would corrupt
-      // the frontmatter of every page it is applied to.
-      if (!/^[a-zA-Z0-9_-]+$/.test(newStatus)) {
-        return json({ error: "Invalid status value" }, 400);
-      }
+      const result = await applyWorkflowTransition(
+        { engine, storage, config, hooks, workflow },
+        sourcePath,
+        newStatus,
+      );
 
-      const contentDir = config.system.content.dir;
-      const filePath = `${contentDir}/${pageIndex.sourcePath}`;
-      const raw = new TextDecoder().decode(await storage.read(filePath));
-
-      let updated = raw.match(/^status:\s*.+$/m)
-        ? raw.replace(/^status:\s*.+$/m, `status: ${newStatus}`)
-        : raw.replace(/^---\n/, `---\nstatus: ${newStatus}\n`);
-
-      if (workflow.setsPublished(newStatus)) {
-        if (updated.match(/^published:\s*.+$/m)) {
-          updated = updated.replace(/^published:\s*.+$/m, "published: true");
-        }
-      } else {
-        if (updated.match(/^published:\s*.+$/m)) {
-          updated = updated.replace(/^published:\s*.+$/m, "published: false");
-        }
-      }
-
-      await storage.write(filePath, new TextEncoder().encode(updated));
-      await engine.rebuild();
-
-      const webhookEndpoints = config.admin?.webhooks ?? [];
-      const runtimeDir = config.admin?.runtimeDir ?? ".dune/admin";
-      if (hooks) hooks.fire("onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }).catch(() => {});
-      fireContentWebhooks(webhookEndpoints, "onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }, runtimeDir);
-
-      return json({ transitioned: true, from: currentStatus, to: newStatus });
+      return json({ transitioned: true, from: result.from, to: result.to });
     } catch (err) {
+      if (err instanceof Error && err.message.startsWith("Invalid status value")) {
+        return json({ error: err.message }, 400);
+      }
       return serverError(err);
     }
   },

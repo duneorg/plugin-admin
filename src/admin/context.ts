@@ -13,7 +13,7 @@ import type { UserManager } from "./auth/users.ts";
 import type { SessionManager } from "./auth/sessions.ts";
 import type { AuthProvider } from "./auth/provider.ts";
 import type { WorkflowEngine } from "@dune/core/workflow";
-import type { Scheduler } from "@dune/core/workflow";
+import type { Scheduler, ScheduledAction } from "@dune/core/workflow";
 import type { HistoryEngine } from "@dune/core/history";
 import type { SubmissionManager } from "./submissions.ts";
 import type { FlexEngine } from "@dune/core/flex";
@@ -48,6 +48,15 @@ export interface AdminContext {
   authProvider?: AuthProvider;
   workflow?: WorkflowEngine;
   scheduler?: Scheduler;
+  /**
+   * Executes a due scheduled action (publish/unpublish/archive) by applying
+   * the corresponding workflow transition. Passed to `scheduler.start()` by
+   * whichever long-running process (`dune serve`) owns the scheduler's
+   * polling loop — `scheduler` on its own only supports CRUD (schedule/
+   * cancel/list); nothing calls `.start()`/`.tick()` without this, and a
+   * scheduled action would otherwise sit forever without ever executing.
+   */
+  executeScheduledAction?: (action: ScheduledAction) => Promise<void>;
   history?: HistoryEngine;
   submissions?: SubmissionManager;
   flex?: FlexEngine;
