@@ -70,23 +70,23 @@ export default function SearchPanel({ prefix }: Props) {
     }
   }
 
-  if (loading) return <p style="color:#718096;padding:2rem 0">Loading…</p>;
-  if (error && !state) return <p style="color:#e53e3e;padding:2rem 0">Error: {error}</p>;
+  if (loading) return <p class="s-17a730ae">Loading…</p>;
+  if (error && !state) return <p class="s-1eb2babc">Error: {error}</p>;
   if (!state) return null;
 
   const { active, engines, parallel } = state;
 
   return (
-    <div style="max-width:600px">
-      {error && <p style="color:#e53e3e;margin-bottom:1rem">{error}</p>}
-      {success && <p style="color:#38a169;margin-bottom:1rem">{success}</p>}
+    <div class="s-3e9d9c4c">
+      {error && <p class="s-bf1e2758">{error}</p>}
+      {success && <p class="s-04a2236a">{success}</p>}
 
-      <section style="margin-bottom:2rem">
-        <h3 style="margin:0 0 .75rem;font-size:1rem;font-weight:600">Active Engine</h3>
+      <section class="s-df2a69f4">
+        <h3 class="s-3c2db771">Active Engine</h3>
         {engines.length === 0
-          ? <p style="color:#718096">No search engines registered. Install a search plugin to enable full-text search.</p>
+          ? <p class="s-4f77c842">No search engines registered. Install a search plugin to enable full-text search.</p>
           : (
-            <div style="display:flex;flex-direction:column;gap:.5rem">
+            <div class="s-516a4d34">
               {engines.map((name) => (
                 <label
                   key={name}
@@ -100,8 +100,8 @@ export default function SearchPanel({ prefix }: Props) {
                     disabled={saving || engines.length < 2}
                     onChange={() => patch({ active: name })}
                   />
-                  <span style="font-weight:500">{name}</span>
-                  {name === active && <span style="margin-left:auto;font-size:.75rem;color:#3182ce;font-weight:600">ACTIVE</span>}
+                  <span class="s-1e29eefb">{name}</span>
+                  {name === active && <span class="s-d0be2a48">ACTIVE</span>}
                 </label>
               ))}
             </div>
@@ -110,11 +110,11 @@ export default function SearchPanel({ prefix }: Props) {
 
       {engines.length > 1 && (
         <section>
-          <h3 style="margin:0 0 .75rem;font-size:1rem;font-weight:600">Parallel Mode</h3>
-          <p style="color:#718096;font-size:.875rem;margin:0 0 .75rem">
+          <h3 class="s-3c2db771">Parallel Mode</h3>
+          <p class="s-3cf64e05">
             When enabled, queries run against all registered engines simultaneously and results are merged.
           </p>
-          <label style="display:flex;align-items:center;gap:.75rem;cursor:pointer">
+          <label class="s-8d1a5c1d">
             <input
               type="checkbox"
               checked={parallel}

@@ -77,16 +77,16 @@ export default function ConfigEditor({ prefix }: Props) {
     setConfig((prev) => ({ ...prev, taxonomies: prev.taxonomies.filter((x) => x !== t) }));
   }
 
-  if (loading) return <div style="padding:2rem;color:#718096">Loading configuration…</div>;
+  if (loading) return <div class="s-7f1b1911">Loading configuration…</div>;
 
   return (
     <div class="cfg-wrap">
-      {error && <div class="alert alert-error" style="margin-bottom:1rem">{error}</div>}
+      {error && <div class="alert alert-error s-9590f79e">{error}</div>}
 
       <form onSubmit={saveSiteConfig}>
         <div class="cfg-section">
           <h4>Site</h4>
-          <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-grid s-cac755ce">
             <div class="form-group">
               <label>Title</label>
               <input
@@ -116,7 +116,7 @@ export default function ConfigEditor({ prefix }: Props) {
 
         <div class="cfg-section">
           <h4>Author</h4>
-          <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-grid s-cac755ce">
             <div class="form-group">
               <label>Name</label>
               <input
@@ -138,29 +138,29 @@ export default function ConfigEditor({ prefix }: Props) {
 
         <div class="cfg-section">
           <h4>Taxonomies</h4>
-          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem">
+          <div class="s-aa1fe21d">
             {config.taxonomies.map((t) => (
-              <span key={t} class="badge" style="display:flex;align-items:center;gap:0.25rem">
+              <span key={t} class="badge s-6e0691e8">
                 {t}
-                <button type="button" style="border:none;background:none;cursor:pointer;padding:0;line-height:1" onClick={() => removeTaxonomy(t)}>×</button>
+                <button type="button" class="s-4e407366" onClick={() => removeTaxonomy(t)}>×</button>
               </span>
             ))}
           </div>
-          <div style="display:flex;gap:0.5rem">
+          <div class="s-d1e542ea">
             <input
               type="text"
               value={taxInput}
               onInput={(e) => setTaxInput((e.target as HTMLInputElement).value)}
               placeholder="Add taxonomy (e.g. tags)"
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTaxonomy(); } }}
-              style="flex:1"
+              class="s-da5cd676"
             />
             <button type="button" class="btn btn-sm btn-outline" onClick={addTaxonomy}>Add</button>
           </div>
         </div>
 
-        <div class="form-actions" style="margin-top:1.5rem">
-          {saved && <span style="color:#276749;margin-right:1rem">✓ Saved</span>}
+        <div class="form-actions s-b06fb3de">
+          {saved && <span class="s-e5de08ff">✓ Saved</span>}
           <button type="submit" class="btn btn-primary" disabled={saving}>
             {saving ? "Saving…" : "Save changes"}
           </button>

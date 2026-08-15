@@ -34,12 +34,12 @@ export default function SubmissionDetailRoute(
         <h2>Submission</h2>
         <a href={`${data.prefix}/submissions/${data.form}`} class="btn">Back</a>
       </div>
-      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin-bottom:16px">
+      <div class="s-0b5d16f0">
         <table class="admin-table">
           <tbody>
             {Object.entries(fields).map(([k, v]) => (
               <tr key={k}>
-                <td style="font-weight:600;width:160px">{k}</td>
+                <td class="s-57fe2250">{k}</td>
                 <td>{v}</td>
               </tr>
             ))}
@@ -48,14 +48,9 @@ export default function SubmissionDetailRoute(
       </div>
       {files.length > 0 && (
         <div>
-          <h3 style="font-size:15px;margin-bottom:8px">Attachments</h3>
+          <h3 class="s-db27a9cf">Attachments</h3>
           {files.map((f) => (
-            <a
-              key={f.name}
-              href={`${data.prefix}/submissions/${data.form}/${s.id}/files/${encodeURIComponent(f.name)}`}
-              class="btn btn-sm"
-              style="margin-right:8px"
-            >
+            <a key={f.name} href={`${data.prefix}/submissions/${data.form}/${s.id}/files/${encodeURIComponent(f.name)}`} class="btn btn-sm s-d109945c">
               {f.name}
             </a>
           ))}

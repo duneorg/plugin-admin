@@ -29,7 +29,7 @@ export default function AuditRoute(
     return (
       <div>
         <div class="section-header"><h2>Audit Log</h2></div>
-        <p style="color:#718096;padding:2rem 0">Audit logging is not enabled.</p>
+        <p class="s-17a730ae">Audit logging is not enabled.</p>
       </div>
     );
   }
@@ -41,15 +41,15 @@ export default function AuditRoute(
         <tbody>
           {(data.entries as Array<Record<string, unknown>>).map((e, i) => (
             <tr key={i}>
-              <td style="white-space:nowrap;font-size:12px;color:#718096">{String(e.ts ?? "").replace("T", " ").slice(0, 19)}</td>
-              <td><code style="font-size:12px">{String(e.event ?? "")}</code></td>
+              <td class="s-b3f1a710">{String(e.ts ?? "").replace("T", " ").slice(0, 19)}</td>
+              <td><code class="s-6b9c179a">{String(e.event ?? "")}</code></td>
               <td>{(e.actor as { username?: string })?.username ?? "—"}</td>
-              <td style="font-size:12px">
+              <td class="s-6b9c179a">
                 {e.target
                   ? `${(e.target as { type?: string }).type ?? "?"}:${(e.target as { id?: string }).id ?? "?"}`
                   : "—"}
               </td>
-              <td style="font-size:12px;color:#718096">{String(e.ip ?? "—")}</td>
+              <td class="s-c866c7be">{String(e.ip ?? "—")}</td>
               <td><span class={`badge ${e.outcome === "success" ? "badge-success" : "badge-failure"}`}>{String(e.outcome ?? "")}</span></td>
             </tr>
           ))}

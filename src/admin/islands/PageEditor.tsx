@@ -115,10 +115,10 @@ export default function PageEditor({ pagePath, prefix }: Props) {
   }
 
   if (loading) {
-    return <div style="padding:2rem;color:#718096">Loading editor…</div>;
+    return <div class="s-7f1b1911">Loading editor…</div>;
   }
   if (!page) {
-    return <div style="padding:2rem;color:#e53e3e">{error || "Page not found."}</div>;
+    return <div class="s-d36754cf">{error || "Page not found."}</div>;
   }
 
   return (
@@ -130,11 +130,7 @@ export default function PageEditor({ pagePath, prefix }: Props) {
           <span class="editor-title">{String(fm.title ?? page.title)}</span>
           <span class={`badge badge-${page.format}`}>{page.format}</span>
           {page.format === "tsx" && (
-            <span
-              class="badge badge-warning"
-              title="TSX pages execute server-side Deno code. Only trusted admin-role authors should edit these files."
-              style="background:#f6ad55;color:#744210;cursor:help"
-            >
+            <span class="badge badge-warning s-89c10cfd" title="TSX pages execute server-side Deno code. Only trusted admin-role authors should edit these files.">
               ⚠ trusted author only
             </span>
           )}
@@ -284,13 +280,12 @@ export default function PageEditor({ pagePath, prefix }: Props) {
         {/* Content area */}
         <main class={`editor-main${showPreview ? " editor-main-split" : ""}`}>
           <textarea
-            class="editor-content"
+            class="editor-content s-724242e3"
             value={rawContent}
             onInput={(e) => {
               setRawContent((e.target as HTMLTextAreaElement).value);
               setDirty(true);
             }}
-            style="width:100%;height:100%;font-family:monospace;font-size:14px;border:none;outline:none;resize:none;padding:1rem"
             spellcheck={false}
           />
         </main>
@@ -301,7 +296,7 @@ export default function PageEditor({ pagePath, prefix }: Props) {
             <iframe
               ref={previewRef}
               src={`${prefix}/api/preview`}
-              style="width:100%;height:100%;border:none"
+              class="s-5050775b"
               title="Page preview"
             />
           </aside>
@@ -309,7 +304,7 @@ export default function PageEditor({ pagePath, prefix }: Props) {
       </div>
 
       {error && (
-        <div class="toast toast-error" style="position:fixed;bottom:1rem;right:1rem">
+        <div class="toast toast-error s-773881f7">
           {error}
         </div>
       )}

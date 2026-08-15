@@ -75,24 +75,24 @@ export default function ThemeSwitcher({ prefix, activeTheme, previewSlug }: Prop
     return `${apiBase}/theme-preview?theme=${encodeURIComponent(selectedTheme)}&route=${encodeURIComponent(route)}`;
   }
 
-  if (loading) return <div style="padding:1rem;color:#718096">Loading themes…</div>;
+  if (loading) return <div class="s-d89fdddb">Loading themes…</div>;
 
   return (
     <div>
-      {error && <div class="alert alert-error" style="margin-bottom:1rem">{error}</div>}
+      {error && <div class="alert alert-error s-9590f79e">{error}</div>}
       <div class="form-group">
         <label>Active theme</label>
         <select
           value={selectedTheme}
           onChange={(e) => setSelectedTheme((e.target as HTMLSelectElement).value)}
-          style="max-width:300px"
+          class="s-4d14681b"
         >
           {themes.available.map((t) => (
             <option key={t} value={t}>{t}{t === themes.current ? " (active)" : ""}</option>
           ))}
         </select>
       </div>
-      {msg && <div class="alert alert-success" style="margin-bottom:1rem">{msg}</div>}
+      {msg && <div class="alert alert-success s-9590f79e">{msg}</div>}
       <div class="form-actions">
         <button type="button"
           class="btn btn-primary"
@@ -111,9 +111,9 @@ export default function ThemeSwitcher({ prefix, activeTheme, previewSlug }: Prop
       </div>
 
       {previewOpen && (
-        <div class="cfg-section" style="margin-top:1.5rem;border:1px solid #e2e8f0;border-radius:6px;padding:1rem">
-          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap">
-            <label style="margin:0;white-space:nowrap">Preview route</label>
+        <div class="cfg-section s-8e9e7137">
+          <div class="s-0ac2ae96">
+            <label class="s-049af8ec">Preview route</label>
             <input
               type="text"
               value={routeDraft}
@@ -122,17 +122,13 @@ export default function ThemeSwitcher({ prefix, activeTheme, previewSlug }: Prop
                 if (e.key === "Enter") commitRoute();
               }}
               onBlur={commitRoute}
-              style="max-width:240px"
+              class="s-dd76ed55"
             />
             <button type="button" class="btn btn-sm" onClick={commitRoute}>Go</button>
             <button type="button" class="btn btn-sm btn-outline" onClick={() => setRefreshKey((k) => k + 1)}>
               ↻ Refresh
             </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline"
-              style="margin-left:auto"
-              onClick={() => setPreviewOpen(false)}
+            <button type="button" class="btn btn-sm btn-outline s-83456371" onClick={() => setPreviewOpen(false)}
             >
               × Close
             </button>
@@ -141,23 +137,22 @@ export default function ThemeSwitcher({ prefix, activeTheme, previewSlug }: Prop
             key={refreshKey}
             src={previewSrc()}
             title="Theme preview"
-            style="width:100%;height:600px;border:1px solid var(--border);border-radius:6px;background:#fff"
+            class="s-38f5682c"
           />
         </div>
       )}
 
-      <div style="margin-top:2rem">
+      <div class="s-831acaf6">
         <h4>Available themes</h4>
-        <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+        <div class="s-b9732f3c">
           {themes.available.map((t) => (
             <div
               key={t}
-              class={`theme-card${t === themes.current ? " theme-card-active" : ""}`}
-              style="border:1px solid #e2e8f0;border-radius:6px;padding:1rem;cursor:pointer;min-width:140px"
+              class={`theme-card s-9ad6cb3a${t === themes.current ? " theme-card-active" : ""}`}
               onClick={() => setSelectedTheme(t)}
             >
-              <div style="font-weight:600">{t}</div>
-              {t === themes.current && <span class="badge" style="margin-top:0.25rem">active</span>}
+              <div class="s-e634e6da">{t}</div>
+              {t === themes.current && <span class="badge s-6bb006fc">active</span>}
             </div>
           ))}
         </div>

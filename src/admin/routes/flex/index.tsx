@@ -20,7 +20,7 @@ export default function FlexRoute(
     <div>
       <div class="section-header"><h2>Flex Objects</h2></div>
       {data.schemas.length === 0
-        ? <p style="color:#718096;padding:2rem 0">No flex object types defined.</p>
+        ? <p class="s-17a730ae">No flex object types defined.</p>
         : (
           <table class="admin-table">
             <thead><tr><th>Type</th><th>Label</th><th></th></tr></thead>

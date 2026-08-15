@@ -52,14 +52,14 @@ export default function ThemeConfigEditor({ prefix }: Props) {
     }
   }
 
-  if (loading) return <div style="padding:1rem;color:#718096">Loading theme settings…</div>;
+  if (loading) return <div class="s-d89fdddb">Loading theme settings…</div>;
 
   return (
     <div>
-      {error && <div class="alert alert-error" style="margin-bottom:1rem">{error}</div>}
+      {error && <div class="alert alert-error s-9590f79e">{error}</div>}
       <form onSubmit={save}>
         {Object.keys(schema).length === 0 ? (
-          <p style="color:#718096">This theme has no configurable options.</p>
+          <p class="s-4f77c842">This theme has no configurable options.</p>
         ) : (
           Object.entries(schema).map(([key, field]) => (
             <div class="form-group" key={key}>
@@ -101,8 +101,8 @@ export default function ThemeConfigEditor({ prefix }: Props) {
             </div>
           ))
         )}
-        <div class="form-actions" style="margin-top:1.5rem">
-          {saved && <span style="color:#276749;margin-right:1rem">✓ Saved</span>}
+        <div class="form-actions s-b06fb3de">
+          {saved && <span class="s-e5de08ff">✓ Saved</span>}
           <button type="submit" class="btn btn-primary" disabled={saving}>
             {saving ? "Saving…" : "Save theme settings"}
           </button>

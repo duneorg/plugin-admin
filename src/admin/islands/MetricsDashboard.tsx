@@ -84,14 +84,14 @@ export default function MetricsDashboard({ prefix }: Props) {
     return () => clearInterval(timer);
   }, [autoRefresh, load]);
 
-  if (loading) return <div style="padding:2rem;color:#718096">Loading metrics…</div>;
+  if (loading) return <div class="s-7f1b1911">Loading metrics…</div>;
 
   return (
     <div class="metrics-wrap">
       {/* Toolbar */}
-      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+      <div class="s-2971273c">
         <button type="button" class="btn btn-sm btn-outline" onClick={load}>↻ Refresh</button>
-        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem">
+        <label class="s-1b859768">
           <input
             type="checkbox"
             checked={autoRefresh}
@@ -100,18 +100,18 @@ export default function MetricsDashboard({ prefix }: Props) {
           Auto-refresh (30s)
         </label>
         {lastRefresh && (
-          <span style="color:#718096;font-size:0.85rem;margin-left:auto">
+          <span class="s-ace205ad">
             Last updated: {lastRefresh.toLocaleTimeString()}
           </span>
         )}
       </div>
 
-      {error && <div class="alert alert-error" style="margin-bottom:1rem">{error}</div>}
+      {error && <div class="alert alert-error s-9590f79e">{error}</div>}
 
       {metrics && (
         <>
           {/* Summary cards */}
-          <div class="metrics-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
+          <div class="metrics-cards s-eda77236">
             <MetricCard label="Requests" value={String(metrics.requestCount)} sub={`${metrics.windowSeconds}s window`} />
             <MetricCard
               label="Error rate"
@@ -128,9 +128,9 @@ export default function MetricsDashboard({ prefix }: Props) {
           </div>
 
           {/* Latency bar chart */}
-          <div style="margin-bottom:2rem">
+          <div class="s-df2a69f4">
             <h4>Latency distribution</h4>
-            <div style="display:flex;flex-direction:column;gap:0.5rem;max-width:480px">
+            <div class="s-f1fe5575">
               {[
                 { label: "p50", value: metrics.latency.p50 },
                 { label: "p75", value: metrics.latency.p75 },
@@ -140,14 +140,14 @@ export default function MetricsDashboard({ prefix }: Props) {
                 const maxMs = Math.max(metrics.latency.p99, 100);
                 const pct = Math.min(100, (value / maxMs) * 100);
                 return (
-                  <div key={label} style="display:flex;align-items:center;gap:0.75rem">
-                    <span style="width:3rem;font-size:0.85rem;color:#718096">{label}</span>
+                  <div key={label} class="s-f53c0fbe">
+                    <span class="s-d8241069">{label}</span>
                     <div style={`flex:1;height:8px;background:#e2e8f0;border-radius:4px`}>
                       <div
                         style={`height:8px;width:${pct}%;background:${value > 1000 ? "#e53e3e" : value > 500 ? "#f59e0b" : "#4f46e5"};border-radius:4px`}
                       />
                     </div>
-                    <span style="width:4rem;font-size:0.85rem;text-align:right">{fmtMs(value)}</span>
+                    <span class="s-85a4ef6b">{fmtMs(value)}</span>
                   </div>
                 );
               })}
@@ -158,7 +158,7 @@ export default function MetricsDashboard({ prefix }: Props) {
           {metrics.slowQueries.length > 0 && (
             <div>
               <h4>Slowest routes</h4>
-              <table class="admin-table" style="max-width:640px">
+              <table class="admin-table s-4dd59aa6">
                 <thead>
                   <tr>
                     <th>Route</th>
@@ -199,9 +199,9 @@ function MetricCard({
     <div
       style={`border:1px solid ${highlight ? "#fed7d7" : "#e2e8f0"};border-radius:8px;padding:1rem;background:${highlight ? "#fff5f5" : "white"}`}
     >
-      <div style="font-size:0.8rem;color:#718096;margin-bottom:0.25rem">{label}</div>
+      <div class="s-5b4cfbc9">{label}</div>
       <div style={`font-size:1.5rem;font-weight:700;color:${highlight ? "#e53e3e" : "#2d3748"}`}>{value}</div>
-      {sub && <div style="font-size:0.8rem;color:#a0aec0;margin-top:0.25rem">{sub}</div>}
+      {sub && <div class="s-01282aa4">{sub}</div>}
     </div>
   );
 }

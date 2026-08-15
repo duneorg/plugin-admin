@@ -39,13 +39,13 @@ export default function JobsPage({ data }: { data: PageData }) {
       </div>
 
       {jobs.length === 0 && (
-        <p style="color:#718096;padding:2rem 0">
+        <p class="s-17a730ae">
           No jobs registered. Create a <code>jobs/</code> directory in your project root and add job files.
         </p>
       )}
 
       {jobs.length > 0 && (
-        <table class="admin-table" style="width:100%">
+        <table class="admin-table s-6d567387">
           <thead>
             <tr>
               <th>Name</th>
@@ -59,18 +59,18 @@ export default function JobsPage({ data }: { data: PageData }) {
           <tbody>
             {jobs.map((job) => (
               <tr key={job.name}>
-                <td><code style="font-size:0.875rem">{job.name}</code></td>
+                <td><code class="s-6a037922">{job.name}</code></td>
                 <td>{statusBadge(job.status)}</td>
-                <td style="font-size:0.875rem;color:#4a5568">{fmtDate(job.lastRun)}</td>
-                <td style="font-size:0.875rem;color:#4a5568">{fmtDate(job.nextRun)}</td>
-                <td style="font-size:0.8rem;color:#c53030;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                <td class="s-b1c3a18b">{fmtDate(job.lastRun)}</td>
+                <td class="s-b1c3a18b">{fmtDate(job.nextRun)}</td>
+                <td class="s-06602b4f">
                   {job.lastError ?? "—"}
                 </td>
                 <td>
-                  <form method="post" action={`${prefix}/api/jobs/${job.name}/run`} style="display:inline">
+                  <form method="post" action={`${prefix}/api/jobs/${job.name}/run`} class="s-5677b988">
                     <button
                       type="submit"
-                      style="padding:4px 12px;font-size:0.8rem;border:1px solid #cbd5e0;border-radius:4px;background:white;cursor:pointer"
+                      class="s-c7a8daea"
                       title="Trigger this job now"
                     >
                       Run now
@@ -83,7 +83,7 @@ export default function JobsPage({ data }: { data: PageData }) {
         </table>
       )}
 
-      <p style="font-size:0.75rem;color:#a0aec0;margin-top:1rem">
+      <p class="s-6059c7e1">
         Jobs are triggered automatically by their cron schedule. "Run now" fires the job immediately regardless of schedule.
       </p>
     </div>

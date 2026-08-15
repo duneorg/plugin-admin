@@ -126,7 +126,7 @@ export default function AdminLayout(
               <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Open menu">☰</button>
               <div class="topbar-right">
                 <span class="topbar-user">{userName}</span>
-                <form method="POST" action={`${prefix}/login/logout`} style="display:inline">
+                <form method="POST" action={`${prefix}/login/logout`} class="s-5677b988">
                   <button type="submit" class="btn btn-sm">Sign out</button>
                 </form>
               </div>
@@ -283,6 +283,154 @@ function adminCss(rtl: boolean): string {
     /* Section headers */
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .section-header h2 { font-size: 20px; font-weight: 600; }
+
+    /* Extracted from inline style="" attributes across admin islands/routes —
+       plugin-admin's CSP (useNonce: true) drops 'unsafe-inline' from style-src,
+       and Fresh only auto-nonces <style>/<script> elements it renders itself,
+       never style="" attribute values, so raw inline styles were silently
+       blocked. Class names are content hashes (s-<md5-prefix>), generated
+       mechanically from each unique style string — not meant to be hand-edited;
+       regenerate by re-extracting rather than adding to this list by hand. */
+    .s-01282aa4 { font-size:0.8rem;color:#a0aec0;margin-top:0.25rem }
+    .s-0223e5e4 { background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:0.75rem;margin-top:0.5rem }
+    .s-049af8ec { margin:0;white-space:nowrap }
+    .s-04a2236a { color:#38a169;margin-bottom:1rem }
+    .s-04ce2983 { font-size:0.85rem;color:#718096 }
+    .s-06602b4f { font-size:0.8rem;color:#c53030;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap }
+    .s-076e1d4d { font-size:0.85rem }
+    .s-0ac2ae96 { display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap }
+    .s-0b5d16f0 { background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin-bottom:16px }
+    .s-0f69679b { display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem }
+    .s-1386d503 { margin:0 }
+    .s-14ae7afe { display:flex;align-items:flex-start;gap:0.5rem;margin-bottom:0.5rem }
+    .s-17a730ae { color:#718096;padding:2rem 0 }
+    .s-19ec2070 { display:flex;align-items:center;justify-content:center;height:400px;color:#a0aec0;font-size:0.875rem }
+    .s-1b859768 { display:flex;align-items:center;gap:0.5rem;font-size:0.9rem }
+    .s-1e29eefb { font-weight:500 }
+    .s-1eb2babc { color:#e53e3e;padding:2rem 0 }
+    .s-21f8d78f { font-size:0.75rem;color:#718096;margin-top:0.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis }
+    .s-2971273c { display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem }
+    .s-297d7857 { margin-left:auto;display:flex;align-items:center;gap:0.75rem }
+    .s-2a4cda41 { color:#f59e0b }
+    .s-2a9780cb { display:flex;align-items:center;gap:8px }
+    .s-2e33ae4a { display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start }
+    .s-2e9f9b64 { border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;min-height:400px }
+    .s-3044b600 { font-size:13px }
+    .s-31db4ccc { display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem }
+    .s-3353514d { font-size:0.7rem;color:#a0aec0;margin-top:0.1rem }
+    .s-358b17e7 { margin-top:1.5rem;display:flex;gap:0.75rem;align-items:center }
+    .s-375dd3c3 { font-size:0.8rem;color:#718096 }
+    .s-37b5834e { font-size:4rem;text-align:center;padding:2rem }
+    .s-38f5682c { width:100%;height:600px;border:1px solid var(--border);border-radius:6px;background:#fff }
+    .s-3adba436 { font-size:0.8rem;color:#718096;margin-right:0.5rem }
+    .s-3b2074de { margin-bottom:0.5rem }
+    .s-3c2db771 { margin:0 0 .75rem;font-size:1rem;font-weight:600 }
+    .s-3cf64e05 { color:#718096;font-size:.875rem;margin:0 0 .75rem }
+    .s-3e9d9c4c { max-width:600px }
+    .s-3f29e863 { font-size:0.8rem;color:#718096;margin-top:0.25rem }
+    .s-402564c4 { margin-bottom:0.75rem }
+    .s-47790cc9 { width:100%;height:160px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;color:#a0aec0;font-size:2rem }
+    .s-48624e4b { font-weight:600;margin-bottom:0.25rem }
+    .s-48e36cb6 { max-width:400px;max-height:300px;display:block }
+    .s-49c5b5cd { width:100%;height:160px;object-fit:cover }
+    .s-4a1a0733 { background:#f7fafc;border:1px solid #e2e8f0;border-radius:4px;padding:1rem;overflow:auto;font-size:0.85rem;max-height:60vh }
+    .s-4bf94c79 { background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:1rem;margin-bottom:1rem }
+    .s-4d5cad12 { padding:1rem;border-bottom:1px solid #e2e8f0;background:#f7fafc }
+    .s-4dc05622 { font-size:0.75rem }
+    .s-4dd59aa6 { max-width:640px }
+    .s-4e407366 { border:none;background:none;cursor:pointer;padding:0;line-height:1 }
+    .s-4f77c842 { color:#718096 }
+    .s-5050775b { width:100%;height:100%;border:none }
+    .s-516a4d34 { display:flex;flex-direction:column;gap:.5rem }
+    .s-51f08752 { margin:0;white-space:pre-wrap;font-size:0.85rem }
+    .s-53896af7 { margin-top:0 }
+    .s-559a05d5 { margin-bottom:12px;font-size:16px;font-weight:600 }
+    .s-5677b988 { display:inline }
+    .s-57925e75 { border:1px solid #e2e8f0;border-radius:8px;padding:1rem }
+    .s-57fe2250 { font-weight:600;width:160px }
+    .s-5b4cfbc9 { font-size:0.8rem;color:#718096;margin-bottom:0.25rem }
+    .s-6059c7e1 { font-size:0.75rem;color:#a0aec0;margin-top:1rem }
+    .s-609e15d9 { display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;padding:0.25rem 0 }
+    .s-6404d85c { font-weight:500;font-size:0.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis }
+    .s-6a037922 { font-size:0.875rem }
+    .s-6a1fb824 { position:relative;display:inline-block;cursor:crosshair }
+    .s-6a7c8737 { width:40px;height:40px;border-radius:4px;object-fit:cover }
+    .s-6a9767ee { color:#718096;font-size:0.9rem }
+    .s-6b9c179a { font-size:12px }
+    .s-6bb006fc { margin-top:0.25rem }
+    .s-6d567387 { width:100% }
+    .s-6e0691e8 { display:flex;align-items:center;gap:0.25rem }
+    .s-6fe37944 { width:320px;flex-shrink:0 }
+    .s-763f1850 { height:calc(100vh - 104px) }
+    .s-773881f7 { position:fixed;bottom:1rem;right:1rem }
+    .s-78c94453 { font-size:0.75rem;font-weight:400;color:#718096;margin-left:0.5rem }
+    .s-79df0477 { color:#276749 }
+    .s-7f1b1911 { padding:2rem;color:#718096 }
+    .s-801fc590 { width:40px;height:40px;border-radius:4px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:1.5rem }
+    .s-819192ef { display:flex;gap:0.5rem;flex-wrap:wrap }
+    .s-831acaf6 { margin-top:2rem }
+    .s-83456371 { margin-left:auto }
+    .s-85a4ef6b { width:4rem;font-size:0.85rem;text-align:right }
+    .s-87dab5e6 { padding:2rem 0;color:#718096 }
+    .s-89bd09bd { flex:1;min-width:0 }
+    .s-89c10cfd { background:#f6ad55;color:#744210;cursor:help }
+    .s-8d1a5c1d { display:flex;align-items:center;gap:.75rem;cursor:pointer }
+    .s-8e9e7137 { margin-top:1.5rem;border:1px solid #e2e8f0;border-radius:6px;padding:1rem }
+    .s-90bda5a7 { display:flex;gap:0.5rem;align-items:center }
+    .s-94b930f9 { display:flex;gap:0.25rem;flex-wrap:wrap;margin-bottom:0.75rem }
+    .s-9590f79e { margin-bottom:1rem }
+    .s-9ad6cb3a { border:1px solid #e2e8f0;border-radius:6px;padding:1rem;cursor:pointer;min-width:140px }
+    .s-9dae1d00 { margin-top:1rem }
+    .s-9dcdde5e { margin:0 0 0.75rem }
+    .s-a22f7cc1 { margin-left:.5rem }
+    .s-a4a6d1d8 { display:flex;justify-content:flex-end;margin-bottom:1rem }
+    .s-aa1fe21d { display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem }
+    .s-abcb745b { display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap }
+    .s-ace205ad { color:#718096;font-size:0.85rem;margin-left:auto }
+    .s-b06fb3de { margin-top:1.5rem }
+    .s-b1c3a18b { font-size:0.875rem;color:#4a5568 }
+    .s-b3f1a710 { white-space:nowrap;font-size:12px;color:#718096 }
+    .s-b4e83a82 { width:100%;height:300px;border:1px solid #e2e8f0;border-radius:4px;margin-top:1rem }
+    .s-b9732f3c { display:flex;gap:0.75rem;flex-wrap:wrap }
+    .s-ba9f0926 { width:100%;height:500px;border:0;display:block }
+    .s-bef9490d { display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:0.5rem }
+    .s-bf1e2758 { color:#e53e3e;margin-bottom:1rem }
+    .s-c7a8daea { padding:4px 12px;font-size:0.8rem;border:1px solid #cbd5e0;border-radius:4px;background:white;cursor:pointer }
+    .s-c866c7be { font-size:12px;color:#718096 }
+    .s-cac755ce { display:grid;grid-template-columns:1fr 1fr;gap:1rem }
+    .s-cb458930 { display:none }
+    .s-d0be2a48 { margin-left:auto;font-size:.75rem;color:#3182ce;font-weight:600 }
+    .s-d109945c { margin-right:8px }
+    .s-d13ab416 { font-size:0.9rem;color:#4a5568;margin:0 0 0.75rem }
+    .s-d1e542ea { display:flex;gap:0.5rem }
+    .s-d36754cf { padding:2rem;color:#e53e3e }
+    .s-d59b2c04 { color:#e53e3e;margin-left:2px }
+    .s-d77827f6 { color:#e53e3e;font-size:0.9rem }
+    .s-d8241069 { width:3rem;font-size:0.85rem;color:#718096 }
+    .s-d88d8b5a { font-size:0.75rem;color:#a0aec0 }
+    .s-d89fdddb { padding:1rem;color:#718096 }
+    .s-da472840 { margin-left:6px }
+    .s-da92b19d { display:flex;gap:0.5rem;margin-top:0.75rem }
+    .s-db27a9cf { font-size:15px;margin-bottom:8px }
+    .s-db9feeed { display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap }
+    .s-df2a69f4 { margin-bottom:2rem }
+    .s-df643397 { color:#718096;font-size:0.85rem }
+    .s-e0c704d9 { padding:1rem }
+    .s-e3d4adcf { color:#718096;padding:1rem 0 }
+    .s-e5de08ff { color:#276749;margin-right:1rem }
+    .s-e634e6da { font-weight:600 }
+    .s-e6a47de8 { font-size:0.8rem;color:#718096;margin-bottom:0.5rem }
+    .s-ebdd5d0a { display:flex;gap:1.5rem;align-items:flex-start }
+    .s-eda77236 { display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:2rem }
+    .s-eeaeeb40 { display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem }
+    .s-f1334ee1 { border:1px solid #e2e8f0;border-radius:8px;overflow:hidden }
+    .s-f1fe5575 { display:flex;flex-direction:column;gap:0.5rem;max-width:480px }
+    .s-f53c0fbe { display:flex;align-items:center;gap:0.75rem }
+    .s-4d14681b { max-width:300px }
+    .s-dd76ed55 { max-width:240px }
+    .s-da5cd676 { flex:1 }
+    .s-724242e3 { width:100%;height:100%;font-family:monospace;font-size:14px;border:none;outline:none;resize:none;padding:1rem }
+    .s-5285a128 { flex:1;max-width:320px }
 
     ${rtl ? `
     /* RTL adjustments */

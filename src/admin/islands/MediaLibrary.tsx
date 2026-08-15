@@ -207,19 +207,19 @@ export default function MediaLibrary({ prefix }: Props) {
         <input
           type="file"
           ref={fileInputRef}
-          style="display:none"
+          class="s-cb458930"
           multiple
           onChange={upload}
         />
       </div>
 
-      {uploadError && <div class="alert alert-error" style="margin-bottom:1rem">{uploadError}</div>}
+      {uploadError && <div class="alert alert-error s-9590f79e">{uploadError}</div>}
 
       {/* Grid */}
       {loading ? (
-        <p style="color:#718096;padding:2rem 0">Loading media files…</p>
+        <p class="s-17a730ae">Loading media files…</p>
       ) : filtered.length === 0 ? (
-        <p style="color:#718096;padding:2rem 0">No files found.</p>
+        <p class="s-17a730ae">No files found.</p>
       ) : (
         <div class="media-grid">
           {filtered.map((f) => (
@@ -247,27 +247,23 @@ export default function MediaLibrary({ prefix }: Props) {
         <div class="modal">
           <div class="modal-backdrop" onClick={() => setSelected(null)} />
           <div class="modal-content modal-wide">
-            <h3 style="margin-top:0">{selected.name}</h3>
+            <h3 class="s-53896af7">{selected.name}</h3>
             <div class="media-detail">
               <div class="media-detail-preview">
                 {selected.type === "image" ? (
-                  <div
-                    class="focal-picker-wrap"
-                    style="position:relative;display:inline-block;cursor:crosshair"
-                    onClick={handleFocalClick}
-                  >
+                  <div class="focal-picker-wrap s-6a1fb824" onClick={handleFocalClick}>
                     <img
                       ref={focalImgRef}
                       src={selected.url}
                       alt={selected.name}
-                      style="max-width:400px;max-height:300px;display:block"
+                      class="s-48e36cb6"
                     />
                     <div
                       style={`position:absolute;width:12px;height:12px;border-radius:50%;background:rgba(79,70,229,0.8);border:2px solid white;transform:translate(-50%,-50%);top:${focalY}%;left:${focalX}%;pointer-events:none`}
                     />
                   </div>
                 ) : (
-                  <div class="media-icon" style="font-size:4rem;text-align:center;padding:2rem">
+                  <div class="media-icon s-37b5834e">
                     {selected.type === "video" ? "🎬" : selected.type === "audio" ? "🎵" : "📄"}
                   </div>
                 )}
@@ -277,12 +273,12 @@ export default function MediaLibrary({ prefix }: Props) {
                 <p><strong>Size:</strong> {fmtSize(selected.size)}</p>
                 {selected.page && <p><strong>Page:</strong> <code>{selected.page}</code></p>}
                 {selected.type === "image" && (
-                  <div style="margin-top:1rem">
-                    <p style="margin-bottom:0.5rem">
+                  <div class="s-9dae1d00">
+                    <p class="s-3b2074de">
                       <strong>Focal point:</strong> {focalX}%, {focalY}%
                     </p>
-                    <p style="font-size:0.85rem;color:#718096">Click the image to set the focal point.</p>
-                    <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+                    <p class="s-04ce2983">Click the image to set the focal point.</p>
+                    <div class="s-da92b19d">
                       <button type="button"
                         class="btn btn-sm btn-primary"
                         onClick={saveFocal}
@@ -301,7 +297,7 @@ export default function MediaLibrary({ prefix }: Props) {
                 )}
               </div>
             </div>
-            <div class="form-actions" style="margin-top:1.5rem">
+            <div class="form-actions s-b06fb3de">
               <button type="button" class="btn btn-outline" onClick={() => setSelected(null)}>Close</button>
               <button type="button" class="btn btn-danger" onClick={deleteFile}>Delete</button>
               <button type="button" class="btn btn-primary" onClick={copyUrl}>Copy URL</button>

@@ -31,7 +31,7 @@ export default function EmailPreviewPage({ data }: { data: PageData }) {
     return (
       <div>
         <div class="section-header"><h2>Email Preview</h2></div>
-        <p style="color:#718096;padding:2rem 0">
+        <p class="s-17a730ae">
           Email preview is only available in development mode (DUNE_ENV=dev).
         </p>
       </div>
@@ -43,22 +43,22 @@ export default function EmailPreviewPage({ data }: { data: PageData }) {
       <div class="section-header">
         <h2>
           Email Preview{" "}
-          <span style="font-size:0.75rem;font-weight:400;color:#718096;margin-left:0.5rem">
+          <span class="s-78c94453">
             dev only
           </span>
         </h2>
       </div>
 
       {emails.length === 0 && (
-        <p style="color:#718096;padding:2rem 0">
+        <p class="s-17a730ae">
           No intercepted emails yet. Emails sent via the console provider will appear here.
         </p>
       )}
 
       {emails.length > 0 && (
-        <div style="display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start">
+        <div class="s-2e33ae4a">
           {/* Email list */}
-          <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+          <div class="s-f1334ee1">
             {emails.map((email) => (
               <a
                 key={email.id}
@@ -67,13 +67,13 @@ export default function EmailPreviewPage({ data }: { data: PageData }) {
                   selected?.id === email.id ? "#ebf8ff" : "white"
                 }`}
               >
-                <div style="font-weight:500;font-size:0.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                <div class="s-6404d85c">
                   {email.subject || "(no subject)"}
                 </div>
-                <div style="font-size:0.75rem;color:#718096;margin-top:0.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                <div class="s-21f8d78f">
                   {email.to}
                 </div>
-                <div style="font-size:0.7rem;color:#a0aec0;margin-top:0.1rem">
+                <div class="s-3353514d">
                   {formatDate(email.timestamp)}
                 </div>
               </a>
@@ -81,28 +81,28 @@ export default function EmailPreviewPage({ data }: { data: PageData }) {
           </div>
 
           {/* Preview pane */}
-          <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;min-height:400px">
+          <div class="s-2e9f9b64">
             {selected
               ? (
                 <div>
-                  <div style="padding:1rem;border-bottom:1px solid #e2e8f0;background:#f7fafc">
-                    <div style="font-weight:600">{selected.subject}</div>
-                    <div style="font-size:0.8rem;color:#718096;margin-top:0.25rem">
+                  <div class="s-4d5cad12">
+                    <div class="s-e634e6da">{selected.subject}</div>
+                    <div class="s-3f29e863">
                       To: {selected.to}
                     </div>
-                    <div style="font-size:0.75rem;color:#a0aec0">
+                    <div class="s-d88d8b5a">
                       {formatDate(selected.timestamp)}
                     </div>
                   </div>
                   <iframe
                     srcDoc={selected.html}
-                    style="width:100%;height:500px;border:0;display:block"
+                    class="s-ba9f0926"
                     sandbox=""
                   />
                 </div>
               )
               : (
-                <div style="display:flex;align-items:center;justify-content:center;height:400px;color:#a0aec0;font-size:0.875rem">
+                <div class="s-19ec2070">
                   Select an email to preview
                 </div>
               )}

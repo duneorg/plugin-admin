@@ -274,7 +274,7 @@ export default function LoginPage(
               <label for="password">Password</label>
               <input type="password" id="password" name="password" required />
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%">Sign in</button>
+            <button type="submit" class="btn btn-primary s-6d567387">Sign in</button>
           </form>
         </div>
       </body>

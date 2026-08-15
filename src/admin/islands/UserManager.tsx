@@ -171,12 +171,12 @@ export default function UserManager({ prefix }: Props) {
 
   return (
     <div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+      <div class="s-a4a6d1d8">
         <button type="button" class="btn btn-primary btn-sm" onClick={openCreate}>+ New User</button>
       </div>
 
       {loading ? (
-        <p style="color:#718096">Loading users…</p>
+        <p class="s-4f77c842">Loading users…</p>
       ) : (
         <table class="admin-table">
           <thead>
@@ -194,7 +194,7 @@ export default function UserManager({ prefix }: Props) {
               <tr key={u.id}>
                 <td>
                   <code>{u.username}</code>
-                  {u.id === currentUserId && <span class="badge" style="margin-left:.5rem">you</span>}
+                  {u.id === currentUserId && <span class="badge s-a22f7cc1">you</span>}
                 </td>
                 <td>{u.name}</td>
                 <td>{u.email}</td>

@@ -21,7 +21,7 @@ export default function PageBuilderRoute(
   { data }: { data: { pagePath: string; prefix: string } },
 ) {
   return (
-    <div style="height:calc(100vh - 104px)">
+    <div class="s-763f1850">
       <PageBuilder pagePath={data.pagePath} prefix={data.prefix} />
     </div>
   );

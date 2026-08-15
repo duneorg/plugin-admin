@@ -45,7 +45,7 @@ export default function I18nRoute(
               <td>{row.lang}{row.lang === data.defaultLang ? " (default)" : ""}</td>
               <td>{row.count}</td>
               <td>
-                <div style="display:flex;align-items:center;gap:8px">
+                <div class="s-2a9780cb">
                   <div style={`height:8px;width:120px;background:#e2e8f0;border-radius:4px`}>
                     <div style={`height:8px;width:${row.pct}%;background:#4f46e5;border-radius:4px`} />
                   </div>

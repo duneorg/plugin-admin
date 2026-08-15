@@ -230,8 +230,8 @@ export default function Marketplace({ prefix, initialTab }: Props) {
   return (
     <div>
       {/* Tabs + search */}
-      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
-        <div style="display:flex;gap:0.5rem">
+      <div class="s-db9feeed">
+        <div class="s-d1e542ea">
           <button type="button"
             class={`btn btn-sm${
               tab === "plugins" ? " btn-primary" : " btn-outline"
@@ -262,85 +262,74 @@ export default function Marketplace({ prefix, initialTab }: Props) {
           value={search}
           onInput={(e) => setSearch((e.target as HTMLInputElement).value)}
           placeholder={`Search ${tab}…`}
-          style="flex:1;max-width:320px"
+          class="s-5285a128"
         />
       </div>
 
       {installMsg && (
-        <div class="alert alert-success" style="margin-bottom:1rem">
+        <div class="alert alert-success s-9590f79e">
           {installMsg}
         </div>
       )}
       {error && (
-        <div class="alert alert-error" style="margin-bottom:1rem">{error}</div>
+        <div class="alert alert-error s-9590f79e">{error}</div>
       )}
 
       {/* Plugin grid */}
       {tab === "plugins" && (
         loadingPlugins
-          ? <p style="color:#718096">Loading plugins…</p>
+          ? <p class="s-4f77c842">Loading plugins…</p>
           : filteredPlugins.length === 0
           ? (
-            <p style="color:#718096">
+            <p class="s-4f77c842">
               {search
                 ? "No plugins match your search."
                 : "Plugin registry empty."}
             </p>
           )
           : (
-            <div
-              class="marketplace-grid"
-              style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem"
-            >
+            <div class="marketplace-grid s-eeaeeb40">
               {filteredPlugins.map((p) => (
-                <div
-                  key={p.name}
-                  class="marketplace-card"
-                  style="border:1px solid #e2e8f0;border-radius:8px;padding:1rem"
-                >
-                  <div style="display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:0.5rem">
+                <div key={p.name} class="marketplace-card s-57925e75">
+                  <div class="s-bef9490d">
                     {p.iconUrl
                       ? (
                         <img
                           src={p.iconUrl}
                           alt=""
-                          style="width:40px;height:40px;border-radius:4px;object-fit:cover"
+                          class="s-6a7c8737"
                         />
                       )
                       : (
-                        <div style="width:40px;height:40px;border-radius:4px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:1.5rem">
+                        <div class="s-801fc590">
                           🧩
                         </div>
                       )}
                     <div>
-                      <div style="font-weight:600">{p.label}</div>
-                      <div style="font-size:0.8rem;color:#718096">
+                      <div class="s-e634e6da">{p.label}</div>
+                      <div class="s-375dd3c3">
                         by {p.author} · v{p.version}
                       </div>
                     </div>
                     {p.verified && (
-                      <span
-                        class="badge"
-                        style="margin-left:auto"
-                        title="Verified"
-                      >
+                      <span class="badge s-83456371" title="Verified">
                         ✓
                       </span>
                     )}
                   </div>
-                  <p style="font-size:0.9rem;color:#4a5568;margin:0 0 0.75rem">
+                  <p class="s-d13ab416">
                     {p.description}
                   </p>
                   {p.tags && p.tags.length > 0 && (
-                    <div style="display:flex;gap:0.25rem;flex-wrap:wrap;margin-bottom:0.75rem">
+                    <div class="s-94b930f9">
                       {p.tags.map((t) => (
-                        <span key={t} class="badge" style="font-size:0.75rem">
+                        <span key={t} class="badge s-4dc05622">
                           {t}
                         </span>
                       ))}
                     </div>
                   )}
-                  <div style="display:flex;gap:0.5rem">
+                  <div class="s-d1e542ea">
                     <button type="button"
                       class="btn btn-sm btn-primary"
                       onClick={() => installPlugin(p)}
@@ -367,45 +356,38 @@ export default function Marketplace({ prefix, initialTab }: Props) {
 
       {/* Installed themes */}
       {tab === "themes" && (
-        <div style="margin-bottom:2rem">
-          <h4 style="margin-bottom:0.75rem">Installed</h4>
+        <div class="s-df2a69f4">
+          <h4 class="s-402564c4">Installed</h4>
           {filteredInstalledThemes.length === 0
             ? (
-              <p style="color:#718096">
+              <p class="s-4f77c842">
                 {search ? "No installed themes match your search." : "No themes installed."}
               </p>
             )
             : (
-              <div
-                class="marketplace-grid"
-                style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem"
-              >
+              <div class="marketplace-grid s-eeaeeb40">
                 {filteredInstalledThemes.map((slug) => {
                   const entry = registryEntryFor(slug);
                   const isActive = slug === activeTheme;
                   return (
-                    <div
-                      key={slug}
-                      class="marketplace-card"
-                      style="border:1px solid #e2e8f0;border-radius:8px;padding:1rem"
-                    >
-                      <div style="display:flex;align-items:flex-start;gap:0.5rem;margin-bottom:0.5rem">
-                        <div style="font-weight:600">{entry?.name ?? slug}</div>
+                    <div key={slug} class="marketplace-card s-57925e75">
+                      <div class="s-14ae7afe">
+                        <div class="s-e634e6da">{entry?.name ?? slug}</div>
                         {isActive && (
-                          <span class="badge" style="margin-left:auto">Active</span>
+                          <span class="badge s-83456371">Active</span>
                         )}
                       </div>
                       {entry && (
-                        <div style="font-size:0.8rem;color:#718096;margin-bottom:0.5rem">
+                        <div class="s-e6a47de8">
                           by {entry.author} · v{entry.version}
                         </div>
                       )}
                       {entry?.description && (
-                        <p style="font-size:0.9rem;color:#4a5568;margin:0 0 0.75rem">
+                        <p class="s-d13ab416">
                           {entry.description}
                         </p>
                       )}
-                      <div style="display:flex;gap:0.5rem">
+                      <div class="s-d1e542ea">
                         <a
                           href={`${prefix}/themes?preview=${encodeURIComponent(slug)}`}
                           class="btn btn-sm btn-outline"
@@ -431,52 +413,45 @@ export default function Marketplace({ prefix, initialTab }: Props) {
       {/* Available from registry */}
       {tab === "themes" && (
         <div>
-          <h4 style="margin-bottom:0.75rem">Available from registry</h4>
+          <h4 class="s-402564c4">Available from registry</h4>
           {loadingThemes
-            ? <p style="color:#718096">Loading themes…</p>
+            ? <p class="s-4f77c842">Loading themes…</p>
             : filteredThemes.length === 0
             ? (
-              <p style="color:#718096">
+              <p class="s-4f77c842">
                 {search
                   ? "No registry themes match your search."
                   : "All registry themes are already installed."}
               </p>
             )
             : (
-              <div
-                class="marketplace-grid"
-                style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem"
-              >
+              <div class="marketplace-grid s-31db4ccc">
                 {filteredThemes.map((t) => (
-                  <div
-                    key={t.slug}
-                    class="marketplace-card"
-                    style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden"
-                  >
+                  <div key={t.slug} class="marketplace-card s-f1334ee1">
                     {t.screenshotUrl
                       ? (
                         <img
                           src={t.screenshotUrl}
                           alt={t.name}
-                          style="width:100%;height:160px;object-fit:cover"
+                          class="s-49c5b5cd"
                         />
                       )
                       : (
-                        <div style="width:100%;height:160px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;color:#a0aec0;font-size:2rem">
+                        <div class="s-47790cc9">
                           🎨
                         </div>
                       )}
-                    <div style="padding:1rem">
-                      <div style="font-weight:600;margin-bottom:0.25rem">
+                    <div class="s-e0c704d9">
+                      <div class="s-48624e4b">
                         {t.name}
                       </div>
-                      <div style="font-size:0.8rem;color:#718096;margin-bottom:0.5rem">
+                      <div class="s-e6a47de8">
                         by {t.author} · v{t.version}
                       </div>
-                      <p style="font-size:0.9rem;color:#4a5568;margin:0 0 0.75rem">
+                      <p class="s-d13ab416">
                         {t.description}
                       </p>
-                      <div style="display:flex;gap:0.5rem;align-items:center">
+                      <div class="s-90bda5a7">
                         <button type="button"
                           class="btn btn-sm btn-primary"
                           onClick={() => installTheme(t)}

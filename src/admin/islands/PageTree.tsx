@@ -262,7 +262,7 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
       {filtered && (
         <div class="page-search-results">
           {filtered.length === 0 ? (
-            <p style="color:#718096;padding:1rem 0">No pages match "{query}"</p>
+            <p class="s-e3d4adcf">No pages match "{query}"</p>
           ) : (
             <table class="admin-table">
               <thead>
@@ -282,7 +282,7 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
                       <td>
                         <a href={`${prefix}/edit?path=${encodeURIComponent(p.sourcePath)}`}>{p.title || "(untitled)"}</a>
                         {searchEditors.length > 0 && (
-                          <span style="margin-left:6px">
+                          <span class="s-da472840">
                             <PresenceBadge editors={searchEditors} />
                           </span>
                         )}
@@ -306,7 +306,7 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
       {!filtered && tree && (
         <div class="page-tree" id="page-tree">
           {tree.length === 0 ? (
-            <p style="color:#718096;padding:2rem 0">No pages yet. Create your first page above.</p>
+            <p class="s-17a730ae">No pages yet. Create your first page above.</p>
           ) : (
             tree.map((node) => renderNode(node))
           )}

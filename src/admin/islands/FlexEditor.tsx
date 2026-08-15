@@ -109,23 +109,23 @@ export default function FlexEditor({ type, id, schema, record, prefix }: Props) 
 
   return (
     <form onSubmit={save}>
-      {error && <div class="alert alert-error" style="margin-bottom:1rem">{error}</div>}
+      {error && <div class="alert alert-error s-9590f79e">{error}</div>}
 
       {fields.length === 0 ? (
-        <p style="color:#718096">This schema has no fields defined.</p>
+        <p class="s-4f77c842">This schema has no fields defined.</p>
       ) : (
         fields.map(([key, field]) => (
           <div class="form-group" key={key}>
             <label>
               {field.label}
-              {field.required && <span style="color:#e53e3e;margin-left:2px">*</span>}
+              {field.required && <span class="s-d59b2c04">*</span>}
             </label>
             {renderField(key, field, values[key], setField)}
           </div>
         ))
       )}
 
-      <div class="form-actions" style="margin-top:1.5rem;display:flex;gap:0.75rem;align-items:center">
+      <div class="form-actions s-358b17e7">
         <button type="submit" class="btn btn-primary" disabled={saving}>
           {saving ? "Saving…" : (isNew ? "Create" : "Save")}
         </button>
@@ -139,7 +139,7 @@ export default function FlexEditor({ type, id, schema, record, prefix }: Props) 
             {deleting ? "Deleting…" : "Delete"}
           </button>
         )}
-        {saved && <span style="color:#276749">✓ Saved</span>}
+        {saved && <span class="s-79df0477">✓ Saved</span>}
       </div>
     </form>
   );

@@ -151,8 +151,8 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
     await load();
   }
 
-  if (loading) return <div style="color:#718096;font-size:0.9rem">Loading workflow…</div>;
-  if (error) return <div style="color:#e53e3e;font-size:0.9rem">{error}</div>;
+  if (loading) return <div class="s-6a9767ee">Loading workflow…</div>;
+  if (error) return <div class="s-d77827f6">{error}</div>;
   if (!status) return null;
 
   const currentStage = status.stages.find((s) => s.id === status.currentStatus);
@@ -162,8 +162,8 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
   return (
     <div class="workflow-panel">
       {/* Current status */}
-      <div style="margin-bottom:1rem">
-        <div style="font-size:0.8rem;color:#718096;margin-bottom:0.25rem">Status</div>
+      <div class="s-9590f79e">
+        <div class="s-5b4cfbc9">Status</div>
         <span
           style={`display:inline-block;padding:0.25rem 0.75rem;border-radius:999px;font-size:0.85rem;font-weight:600;color:white;background:${color}`}
         >
@@ -173,9 +173,9 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
 
       {/* Transitions */}
       {status.transitions.length > 0 && (
-        <div style="margin-bottom:1rem">
-          <div style="font-size:0.8rem;color:#718096;margin-bottom:0.5rem">Move to</div>
-          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <div class="s-9590f79e">
+          <div class="s-e6a47de8">Move to</div>
+          <div class="s-819192ef">
             {status.transitions.map((t) => {
               const targetStage = status.stages.find((s) => s.id === t.to);
               const tc = stageColor(targetStage, t.to);
@@ -197,20 +197,17 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
 
       {/* Scheduled actions */}
       {status.scheduledActions.length > 0 && (
-        <div style="margin-bottom:1rem">
-          <div style="font-size:0.8rem;color:#718096;margin-bottom:0.5rem">Scheduled</div>
+        <div class="s-9590f79e">
+          <div class="s-e6a47de8">Scheduled</div>
           {status.scheduledActions.map((sa) => (
             <div
               key={sa.id}
-              style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;padding:0.25rem 0"
+              class="s-609e15d9"
             >
-              <span style="color:#f59e0b">⏰</span>
+              <span class="s-2a4cda41">⏰</span>
               <span>{sa.action}</span>
-              <span style="color:#718096">{new Date(sa.scheduledAt).toLocaleString()}</span>
-              <button type="button"
-                class="btn btn-xs btn-outline"
-                style="margin-left:auto"
-                onClick={() => cancelSchedule(sa.id)}
+              <span class="s-4f77c842">{new Date(sa.scheduledAt).toLocaleString()}</span>
+              <button type="button" class="btn btn-xs btn-outline s-83456371" onClick={() => cancelSchedule(sa.id)}
               >
                 Cancel
               </button>
@@ -220,18 +217,15 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
       )}
 
       {/* Schedule button */}
-      <button type="button"
-        class="btn btn-xs btn-outline"
-        style="margin-bottom:0.5rem"
-        onClick={() => setShowSchedule((v) => !v)}
+      <button type="button" class="btn btn-xs btn-outline s-3b2074de" onClick={() => setShowSchedule((v) => !v)}
       >
         {showSchedule ? "Cancel" : "Schedule action…"}
       </button>
 
       {showSchedule && (
-        <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:0.75rem;margin-top:0.5rem">
-          <div class="form-group" style="margin-bottom:0.5rem">
-            <label style="font-size:0.85rem">Action</label>
+        <div class="s-0223e5e4">
+          <div class="form-group s-3b2074de">
+            <label class="s-076e1d4d">Action</label>
             <select
               value={scheduleAction}
               onChange={(e) => setScheduleAction((e.target as HTMLSelectElement).value)}
@@ -241,8 +235,8 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
               <option value="archive">Archive</option>
             </select>
           </div>
-          <div class="form-group" style="margin-bottom:0.75rem">
-            <label style="font-size:0.85rem">When</label>
+          <div class="form-group s-402564c4">
+            <label class="s-076e1d4d">When</label>
             <input
               type="datetime-local"
               value={scheduleDate}

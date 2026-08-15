@@ -142,7 +142,7 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
   const selectedSection = sections.find((s) => s.id === selectedId) ?? null;
   const selectedDef = selectedSection ? defs.find((d) => d.type === selectedSection.type) : null;
 
-  if (loading) return <div style="padding:2rem;color:#718096">Loading builder…</div>;
+  if (loading) return <div class="s-7f1b1911">Loading builder…</div>;
 
   return (
     <div class="bld-layout">
@@ -180,7 +180,7 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
             </button>
           ))}
           {defs.length === 0 && (
-            <p style="color:#718096;font-size:0.85rem">No section types registered.</p>
+            <p class="s-df643397">No section types registered.</p>
           )}
         </aside>
 
@@ -225,7 +225,7 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
                   {isSelected && def && (
                     <div class="bld-section-preview">
                       {Object.entries(def.fields).slice(0, 2).map(([k, f]) => (
-                        <span key={k} style="font-size:0.8rem;color:#718096;margin-right:0.5rem">
+                        <span key={k} class="s-3adba436">
                           {f.label}: {String(sec[k] ?? "").slice(0, 40)}
                         </span>
                       ))}
@@ -311,7 +311,7 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
                 <iframe
                   ref={iframeRef}
                   src={`${prefix}/api/preview`}
-                  style="width:100%;height:300px;border:1px solid #e2e8f0;border-radius:4px;margin-top:1rem"
+                  class="s-b4e83a82"
                   title="Preview"
                 />
               )}
@@ -321,7 +321,7 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
       </div>
 
       {error && (
-        <div class="toast toast-error" style="position:fixed;bottom:1rem;right:1rem">
+        <div class="toast toast-error s-773881f7">
           {error}
         </div>
       )}

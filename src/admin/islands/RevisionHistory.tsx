@@ -86,15 +86,15 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
     }
   }
 
-  if (loading) return <div style="padding:2rem;color:#718096">Loading history…</div>;
-  if (error) return <div style="padding:2rem;color:#e53e3e">{error}</div>;
+  if (loading) return <div class="s-7f1b1911">Loading history…</div>;
+  if (error) return <div class="s-d36754cf">{error}</div>;
 
   return (
-    <div class="revision-wrap" style="display:flex;gap:1.5rem;align-items:flex-start">
+    <div class="revision-wrap s-ebdd5d0a">
       {/* Timeline */}
-      <div class="revision-timeline" style="width:320px;flex-shrink:0">
+      <div class="revision-timeline s-6fe37944">
         {revisions.length === 0 ? (
-          <p style="color:#718096">No revisions yet.</p>
+          <p class="s-4f77c842">No revisions yet.</p>
         ) : (
           revisions.map((rev, idx) => {
             const date = new Date(rev.createdAt);
@@ -145,31 +145,31 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
       </div>
 
       {/* Content panel */}
-      <div class="revision-content-panel" style="flex:1;min-width:0">
+      <div class="revision-content-panel s-89bd09bd">
         {restoreMsg && (
-          <div class="alert alert-success" style="margin-bottom:1rem">{restoreMsg}</div>
+          <div class="alert alert-success s-9590f79e">{restoreMsg}</div>
         )}
 
         {viewRev && (
           <div>
-            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">
-              <h4 style="margin:0">Revision #{viewRev.number}</h4>
+            <div class="s-0f69679b">
+              <h4 class="s-1386d503">Revision #{viewRev.number}</h4>
               <button type="button" class="btn btn-xs btn-outline" onClick={() => setViewRev(null)}>Close</button>
             </div>
             <pre
-              style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:4px;padding:1rem;overflow:auto;font-size:0.85rem;max-height:60vh"
+              class="s-4a1a0733"
             >{viewRev.content}</pre>
           </div>
         )}
 
         {diffRev && (
           <div>
-            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">
-              <h4 style="margin:0">Diff for revision #{diffRev.number}</h4>
+            <div class="s-0f69679b">
+              <h4 class="s-1386d503">Diff for revision #{diffRev.number}</h4>
               <button type="button" class="btn btn-xs btn-outline" onClick={() => setDiffRev(null)}>Close</button>
             </div>
             <pre
-              style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:4px;padding:1rem;overflow:auto;font-size:0.85rem;max-height:60vh"
+              class="s-4a1a0733"
             >
               {diffRev.lines.map((line, i) => (
                 <span
@@ -191,7 +191,7 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
         )}
 
         {!viewRev && !diffRev && (
-          <div style="color:#718096;padding:2rem 0">
+          <div class="s-17a730ae">
             Select View or Diff on any revision to inspect it.
           </div>
         )}

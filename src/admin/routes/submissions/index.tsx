@@ -30,7 +30,7 @@ export default function SubmissionsRoute(
   return (
     <div>
       <div class="section-header"><h2>Submissions</h2></div>
-      <p style="color:#718096;padding:2rem 0">No form submissions yet.</p>
+      <p class="s-17a730ae">No form submissions yet.</p>
     </div>
   );
 }

@@ -15,7 +15,7 @@ function PageEditorRoute(
   { data }: { data: { pagePath: string; pageIndex: unknown; prefix: string } },
 ) {
   return (
-    <div style="height:calc(100vh - 104px)">
+    <div class="s-763f1850">
       <PageEditor
         pagePath={data.pagePath}
         pageIndex={data.pageIndex}

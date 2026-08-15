@@ -46,7 +46,7 @@ export default function Dashboard(
         <div class="stat-card"><div class="stat-number">{stats.mdx}</div><div class="stat-label">MDX</div></div>
         <div class="stat-card"><div class="stat-number">{stats.tsx}</div><div class="stat-label">TSX</div></div>
       </div>
-      <h3 style="margin-bottom:12px;font-size:16px;font-weight:600">Recent pages</h3>
+      <h3 class="s-559a05d5">Recent pages</h3>
       <table class="admin-table">
         <thead><tr><th>Route</th><th>Title</th><th>Format</th><th>Status</th></tr></thead>
         <tbody>

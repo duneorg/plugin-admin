@@ -30,7 +30,7 @@ export default function PluginsRoute(
         <a href={`${data.prefix}/marketplace?tab=plugins`} class="btn">Browse Marketplace</a>
       </div>
       {data.plugins.length === 0
-        ? <p style="color:#718096;padding:2rem 0">No plugins installed.</p>
+        ? <p class="s-17a730ae">No plugins installed.</p>
         : (
           <table class="admin-table">
             <thead><tr><th>Name</th><th>Version</th><th>Description</th><th>Hooks</th></tr></thead>
@@ -40,7 +40,7 @@ export default function PluginsRoute(
                   <td><strong>{String(p.name)}</strong></td>
                   <td>{String(p.version ?? "—")}</td>
                   <td>{String(p.description ?? "—")}</td>
-                  <td style="font-size:12px;color:#718096">{(p.hooks as string[]).join(", ") || "—"}</td>
+                  <td class="s-c866c7be">{(p.hooks as string[]).join(", ") || "—"}</td>
                 </tr>
               ))}
             </tbody>

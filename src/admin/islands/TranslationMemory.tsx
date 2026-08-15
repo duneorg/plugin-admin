@@ -108,7 +108,7 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
 
   if (supportedLanguages.length < 2) {
     return (
-      <div style="padding:2rem 0;color:#718096">
+      <div class="s-87dab5e6">
         Translation memory requires at least two configured languages.
       </div>
     );
@@ -117,8 +117,8 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
   return (
     <div>
       {/* Language pair selector */}
-      <div class="tm-header" style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap">
-        <div class="tm-tabs" style="display:flex;gap:0.5rem">
+      <div class="tm-header s-abcb745b">
+        <div class="tm-tabs s-d1e542ea">
           {otherLangs.map((lang) => (
             <button type="button"
               key={lang}
@@ -129,8 +129,8 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
             </button>
           ))}
         </div>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:0.75rem">
-          <span style="color:#718096;font-size:0.9rem">{entries.length} entries</span>
+        <div class="s-297d7857">
+          <span class="s-6a9767ee">{entries.length} entries</span>
           <button type="button" class="btn btn-sm btn-outline" onClick={() => { setShowAdd(true); setError(""); }}>
             + Add Entry
           </button>
@@ -144,17 +144,17 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
         </div>
       </div>
 
-      {rebuildMsg && <div class="alert alert-success" style="margin-bottom:1rem">{rebuildMsg}</div>}
-      {error && <div class="alert alert-error" style="margin-bottom:1rem">{error}</div>}
+      {rebuildMsg && <div class="alert alert-success s-9590f79e">{rebuildMsg}</div>}
+      {error && <div class="alert alert-error s-9590f79e">{error}</div>}
 
       {/* Add entry form */}
       {showAdd && (
         <form
           onSubmit={addEntry}
-          style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;padding:1rem;margin-bottom:1rem"
+          class="s-4bf94c79"
         >
-          <h4 style="margin:0 0 0.75rem">Add / Update Entry</h4>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <h4 class="s-9dcdde5e">Add / Update Entry</h4>
+          <div class="s-cac755ce">
             <div class="form-group">
               <label>Source ({from})</label>
               <textarea
@@ -186,9 +186,9 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
 
       {/* Entry table */}
       {loading ? (
-        <p style="color:#718096">Loading entries…</p>
+        <p class="s-4f77c842">Loading entries…</p>
       ) : entries.length === 0 ? (
-        <p style="color:#718096;padding:1rem 0">
+        <p class="s-e3d4adcf">
           No entries yet — click <strong>Rebuild from Translations</strong> to populate from existing pages.
         </p>
       ) : (
@@ -203,8 +203,8 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
           <tbody>
             {entries.map((e) => (
               <tr key={e.source} class="tm-row">
-                <td><pre style="margin:0;white-space:pre-wrap;font-size:0.85rem">{e.source}</pre></td>
-                <td><pre style="margin:0;white-space:pre-wrap;font-size:0.85rem">{e.target}</pre></td>
+                <td><pre class="s-51f08752">{e.source}</pre></td>
+                <td><pre class="s-51f08752">{e.target}</pre></td>
                 <td>
                   <button type="button" class="btn btn-xs btn-danger" onClick={() => deleteEntry(e.source)}>Delete</button>
                 </td>
