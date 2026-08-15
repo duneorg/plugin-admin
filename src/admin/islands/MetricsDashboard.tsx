@@ -7,22 +7,28 @@
 
 import { useState, useEffect, useCallback } from "preact/hooks";
 
-interface LatencyPercentiles {
+interface LatencyStats {
+  count: number;
   p50: number;
-  p75: number;
   p95: number;
   p99: number;
+  max: number;
+  mean: number;
 }
 
+/** Matches @dune/core's MetricsSnapshot (src/metrics/types.ts). */
 interface MetricsSummary {
-  requestCount: number;
-  errorCount: number;
-  errorRate: number;
-  latency: LatencyPercentiles;
-  slowQueries: Array<{ route: string; avgMs: number; count: number }>;
+  ts: string;
+  uptimeSeconds: number;
+  requests: {
+    total: number;
+    errors: number;
+    errorRate: number;
+    latency: LatencyStats;
+  };
+  topRoutes: Array<{ route: string; requests: number; errors: number; latency: LatencyStats }>;
   memory: { heapUsed: number; heapTotal: number; rss: number };
-  uptime: number;
-  windowSeconds: number;
+  slowQueries: Array<{ ts: string; type: "collection" | "search"; query: string; durationMs: number }>;
 }
 
 interface Props {
@@ -30,7 +36,7 @@ interface Props {
 }
 
 function fmtMs(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
+  if (ms < 1000) return `${Math.round(ms * 100) / 100}ms`;
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
@@ -112,19 +118,18 @@ export default function MetricsDashboard({ prefix }: Props) {
         <>
           {/* Summary cards */}
           <div class="metrics-cards s-eda77236">
-            <MetricCard label="Requests" value={String(metrics.requestCount)} sub={`${metrics.windowSeconds}s window`} />
+            <MetricCard label="Requests" value={String(metrics.requests.total)} sub={`${metrics.requests.errors} errors`} />
             <MetricCard
               label="Error rate"
-              value={`${(metrics.errorRate * 100).toFixed(1)}%`}
-              sub={`${metrics.errorCount} errors`}
-              highlight={metrics.errorRate > 0.05}
+              value={`${(metrics.requests.errorRate * 100).toFixed(1)}%`}
+              highlight={metrics.requests.errorRate > 0.05}
             />
-            <MetricCard label="p50 latency" value={fmtMs(metrics.latency.p50)} />
-            <MetricCard label="p95 latency" value={fmtMs(metrics.latency.p95)} highlight={metrics.latency.p95 > 1000} />
-            <MetricCard label="p99 latency" value={fmtMs(metrics.latency.p99)} highlight={metrics.latency.p99 > 2000} />
+            <MetricCard label="p50 latency" value={fmtMs(metrics.requests.latency.p50)} />
+            <MetricCard label="p95 latency" value={fmtMs(metrics.requests.latency.p95)} highlight={metrics.requests.latency.p95 > 1000} />
+            <MetricCard label="p99 latency" value={fmtMs(metrics.requests.latency.p99)} highlight={metrics.requests.latency.p99 > 2000} />
             <MetricCard label="Heap used" value={fmtBytes(metrics.memory.heapUsed)} sub={`of ${fmtBytes(metrics.memory.heapTotal)}`} />
             <MetricCard label="RSS" value={fmtBytes(metrics.memory.rss)} />
-            <MetricCard label="Uptime" value={fmtUptime(metrics.uptime)} />
+            <MetricCard label="Uptime" value={fmtUptime(metrics.uptimeSeconds)} />
           </div>
 
           {/* Latency bar chart */}
@@ -132,20 +137,22 @@ export default function MetricsDashboard({ prefix }: Props) {
             <h4>Latency distribution</h4>
             <div class="s-f1fe5575">
               {[
-                { label: "p50", value: metrics.latency.p50 },
-                { label: "p75", value: metrics.latency.p75 },
-                { label: "p95", value: metrics.latency.p95 },
-                { label: "p99", value: metrics.latency.p99 },
+                { label: "p50", value: metrics.requests.latency.p50 },
+                { label: "p95", value: metrics.requests.latency.p95 },
+                { label: "p99", value: metrics.requests.latency.p99 },
               ].map(({ label, value }) => {
-                const maxMs = Math.max(metrics.latency.p99, 100);
+                const maxMs = Math.max(metrics.requests.latency.p99, 100);
                 const pct = Math.min(100, (value / maxMs) * 100);
+                const bucket = value > 1000 ? "bar-fill-danger" : value > 500 ? "bar-fill-warn" : "bar-fill-ok";
                 return (
                   <div key={label} class="s-f53c0fbe">
                     <span class="s-d8241069">{label}</span>
-                    <div style={`flex:1;height:8px;background:#e2e8f0;border-radius:4px`}>
-                      <div
-                        style={`height:8px;width:${pct}%;background:${value > 1000 ? "#e53e3e" : value > 500 ? "#f59e0b" : "#4f46e5"};border-radius:4px`}
-                      />
+                    <div class="bar-track">
+                      {/* Genuinely per-render dynamic value — still a raw style
+                          attribute, still blocked by the useNonce CSP. Needs a
+                          scoped nonce'd <style> element to fix properly; not
+                          addressed here. */}
+                      <div class={`bar-fill ${bucket}`} style={{ width: `${pct}%` }} />
                     </div>
                     <span class="s-85a4ef6b">{fmtMs(value)}</span>
                   </div>
@@ -154,24 +161,53 @@ export default function MetricsDashboard({ prefix }: Props) {
             </div>
           </div>
 
-          {/* Slow queries */}
-          {metrics.slowQueries.length > 0 && (
-            <div>
+          {/* Slowest routes */}
+          {metrics.topRoutes.length > 0 && (
+            <div class="s-df2a69f4">
               <h4>Slowest routes</h4>
               <table class="admin-table s-4dd59aa6">
                 <thead>
                   <tr>
                     <th>Route</th>
-                    <th>Avg</th>
+                    <th>p50</th>
                     <th>Requests</th>
+                    <th>Errors</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {metrics.topRoutes.map((r) => (
+                    <tr key={r.route}>
+                      <td><code>{r.route}</code></td>
+                      <td class={r.latency.p50 > 1000 ? "text-danger" : undefined}>{fmtMs(r.latency.p50)}</td>
+                      <td>{r.requests}</td>
+                      <td>{r.errors}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Recent slow queries */}
+          {metrics.slowQueries.length > 0 && (
+            <div class="s-df2a69f4">
+              <h4>Recent slow queries</h4>
+              <table class="admin-table s-4dd59aa6">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Query</th>
+                    <th>Duration</th>
+                    <th>Time</th>
                   </tr>
                 </thead>
                 <tbody>
                   {metrics.slowQueries.map((q, i) => (
                     <tr key={i}>
-                      <td><code>{q.route}</code></td>
-                      <td style={q.avgMs > 1000 ? "color:#e53e3e" : ""}>{fmtMs(q.avgMs)}</td>
-                      <td>{q.count}</td>
+                      <td>{q.type}</td>
+                      <td><code>{q.query}</code></td>
+                      <td class={q.durationMs > 1000 ? "text-danger" : undefined}>{fmtMs(q.durationMs)}</td>
+                      <td>{new Date(q.ts).toLocaleTimeString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -196,11 +232,9 @@ function MetricCard({
   highlight?: boolean;
 }) {
   return (
-    <div
-      style={`border:1px solid ${highlight ? "#fed7d7" : "#e2e8f0"};border-radius:8px;padding:1rem;background:${highlight ? "#fff5f5" : "white"}`}
-    >
+    <div class={`metric-card${highlight ? " metric-card-highlight" : ""}`}>
       <div class="s-5b4cfbc9">{label}</div>
-      <div style={`font-size:1.5rem;font-weight:700;color:${highlight ? "#e53e3e" : "#2d3748"}`}>{value}</div>
+      <div class={`metric-card-value${highlight ? " metric-card-value-highlight" : ""}`}>{value}</div>
       {sub && <div class="s-01282aa4">{sub}</div>}
     </div>
   );

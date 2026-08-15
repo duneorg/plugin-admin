@@ -284,6 +284,18 @@ function adminCss(rtl: boolean): string {
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .section-header h2 { font-size: 20px; font-weight: 600; }
 
+    /* Metrics dashboard */
+    .metric-card { border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: var(--surface); }
+    .metric-card-highlight { border-color: #fed7d7; background: #fff5f5; }
+    .metric-card-value { font-size: 1.5rem; font-weight: 700; color: #2d3748; }
+    .metric-card-value-highlight { color: var(--danger); }
+    .bar-track { flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; }
+    .bar-fill { height: 8px; border-radius: 4px; }
+    .bar-fill-ok { background: var(--accent); }
+    .bar-fill-warn { background: #f59e0b; }
+    .bar-fill-danger { background: var(--danger); }
+    .text-danger { color: var(--danger); }
+
     /* Extracted from inline style="" attributes across admin islands/routes —
        plugin-admin's CSP (useNonce: true) drops 'unsafe-inline' from style-src,
        and Fresh only auto-nonces <style>/<script> elements it renders itself,
