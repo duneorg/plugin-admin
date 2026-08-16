@@ -5,6 +5,31 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [1.1.5] — 2026-08-16
+
+### Fixed
+
+- **`/api/pages/:path`, `/api/staging/:path`, `/api/workflow/status/:path`,
+  and `/api/workflow/scheduled/:path` couldn't match a real page.** All
+  four were single-segment dynamic routes, but a `sourcePath` is nearly
+  always nested (e.g. `03.arbeitswelt/01.test.mdx`) — the encoded `/`
+  can't match a single-segment route boundary, so the page editor and
+  workflow actions 400'd for virtually every page outside the content
+  root. All four are now wildcard (`:path*`) routes.
+- **Inline `style=""` attributes in the admin dashboard were silently
+  blocked by CSP.** The admin CSP drops `unsafe-inline` from `style-src`;
+  Fresh stamps a nonce onto rendered `<style>`/`<script>` elements but not
+  onto `style=""` attribute values. Converted to CSS classes.
+- **`MetricsDashboard` read fields that don't exist on the real API
+  response.** Its `MetricsSummary` interface didn't match
+  `@dune/core`'s `MetricsSnapshot` shape — latency is nested under
+  `requests.latency`, there's no `windowSeconds`/`p75`, and
+  `slowQueries` is a list of individual timestamped events, not
+  `{route, avgMs, count}` aggregates.
+- **Removed the page editor's Source/Visual toggle.** It never did
+  anything — no visual/rich editor existed to switch to; the content
+  area was always a plain textarea regardless of the toggle's state.
+
 ## [1.1.4] — 2026-08-04
 
 ### Fixed
