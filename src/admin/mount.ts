@@ -37,7 +37,13 @@
 // deno-lint-ignore no-explicit-any
 import type { App, Middleware } from "fresh";
 import type { BootstrapResult } from "@dune/core/bootstrap";
-import { adminIslands, adminLayout, adminMiddleware, adminRoutes } from "./manifest.gen.ts";
+import { registerPluginPublicRoutes } from "@dune/core/fresh-app";
+import {
+  adminIslands,
+  adminLayout,
+  adminMiddleware,
+  adminRoutes,
+} from "./manifest.gen.ts";
 import {
   handleContactSubmission,
   handleFormSchema,
@@ -65,7 +71,7 @@ export async function mountDuneAdmin(
   /** AdminContext built by @dune/plugin-admin — when omitted, falls back to ctx.adminContext. */
   adminCtxOverride?: import("./context.ts").AdminContext,
 ): Promise<void> {
-  const { config, pluginPublicRoutes } = ctx;
+  const { config } = ctx;
   const adminContext = adminCtxOverride ??
     (ctx.adminContext as import("./context.ts").AdminContext | null);
   const adminPrefix = config.admin?.path ?? "/admin";
@@ -103,11 +109,17 @@ export async function mountDuneAdmin(
           // deno-lint-ignore no-explicit-any
           const authResult = (fc.state as any).auth;
           if (!authResult?.authenticated) {
-            return new Response(null, { status: 302, headers: { Location: `${adminPrefix}/login` } });
+            return new Response(null, {
+              status: 302,
+              headers: { Location: `${adminPrefix}/login` },
+            });
           }
           if (page.permission) {
             // deno-lint-ignore no-explicit-any
-            const ok = adminCtx.auth.hasPermission(authResult, page.permission as any);
+            const ok = adminCtx.auth.hasPermission(
+              authResult,
+              page.permission as any,
+            );
             if (!ok) {
               return new Response("Forbidden", { status: 403 });
             }
@@ -120,38 +132,15 @@ export async function mountDuneAdmin(
   }
 
   // ── Plugin public routes ────────────────────────────────────────────────────
-  // Plugins register routes via DunePlugin.publicRoutes. Validate that:
-  //   1. The route path is a string starting with "/"
-  //   2. The route path doesn't shadow the admin prefix or built-in
-  //      /api/* endpoints — otherwise a plugin could overwrite admin or
-  //      core API behavior at request time.
-  // Reserved prefixes match how Fresh routes resolve: a plugin "/admin/foo"
-  // would be served before the admin file-system routes for any path that
-  // didn't match an admin route exactly.
-  const reservedPrefixes = [
-    adminPrefix,
-    "/api/contact",
-    "/api/forms",
-    "/api/webhook",
-    "/_fresh",
-    "/health",
-  ];
-  for (const route of pluginPublicRoutes ?? []) {
-    if (typeof route.path !== "string" || !route.path.startsWith("/")) {
-      console.warn(`[dune] plugin route rejected: path must be a string starting with "/" (got ${JSON.stringify(route.path)})`);
-      continue;
-    }
-    const normalized = route.path.replace(/\/+$/, "") || "/";
-    const shadowed = reservedPrefixes.find((p) =>
-      normalized === p || normalized.startsWith(p + "/")
-    );
-    if (shadowed) {
-      console.warn(`[dune] plugin route ${route.path} rejected: shadows reserved prefix ${shadowed}`);
-      continue;
-    }
-    const method = (route.method ?? "GET").toLowerCase() as "get" | "post" | "put" | "delete" | "all";
-    app[method](route.path, route.handler);
-  }
+  // @dune/core's own createDuneApp() registers these itself now (it collects
+  // BootstrapResult.pluginPublicRoutes in bootstrap.ts and wires them before
+  // its content catch-all) — this call only matters for the headless-mode
+  // path this file's own module docstring documents, where a developer calls
+  // bootstrap() + mountDuneAdmin() directly and never goes through
+  // createDuneApp() at all. Delegating to the same core function (rather than
+  // re-implementing the validation/shadowing logic here) keeps exactly one
+  // place that decides what a plugin route is allowed to do.
+  registerPluginPublicRoutes(app, ctx, { adminPrefix });
 
   // ── Public form / webhook API ───────────────────────────────────────────────
   // Bind handlers to the per-site adminContext via closure so multisite
@@ -159,9 +148,18 @@ export async function mountDuneAdmin(
   if (adminContext) {
     const adminCtx = adminContext;
     app.post("/api/contact", (fc) => handleContactSubmission(adminCtx, fc.req));
-    app.get("/api/forms/:name", (fc) => handleFormSchema(adminCtx, fc.params.name));
-    app.post("/api/forms/:name", (fc) => handleFormSubmission(adminCtx, fc.req, fc.params.name));
-    app.post("/api/webhook/incoming", (fc) => handleIncomingWebhook(adminCtx, fc.req));
+    app.get(
+      "/api/forms/:name",
+      (fc) => handleFormSchema(adminCtx, fc.params.name),
+    );
+    app.post(
+      "/api/forms/:name",
+      (fc) => handleFormSubmission(adminCtx, fc.req, fc.params.name),
+    );
+    app.post(
+      "/api/webhook/incoming",
+      (fc) => handleIncomingWebhook(adminCtx, fc.req),
+    );
   }
 }
 
