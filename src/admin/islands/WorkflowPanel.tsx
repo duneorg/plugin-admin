@@ -59,9 +59,20 @@ function stageColor(stage: Stage | undefined, status: string): string {
   return FALLBACK_COLORS[status] ?? "#6b7280";
 }
 
+/**
+ * The workflow status/scheduled endpoints are wildcard routes
+ * (`:path*`) — sourcePaths are nested ("03.arbeitswelt/01.test.mdx"),
+ * and a literal "/" in the URL is what a `:path*` route matches
+ * directly. encodeURIComponent() on the whole sourcePath turns "/"
+ * into "%2F", which can't match, so encode per-segment instead.
+ */
+function pagePathUrlSegment(pagePath: string): string {
+  return pagePath.split("/").map(encodeURIComponent).join("/");
+}
+
 export default function WorkflowPanel({ pagePath, prefix }: Props) {
   const apiBase = `${prefix}/api`;
-  const encoded = encodeURIComponent(pagePath);
+  const encoded = pagePathUrlSegment(pagePath);
 
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<WorkflowStatus | null>(null);

@@ -53,8 +53,8 @@ import * as r46 from "./routes/api/render-markdown.ts";
 import * as r47 from "./routes/api/search/analytics.ts";
 import * as r48 from "./routes/api/search/engines.ts";
 import * as r49 from "./routes/api/sections.ts";
-import * as r50 from "./routes/api/staging/[path]/index.ts";
-import * as r51 from "./routes/api/staging/[path]/publish.ts";
+import * as r50 from "./routes/api/staging/[...path]/index.ts";
+import * as r51 from "./routes/api/staging/[...path]/publish.ts";
 import * as r52 from "./routes/api/theme-preview.ts";
 import * as r53 from "./routes/api/themes/install.ts";
 import * as r54 from "./routes/api/users/index.ts";
@@ -63,9 +63,9 @@ import * as r56 from "./routes/api/users/[id]/password.ts";
 import * as r57 from "./routes/api/webhooks/deliveries.ts";
 import * as r58 from "./routes/api/workflow/schedule/index.ts";
 import * as r59 from "./routes/api/workflow/schedule/[id].ts";
-import * as r60 from "./routes/api/workflow/scheduled/[path].ts";
+import * as r60 from "./routes/api/workflow/scheduled/[...path].ts";
 import * as r61 from "./routes/api/workflow/stages.ts";
-import * as r62 from "./routes/api/workflow/status/[path].ts";
+import * as r62 from "./routes/api/workflow/status/[...path].ts";
 import * as r63 from "./routes/api/workflow/transition.ts";
 import * as r64 from "./routes/audit/index.tsx";
 import * as r65 from "./routes/collab/edit-ws.ts";
@@ -166,8 +166,8 @@ export const adminRoutes: AdminRouteEntry[] = [
   { pattern: "/api/search/analytics", mod: r47 },
   { pattern: "/api/search/engines", mod: r48 },
   { pattern: "/api/sections", mod: r49 },
-  { pattern: "/api/staging/:path", mod: r50 },
-  { pattern: "/api/staging/:path/publish", mod: r51 },
+  { pattern: "/api/staging/:path*", mod: r50 },
+  { pattern: "/api/staging/:path*/publish", mod: r51 },
   { pattern: "/api/theme-preview", mod: r52 },
   { pattern: "/api/themes/install", mod: r53 },
   { pattern: "/api/users", mod: r54 },
@@ -176,9 +176,9 @@ export const adminRoutes: AdminRouteEntry[] = [
   { pattern: "/api/webhooks/deliveries", mod: r57 },
   { pattern: "/api/workflow/schedule", mod: r58 },
   { pattern: "/api/workflow/schedule/:id", mod: r59 },
-  { pattern: "/api/workflow/scheduled/:path", mod: r60 },
+  { pattern: "/api/workflow/scheduled/:path*", mod: r60 },
   { pattern: "/api/workflow/stages", mod: r61 },
-  { pattern: "/api/workflow/status/:path", mod: r62 },
+  { pattern: "/api/workflow/status/:path*", mod: r62 },
   { pattern: "/api/workflow/transition", mod: r63 },
   { pattern: "/audit", mod: r64 },
   { pattern: "/collab/edit-ws", mod: r65 },

@@ -46,12 +46,32 @@ Deno.test("admin manifest contains middleware, layout, routes, and islands", () 
   assertEquals(adminIslands.length > 0, true, "no admin islands in manifest");
 });
 
+Deno.test("staging and workflow status/scheduled routes are wildcard, not single-segment", () => {
+  // sourcePaths are nested ("03.arbeitswelt/01.test.mdx"). A single-segment
+  // ":path" route can never match one — the router 400s as soon as a caller
+  // encodes the "/" (the correct way to pass a nested path in a URL
+  // segment). These three were originally [path] (bug: only matched
+  // content-root pages) and were renamed to [...path] to match
+  // /api/pages/:path* — see the comment in each route file.
+  const patterns = adminRoutes.map((r) => r.pattern);
+  for (const required of [
+    "/api/staging/:path*",
+    "/api/staging/:path*/publish",
+    "/api/workflow/status/:path*",
+    "/api/workflow/scheduled/:path*",
+  ]) {
+    assertEquals(patterns.includes(required), true, `missing wildcard route pattern ${required}`);
+  }
+});
+
 Deno.test("admin manifest orders static segments before dynamic ones", () => {
   const patterns = adminRoutes.map((r) => r.pattern);
-  // /api/pages/reorder (static) must be registered before /api/pages/:path
-  // (param), or the param route would shadow it.
+  // /api/pages/reorder (static) must be registered before /api/pages/:path*
+  // (wildcard — sourcePaths are nested, e.g. "03.arbeitswelt/01.test.mdx",
+  // so this route is [...path], not [path]; see the pages/[...path] route
+  // comment), or the wildcard route would shadow it.
   const reorder = patterns.indexOf("/api/pages/reorder");
-  const param = patterns.indexOf("/api/pages/:path");
+  const param = patterns.indexOf("/api/pages/:path*");
   assertEquals(reorder >= 0 && param >= 0, true);
-  assertEquals(reorder < param, true, "static route must precede param route");
+  assertEquals(reorder < param, true, "static route must precede wildcard route");
 });

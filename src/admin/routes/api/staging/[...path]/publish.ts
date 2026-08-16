@@ -1,4 +1,8 @@
-/** POST /admin/api/staging/:path/publish */
+/**
+ * POST /admin/api/staging/:path(wildcard)/publish
+ *
+ * Wildcard (not a single segment) — see the note in ./index.ts.
+ */
 
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck, validatePagePath } from "../../_utils.ts";
@@ -29,7 +33,7 @@ export const handler = {
     const { staging, engine, storage, config, history: hist } = ctx.state.adminContext;
     if (!staging) return json({ error: "Staging not enabled" }, 501);
 
-    const pagePath = ctx.params.path;
+    const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
     const authResult = ctx.state.auth;
 

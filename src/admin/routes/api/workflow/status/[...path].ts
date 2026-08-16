@@ -1,4 +1,13 @@
-/** GET /admin/api/workflow/status/:path */
+/**
+ * GET /admin/api/workflow/status/:path*
+ *
+ * Wildcard (not a single segment): sourcePaths are nested
+ * ("03.arbeitswelt/01.test.mdx"), and a literal "/" in the URL is what a
+ * `:path*` route matches directly — callers must NOT encodeURIComponent()
+ * the whole sourcePath (that turns "/" into "%2F", which a single-segment
+ * "/" separator can't match and returns 400 for every nested page). Encode
+ * per-segment instead, or leave path-safe sourcePaths unencoded.
+ */
 
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, validatePagePath } from "../../_utils.ts";
@@ -11,7 +20,7 @@ export const handler = {
     const { workflow, engine } = ctx.state.adminContext;
     if (!workflow) return json({ error: "Workflow not enabled" }, 501);
 
-    const pagePath = ctx.params.path;
+    const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
     const pageIndex = engine.pages.find((p) => p.sourcePath === pagePath);
     if (!pageIndex) return json({ error: "Page not found" }, 404);

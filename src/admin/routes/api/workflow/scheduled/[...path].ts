@@ -1,4 +1,9 @@
-/** GET /admin/api/workflow/scheduled/:path */
+/**
+ * GET /admin/api/workflow/scheduled/:path*
+ *
+ * Wildcard (not a single segment) — see the note in
+ * ../status/[...path].ts.
+ */
 
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, validatePagePath } from "../../_utils.ts";
@@ -10,7 +15,7 @@ export const handler = {
     if (denied) return denied;
     const { scheduler } = ctx.state.adminContext;
     if (!scheduler) return json({ error: "Scheduler not enabled" }, 501);
-    const pagePath = ctx.params.path;
+    const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
     try {
       const actions = await scheduler.listForPage(pagePath);
