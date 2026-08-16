@@ -45,7 +45,6 @@ export default function PageEditor({ pagePath, prefix }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showPreview, setShowPreview] = useState(false);
-  const [sourceMode, setSourceMode] = useState(false);
   const previewRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -138,9 +137,6 @@ export default function PageEditor({ pagePath, prefix }: Props) {
         <div class="toolbar-right">
           <button type="button" class="btn btn-sm btn-outline" onClick={() => setShowPreview((v) => !v)}>
             {showPreview ? "Hide preview" : "Preview"}
-          </button>
-          <button type="button" class="btn btn-sm btn-outline" onClick={() => setSourceMode((v) => !v)}>
-            {sourceMode ? "Visual" : "Source"}
           </button>
           <a
             href={`${prefix}/pages/builder?path=${encodeURIComponent(pagePath)}`}
