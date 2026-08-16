@@ -5,6 +5,53 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **`@dune/plugin-admin/admin/guards`** — a new public subpath exporting
+  `csrfCheck`, `requirePermission`, `validatePagePath`, and `withGuards`
+  (plus the `WithGuardsOptions`/`GuardedHandler` types), all previously
+  private to `src/admin/routes/api/_utils.ts`. Closes the "no public auth/
+  CSRF guard for plugin-registered mutation routes" gap: `DunePlugin.mount(
+  { app })` — the only way to register a `POST`/`PUT`/`DELETE` admin route
+  — handed a plugin author the raw Fresh `app` with no supported way to
+  reuse Dune's own checks, pushing them toward hand-rolling exactly the
+  guard sequence whose past mistakes (`_utils.ts`'s own doc comment names
+  HIGH-1, HIGH-4, and MED-23 from a prior security audit) motivated
+  `withGuards()` in the first place. `withGuards()` is the recommended
+  entry point — it composes `csrfCheck` → `requirePermission` → a path-param
+  validation step, in order, and can't have a step silently skipped. Real
+  tests in `tests/admin/public_guards_test.ts`: importing all four via the
+  actual public package specifier (not a relative path, so the export map
+  entry itself is exercised, not just the module it points at), plus
+  behavioral coverage of `withGuards()` — CSRF denial and permission denial
+  both short-circuit before the handler runs, path validation rejects a
+  traversal attempt, all guards passing reaches the handler, `csrf: false`
+  opts out, and a thrown error still maps through `serverError()`.
+  `withGuards()` itself had no direct behavioral test before this —
+  `tests/admin/guards_test.ts` only does a textual scan proving every
+  mutating internal route *calls* `csrfCheck` somewhere, not that
+  `withGuards()` *behaves* correctly.
+
+### Changed
+
+- **`mountDuneAdmin()`'s `publicRoutes` registration now delegates to
+  `@dune/core`'s own `registerPluginPublicRoutes()`** (from
+  `@dune/core/fresh-app`) instead of keeping a private copy of the same
+  validation/reserved-prefix-shadowing logic. `@dune/core`'s
+  `createDuneApp()` now registers `publicRoutes` itself, in every context
+  (headless, `admin.enabled: false`, `dune mcp:serve`) — this delegation
+  keeps headless-mode callers of `mountDuneAdmin()` (who never call
+  `createDuneApp()` at all) working the same way, off one shared
+  implementation instead of two. **Requires a `@dune/core` release
+  containing `registerPluginPublicRoutes()`** — not yet safe to publish
+  this package to JSR until that release exists and this package's
+  `@dune/core` pin is bumped to require it; currently only resolvable via
+  the local workspace link.
+
+---
+
 ## [1.1.5] — 2026-08-16
 
 ### Fixed
