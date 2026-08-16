@@ -33,6 +33,16 @@ interface Props {
   prefix: string;
 }
 
+/**
+ * /admin/api/pages/:path* is a wildcard route — a literal "/" is what it
+ * matches between segments. encodeURIComponent() on the whole sourcePath
+ * turns "/" into "%2F", which can't match a wildcard segment boundary
+ * (400s for every nested page). Encode per-segment instead.
+ */
+function pagePathUrlSegment(pagePath: string): string {
+  return pagePath.split("/").map(encodeURIComponent).join("/");
+}
+
 export default function PageBuilder({ pagePath, prefix }: Props) {
   const apiBase = `${prefix}/api`;
 
@@ -50,7 +60,7 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${apiBase}/pages/${encodeURIComponent(pagePath)}`).then((r) => r.json()),
+      fetch(`${apiBase}/pages/${pagePathUrlSegment(pagePath)}`).then((r) => r.json()),
       fetch(`${apiBase}/sections`).then((r) => r.json()),
     ])
       .then(([pageData, sectionsData]: [Record<string, unknown>, { sections: SectionDef[] }]) => {
@@ -69,7 +79,7 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
     setSaving(true);
     setError("");
     try {
-      const res = await fetch(`${apiBase}/pages/${encodeURIComponent(pagePath)}`, {
+      const res = await fetch(`${apiBase}/pages/${pagePathUrlSegment(pagePath)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
         body: JSON.stringify({
@@ -310,7 +320,7 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
               {showPreview && (
                 <iframe
                   ref={iframeRef}
-                  src={`${prefix}/api/preview`}
+                  src={`${prefix}/api/preview?path=${encodeURIComponent(pagePath)}`}
                   class="s-b4e83a82"
                   title="Preview"
                 />

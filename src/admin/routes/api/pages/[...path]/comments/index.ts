@@ -10,7 +10,7 @@ export const handler = {
     if (denied) return denied;
     const { comments } = ctx.state.adminContext;
     if (!comments) return json({ error: "Comments not available" }, 503);
-    const pagePath = ctx.params.path;
+    const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
     try {
       const list = await comments.list(pagePath);
@@ -30,7 +30,7 @@ export const handler = {
 
     const authResult = ctx.state.auth;
     if (!authResult.user) return json({ error: "Unauthorized" }, 401);
-    const pagePath = ctx.params.path;
+    const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
 
     try {

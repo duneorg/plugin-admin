@@ -1,4 +1,13 @@
-/** GET + PUT + DELETE /admin/api/pages/:path */
+/**
+ * GET + PUT + DELETE /admin/api/pages/:path*
+ *
+ * Wildcard (not a single segment): sourcePaths are nested
+ * ("03.arbeitswelt/01.test.mdx"), and a literal "/" in the URL is what a
+ * `:path*` route matches directly — callers must NOT encodeURIComponent()
+ * the whole sourcePath (that turns "/" into "%2F", which a single-segment
+ * "/" separator can't match and returns 400 for every nested page). Encode
+ * per-segment instead, or leave path-safe sourcePaths unencoded.
+ */
 
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
@@ -31,7 +40,7 @@ export const handler = {
     if (denied) return denied;
 
     const { engine } = ctx.state.adminContext;
-    const pagePath = ctx.params.path;
+    const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
     try {
       const pageIndex = engine.pages.find((p) => p.sourcePath === pagePath);
@@ -55,7 +64,7 @@ export const handler = {
 
     const { engine, storage, config, hooks, auditLogger } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
-    const pagePath = ctx.params.path;
+    const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
 
     try {
@@ -124,7 +133,7 @@ export const handler = {
 
     const { engine, storage, config, hooks, auditLogger } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
-    const pagePath = ctx.params.path;
+    const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
 
     try {

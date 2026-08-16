@@ -18,7 +18,7 @@ export const PUBLIC_PATHS = new Set(["/login", "/login/logout"]);
  * `X-Frame-Options: SAMEORIGIN` instead of the default deny-all framing
  * policy. Every other admin response stays fully non-frameable.
  */
-const FRAMEABLE_PATHS = new Set(["/api/theme-preview"]);
+const FRAMEABLE_PATHS = new Set(["/api/theme-preview", "/api/preview"]);
 
 /**
  * Nonce-based CSP for rendered admin pages. Fresh auto-stamps a per-request

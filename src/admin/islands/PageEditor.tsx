@@ -34,6 +34,17 @@ interface Props {
   prefix: string;
 }
 
+/**
+ * The REST endpoint (/admin/api/pages/:path*) is a wildcard route — a
+ * literal "/" is what it matches between segments. encodeURIComponent()
+ * on the whole sourcePath turns "/" into "%2F", which the router can't
+ * match against a wildcard segment boundary (404s/400s for every nested
+ * page, i.e. almost all real content). Encode per-segment instead.
+ */
+function pagePathUrlSegment(pagePath: string): string {
+  return pagePath.split("/").map(encodeURIComponent).join("/");
+}
+
 export default function PageEditor({ pagePath, prefix }: Props) {
   const apiBase = `${prefix}/api`;
 
@@ -48,7 +59,7 @@ export default function PageEditor({ pagePath, prefix }: Props) {
   const previewRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    fetch(`${apiBase}/pages/${encodeURIComponent(pagePath)}`)
+    fetch(`${apiBase}/pages/${pagePathUrlSegment(pagePath)}`)
       .then((r) => r.json())
       .then((data: PageData) => {
         setPage(data);
@@ -76,7 +87,7 @@ export default function PageEditor({ pagePath, prefix }: Props) {
     setSaving(true);
     setError("");
     try {
-      const res = await fetch(`${apiBase}/pages/${encodeURIComponent(pagePath)}`, {
+      const res = await fetch(`${apiBase}/pages/${pagePathUrlSegment(pagePath)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
         body: JSON.stringify({
@@ -291,7 +302,7 @@ export default function PageEditor({ pagePath, prefix }: Props) {
           <aside class="editor-preview">
             <iframe
               ref={previewRef}
-              src={`${prefix}/api/preview`}
+              src={`${prefix}/api/preview?path=${encodeURIComponent(pagePath)}`}
               class="s-5050775b"
               title="Page preview"
             />

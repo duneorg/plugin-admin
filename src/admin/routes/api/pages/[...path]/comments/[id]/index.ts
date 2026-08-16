@@ -13,7 +13,8 @@ export const handler = {
 
     const { comments, auth } = ctx.state.adminContext;
     if (!comments) return json({ error: "Comments not available" }, 503);
-    const { path: pagePath, id } = ctx.params;
+    const { path: rawPath, id } = ctx.params;
+    const pagePath = decodeURIComponent(rawPath);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
     const authResult = ctx.state.auth;
 
@@ -42,7 +43,8 @@ export const handler = {
 
     const { comments, auth } = ctx.state.adminContext;
     if (!comments) return json({ error: "Comments not available" }, 503);
-    const { path: pagePath, id } = ctx.params;
+    const { path: rawPath, id } = ctx.params;
+    const pagePath = decodeURIComponent(rawPath);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
     const authResult = ctx.state.auth;
 
