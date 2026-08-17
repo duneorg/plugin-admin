@@ -74,8 +74,8 @@
  *
  * function mapRole(
  *   value: string | string[] | undefined,
- *   roleMap: Array<{ value: string; role: AdminRole }> | undefined,
- * ): AdminRole | undefined {
+ *   roleMap: Array<{ value: string; role: Role }> | undefined,
+ * ): Role | undefined {
  *   if (!roleMap || value === undefined) return undefined;
  *   const values = Array.isArray(value) ? value : [value];
  *   for (const { value: v, role } of roleMap) {

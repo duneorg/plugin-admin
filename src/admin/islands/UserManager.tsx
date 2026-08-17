@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from "preact/hooks";
 
-interface AdminUser {
+interface User {
   id: string;
   username: string;
   name: string;
@@ -22,7 +22,7 @@ interface Props {
 
 type Modal =
   | { kind: "create" }
-  | { kind: "edit"; user: AdminUser }
+  | { kind: "edit"; user: User }
   | { kind: "password"; userId: string; username: string }
   | null;
 
@@ -30,7 +30,7 @@ export default function UserManager({ prefix }: Props) {
   const apiBase = `${prefix}/api`;
 
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [currentUserId, setCurrentUserId] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [modal, setModal] = useState<Modal>(null);
@@ -53,7 +53,7 @@ export default function UserManager({ prefix }: Props) {
     setLoading(true);
     try {
       const res = await fetch(`${apiBase}/users`);
-      const d = await res.json() as { users: AdminUser[]; currentUserId: string; isAdmin: boolean; items?: AdminUser[] };
+      const d = await res.json() as { users: User[]; currentUserId: string; isAdmin: boolean; items?: User[] };
       setUsers(d.users ?? d.items ?? []);
       setCurrentUserId(d.currentUserId ?? "");
       setIsAdmin(d.isAdmin ?? false);
@@ -68,7 +68,7 @@ export default function UserManager({ prefix }: Props) {
     setModal({ kind: "create" });
   }
 
-  function openEdit(user: AdminUser) {
+  function openEdit(user: User) {
     setFName(user.name); setFEmail(user.email); setFRole(user.role);
     setFEnabled(user.enabled); setFormError("");
     setModal({ kind: "edit", user });

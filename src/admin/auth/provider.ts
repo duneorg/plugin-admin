@@ -7,7 +7,7 @@
  * @module
  */
 
-import type { AdminRole } from "@dune/core/config";
+import type { Role } from "@dune/core/config";
 
 /** User attributes returned by an external auth provider after successful authentication. */
 export interface AuthProviderUser {
@@ -18,7 +18,7 @@ export interface AuthProviderUser {
   email?: string;
   name?: string;
   /** Role to assign when auto-provisioning this user. Default: "author" */
-  role?: AdminRole;
+  role?: Role;
 }
 
 /** Credentials passed to an AuthProvider for direct username+password flows (local, LDAP). */
@@ -107,9 +107,9 @@ export interface LdapProviderConfig {
    *     role: "editor"
    * ```
    */
-  roleMap?: Array<{ group: string; role: AdminRole }>;
+  roleMap?: Array<{ group: string; role: Role }>;
   /** Default role for authenticated users not in any mapped group. Default: "author" */
-  defaultRole?: AdminRole;
+  defaultRole?: Role;
 }
 
 /** SAML 2.0 authentication provider configuration. */
@@ -133,9 +133,9 @@ export interface SamlProviderConfig {
   /**
    * Map IdP group/role attribute values to Dune roles. First match wins.
    */
-  roleMap?: Array<{ value: string; role: AdminRole }>;
+  roleMap?: Array<{ value: string; role: Role }>;
   /** SAML attribute carrying the role or group value. Default: "role" or "groups" */
   roleAttr?: string;
   /** Default role for users with no matching roleMap entry. Default: "author" */
-  defaultRole?: AdminRole;
+  defaultRole?: Role;
 }

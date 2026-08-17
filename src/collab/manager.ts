@@ -18,7 +18,7 @@ import type {
   CollabSessionState,
   ClientState,
   ClientMsg,
-  AdminUser,
+  User,
 } from "./types.ts";
 import {
   createCollabSession,
@@ -240,7 +240,7 @@ export function createCollabManager(options: CollabManagerOptions): CollabManage
   async function handleJoin(
     socket: WebSocket,
     clientId: string,
-    user: AdminUser,
+    user: User,
     docId: string,
   ): Promise<void> {
     const session = await getOrCreateSession(docId);
@@ -376,7 +376,7 @@ export function createCollabManager(options: CollabManagerOptions): CollabManage
   async function dispatchMessage(
     socket: WebSocket,
     clientId: string,
-    user: AdminUser,
+    user: User,
     msg: ClientMsg,
     sessionRef: { current: CollabSessionState | null },
   ): Promise<void> {
@@ -414,7 +414,7 @@ export function createCollabManager(options: CollabManagerOptions): CollabManage
   // ── Public API ─────────────────────────────────────────────────────────────
 
   return {
-    handleUpgrade(req: Request, user: AdminUser): Response {
+    handleUpgrade(req: Request, user: User): Response {
       const url = new URL(req.url);
       const docId = url.searchParams.get("docId");
       if (!docId) {

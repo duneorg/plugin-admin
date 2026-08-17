@@ -9,7 +9,7 @@
 import type { StorageAdapter } from "@dune/core/storage";
 import type { DuneEngine } from "@dune/core/engine";
 import type { HistoryEngine } from "@dune/core/history";
-import type { AdminUser } from "../admin/types.ts";
+import type { User } from "../admin/types.ts";
 
 // ── Operations (Quill Delta format) ──────────────────────────────────────────
 
@@ -118,7 +118,7 @@ export interface CollabManager {
    * Returns a 101 Switching Protocols response.
    * Returns a 400 Response if `docId` query param is missing.
    */
-  handleUpgrade(req: Request, user: AdminUser): Response;
+  handleUpgrade(req: Request, user: User): Response;
 }
 
-export type { AdminUser };
+export type { User };

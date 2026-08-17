@@ -184,7 +184,7 @@ export const handler = {
       return ctx.render(<LoginPage data={{ error: "Invalid credentials", next, prefix }} />, { status: 429 });
     }
 
-    let user!: import("../types.ts").AdminUser;
+    let user!: import("../types.ts").User;
 
     if (authProvider) {
       const providerUser = await authProvider.authenticate({ username, password });

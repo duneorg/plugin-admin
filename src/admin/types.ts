@@ -5,21 +5,28 @@
  */
 
 export type { ContentEditorPlugin } from "@dune/core/hooks";
-// AdminSession and AdminRole live in core to break circular deps; import for
+// AdminSession and Role live in core to break circular deps; import for
 // local use AND re-export so callers importing from admin/types get them.
 import type { AdminSession } from "@dune/core/session";
 export type { AdminSession };
-import type { AdminRole } from "@dune/core/config";
-export type { AdminRole };
+import type { Role } from "@dune/core/config";
+export type { Role };
 
-/** Admin user stored in data/users/ */
-export interface AdminUser {
+/**
+ * Admin user stored in data/users/. Named `User`, not `AdminUser`, per
+ * decisions/dec-identity-unification.md's Phase 3 — a bare name, since the
+ * underlying identity concept isn't admin-panel-specific even though this
+ * store currently only holds admin-panel accounts. Renamed as a breaking
+ * change in @dune/plugin-admin 2.0.0 (this package is past its 1.0
+ * API-stability line, unlike @dune/core).
+ */
+export interface User {
   id: string;
   username: string;
   email: string;
   /** PBKDF2 hash of password */
   passwordHash: string;
-  role: AdminRole;
+  role: Role;
   /** Display name */
   name: string;
   createdAt: number;
@@ -29,7 +36,7 @@ export interface AdminUser {
 }
 
 /** Permission definitions per role */
-export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
+export const ROLE_PERMISSIONS: Record<Role, AdminPermission[]> = {
   admin: [
     "pages.create", "pages.read", "pages.update", "pages.delete",
     "media.upload", "media.read", "media.delete",
@@ -87,17 +94,17 @@ export interface AdminConfig {
 /** Result of an auth check */
 export interface AuthResult {
   authenticated: boolean;
-  user?: AdminUser;
+  user?: User;
   session?: AdminSession;
   error?: string;
 }
 
 /** Safe user info (no password hash) for API responses */
-export interface AdminUserInfo {
+export interface UserInfo {
   id: string;
   username: string;
   email: string;
-  role: AdminRole;
+  role: Role;
   name: string;
   createdAt: number;
   enabled: boolean;
@@ -114,8 +121,8 @@ export interface AdminState {
   adminContext: import("./context.ts").AdminContext;
 }
 
-/** Convert AdminUser to safe API response */
-export function toUserInfo(user: AdminUser): AdminUserInfo {
+/** Convert User to safe API response */
+export function toUserInfo(user: User): UserInfo {
   return {
     id: user.id,
     username: user.username,

@@ -17,7 +17,7 @@
 
 import { join, dirname } from "@std/path";
 import { encodeHex } from "@std/encoding/hex";
-import type { AdminUser } from "./types.ts";
+import type { User } from "./types.ts";
 
 // === Types ===
 
@@ -79,7 +79,7 @@ export interface CommentManager {
   create(
     pageSourcePath: string,
     input: { body: string; parentId?: string; blockId?: string },
-    author: AdminUser,
+    author: User,
   ): Promise<PageComment>;
   /** Edit the body of a comment */
   update(
@@ -196,7 +196,7 @@ export function createCommentManager(
     async create(
       pageSourcePath: string,
       input: { body: string; parentId?: string; blockId?: string },
-      author: AdminUser,
+      author: User,
     ): Promise<PageComment> {
       const filePath = commentsFilePath(pageSourcePath);
       const file = await readCommentsFile(filePath);

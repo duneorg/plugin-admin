@@ -30,13 +30,13 @@ export { SamlAuthProvider } from "./auth/saml-provider.ts";
 export { findOrProvisionUser } from "./auth/provisioner.ts";
 
 export type {
-  AdminUser,
-  AdminRole,
+  User,
+  Role,
   AdminSession,
   AdminPermission,
   AdminConfig,
   AuthResult,
-  AdminUserInfo,
+  UserInfo,
 } from "./types.ts";
 export { ROLE_PERMISSIONS, toUserInfo } from "./types.ts";
 

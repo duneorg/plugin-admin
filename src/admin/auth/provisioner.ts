@@ -1,8 +1,8 @@
 /**
- * User provisioner — find or create a local AdminUser from external provider attributes.
+ * User provisioner — find or create a local User from external provider attributes.
  *
  * When an external provider (LDAP, SAML, OIDC) authenticates a user, this function
- * maps the provider's user attributes to a local AdminUser record, creating one if it
+ * maps the provider's user attributes to a local User record, creating one if it
  * does not exist yet (auto-provisioning). Display name is kept in sync with whatever
  * the provider reports on each login.
  *
@@ -12,7 +12,7 @@
  *     for an existing "author" account does NOT elevate them.
  *   - New users are provisioned at the configured `defaultRole` (or "author" if
  *     the provider has none configured), and the provider-reported role is only
- *     accepted if it's a valid AdminRole. Any unknown role string is rejected.
+ *     accepted if it's a valid Role. Any unknown role string is rejected.
  *   - Role *demotion* is permitted (admin -> editor, editor -> author) so an
  *     IdP can revoke privileges, but never elevate them. Operators that need
  *     to grant admin must do so locally.
@@ -24,21 +24,21 @@
 
 import type { AuthProviderUser } from "./provider.ts";
 import type { UserManager } from "./users.ts";
-import type { AdminRole, AdminUser } from "../types.ts";
+import type { Role, User } from "../types.ts";
 
-const VALID_ROLES: ReadonlySet<AdminRole> = new Set<AdminRole>([
+const VALID_ROLES: ReadonlySet<Role> = new Set<Role>([
   "admin", "editor", "author",
 ]);
-const ROLE_RANK: Record<AdminRole, number> = { admin: 3, editor: 2, author: 1 };
+const ROLE_RANK: Record<Role, number> = { admin: 3, editor: 2, author: 1 };
 
-function sanitizeProviderRole(role: string | undefined, fallback: AdminRole): AdminRole {
+function sanitizeProviderRole(role: string | undefined, fallback: Role): Role {
   if (typeof role !== "string") return fallback;
-  if (!VALID_ROLES.has(role as AdminRole)) return fallback;
-  return role as AdminRole;
+  if (!VALID_ROLES.has(role as Role)) return fallback;
+  return role as Role;
 }
 
 /**
- * Find or auto-provision a local AdminUser from external provider attributes.
+ * Find or auto-provision a local User from external provider attributes.
  *
  * Lookup order:
  *   1. Username match (getByUsername)
@@ -50,9 +50,9 @@ function sanitizeProviderRole(role: string | undefined, fallback: AdminRole): Ad
 export async function findOrProvisionUser(
   providerUser: AuthProviderUser,
   users: UserManager,
-  options: { defaultRole?: AdminRole } = {},
-): Promise<AdminUser> {
-  const defaultRole: AdminRole = options.defaultRole ?? "author";
+  options: { defaultRole?: Role } = {},
+): Promise<User> {
+  const defaultRole: Role = options.defaultRole ?? "author";
   const existing = await users.getByUsername(providerUser.username);
 
   if (existing && existing.enabled) {
@@ -79,7 +79,7 @@ export async function findOrProvisionUser(
 
   // Auto-provision: create a new user with a random unusable password and a
   // role limited to the configured default. Provider-reported roles are
-  // accepted at provisioning time only if they're valid AdminRole strings.
+  // accepted at provisioning time only if they're valid Role strings.
   // Even then we cap new users at defaultRole (so a misconfigured provider
   // can't auto-create an admin user on first login).
   const requestedRole = sanitizeProviderRole(providerUser.role, defaultRole);

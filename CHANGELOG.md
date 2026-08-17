@@ -7,6 +7,26 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Breaking
+
+- **Renamed `AdminUser` → `User`, `AdminRole` → `Role`, `AdminUserInfo` →
+  `UserInfo`.** `decisions/dec-identity-unification.md`'s Phase 3: the
+  "Admin" prefix is a likely root cause of `@dune/core`'s public-auth
+  `SiteUser` forking into a wholly separate system instead of extending
+  this one — "AdminUser" reads as admin-scoped on its face, even though the
+  underlying identity concept never was. Bare `User`/`Role` (matching
+  Django/Rails/Laravel/WordPress convention) removes that false signal
+  before Phase 5 unifies this store with `SiteUser`. This package is past
+  its 1.0 API-stability line, so — unlike the equivalent (and non-breaking,
+  because unpublished) `Role` rename in `@dune/core`'s `AdminRole` — this
+  is a real break: bumping to **2.0.0**. No deprecation shim; anyone
+  importing `AdminUser`/`AdminRole`/`AdminUserInfo` from `@dune/plugin-admin`
+  needs a one-time mechanical find-and-replace to `User`/`Role`/`UserInfo`.
+  `@dune/core`'s own `Role` (`@dune/core/config`, formerly `AdminRole`) is
+  re-exported under its new name from `admin/types.ts` unchanged in shape.
+  Full 161-test suite and `deno check`/`deno lint` across `src/` pass
+  unchanged — purely a rename, no behavioral change.
+
 ### Added
 
 - **`@dune/plugin-admin/admin/guards`** — a new public subpath exporting

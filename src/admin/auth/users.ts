@@ -7,7 +7,7 @@
 
 import { encodeHex } from "@std/encoding/hex";
 import type { StorageAdapter } from "@dune/core/storage";
-import type { AdminUser, AdminRole } from "../types.ts";
+import type { User, Role } from "../types.ts";
 import { hashPassword } from "./passwords.ts";
 
 /** Options for {@link createUserManager}. */
@@ -22,22 +22,22 @@ export interface CreateUserInput {
   username: string;
   email: string;
   password: string;
-  role: AdminRole;
+  role: Role;
   name: string;
 }
 
 /** CRUD operations for admin users. Obtain via {@link createUserManager}. */
 export interface UserManager {
   /** Create a new user. Returns the user (without password). */
-  create(input: CreateUserInput): Promise<AdminUser>;
+  create(input: CreateUserInput): Promise<User>;
   /** Get a user by ID */
-  getById(id: string): Promise<AdminUser | null>;
+  getById(id: string): Promise<User | null>;
   /** Get a user by username */
-  getByUsername(username: string): Promise<AdminUser | null>;
+  getByUsername(username: string): Promise<User | null>;
   /** List all users */
-  list(): Promise<AdminUser[]>;
+  list(): Promise<User[]>;
   /** Update a user (partial update) */
-  update(id: string, updates: Partial<Pick<AdminUser, "email" | "role" | "name" | "enabled">>): Promise<AdminUser | null>;
+  update(id: string, updates: Partial<Pick<User, "email" | "role" | "name" | "enabled">>): Promise<User | null>;
   /** Change a user's password */
   changePassword(id: string, newPassword: string): Promise<boolean>;
   /** Delete a user */
@@ -57,11 +57,11 @@ export interface UserManager {
 export function createUserManager(config: UserManagerConfig): UserManager {
   const { storage, usersDir } = config;
 
-  async function create(input: CreateUserInput): Promise<AdminUser> {
+  async function create(input: CreateUserInput): Promise<User> {
     const id = await generateId();
     const now = Date.now();
 
-    const user: AdminUser = {
+    const user: User = {
       id,
       username: input.username,
       email: input.email,
@@ -77,31 +77,31 @@ export function createUserManager(config: UserManagerConfig): UserManager {
     return user;
   }
 
-  async function getById(id: string): Promise<AdminUser | null> {
+  async function getById(id: string): Promise<User | null> {
     const path = `${usersDir}/${id}.json`;
     try {
       if (!(await storage.exists(path))) return null;
       const data = await storage.read(path);
-      return JSON.parse(new TextDecoder().decode(data)) as AdminUser;
+      return JSON.parse(new TextDecoder().decode(data)) as User;
     } catch {
       return null;
     }
   }
 
-  async function getByUsername(username: string): Promise<AdminUser | null> {
+  async function getByUsername(username: string): Promise<User | null> {
     const users = await list();
     return users.find((u) => u.username === username) ?? null;
   }
 
-  async function list(): Promise<AdminUser[]> {
-    const users: AdminUser[] = [];
+  async function list(): Promise<User[]> {
+    const users: User[] = [];
     try {
       const entries = await storage.list(usersDir);
       for (const entry of entries) {
         if (entry.isDirectory || !entry.name.endsWith(".json")) continue;
         try {
           const data = await storage.read(`${usersDir}/${entry.name}`);
-          users.push(JSON.parse(new TextDecoder().decode(data)) as AdminUser);
+          users.push(JSON.parse(new TextDecoder().decode(data)) as User);
         } catch (err) {
           console.warn(`  ⚠️  Skipping corrupt user file: ${entry.name}`, err);
         }
@@ -117,8 +117,8 @@ export function createUserManager(config: UserManagerConfig): UserManager {
 
   async function update(
     id: string,
-    updates: Partial<Pick<AdminUser, "email" | "role" | "name" | "enabled">>,
-  ): Promise<AdminUser | null> {
+    updates: Partial<Pick<User, "email" | "role" | "name" | "enabled">>,
+  ): Promise<User | null> {
     const user = await getById(id);
     if (!user) return null;
 
@@ -189,7 +189,7 @@ export function createUserManager(config: UserManagerConfig): UserManager {
     return { created: true, passwordFile };
   }
 
-  async function saveUser(user: AdminUser): Promise<void> {
+  async function saveUser(user: User): Promise<void> {
     const path = `${usersDir}/${user.id}.json`;
     const data = new TextEncoder().encode(JSON.stringify(user, null, 2));
     await storage.write(path, data);

@@ -67,8 +67,8 @@
  * // Map LDAP group membership to a Dune role (first match wins)
  * function mapRole(
  *   memberOf: string | string[] | undefined,
- *   roleMap: Array<{ group: string; role: AdminRole }> | undefined,
- * ): AdminRole | undefined {
+ *   roleMap: Array<{ group: string; role: Role }> | undefined,
+ * ): Role | undefined {
  *   if (!roleMap || !memberOf) return undefined;
  *   const groups = Array.isArray(memberOf) ? memberOf : [memberOf];
  *   for (const { group, role } of roleMap) {
