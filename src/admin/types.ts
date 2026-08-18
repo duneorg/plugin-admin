@@ -5,10 +5,13 @@
  */
 
 export type { ContentEditorPlugin } from "@dune/core/hooks";
-// AdminSession and Role live in core to break circular deps; import for
+// Session and Role live in core to break circular deps; import for
 // local use AND re-export so callers importing from admin/types get them.
-import type { AdminSession } from "@dune/core/session";
-export type { AdminSession };
+// Session was formerly AdminSession — renamed in
+// decisions/dec-identity-unification.md's Phase 5c, which unified admin
+// and public-site sessions onto one SessionStore/SessionManager mechanism.
+import type { Session } from "@dune/core/session";
+export type { Session };
 import type { Role } from "@dune/core/config";
 export type { Role };
 
@@ -85,7 +88,7 @@ export interface AdminConfig {
 export interface AuthResult {
   authenticated: boolean;
   user?: User;
-  session?: AdminSession;
+  session?: Session;
   error?: string;
 }
 

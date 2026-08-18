@@ -32,7 +32,7 @@ export { findOrProvisionUser } from "./auth/provisioner.ts";
 export type {
   User,
   Role,
-  AdminSession,
+  Session,
   AdminPermission,
   AdminConfig,
   AuthResult,

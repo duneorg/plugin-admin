@@ -1,21 +1,19 @@
 /**
  * Session management — create, validate, and revoke admin sessions.
  *
- * The SessionManager wraps a SessionStore (file-backed, KV, or Redis) and
- * adds the session-creation logic (random ID generation, expiry calculation).
- * The public SessionManager interface is unchanged — all call sites continue
- * to work without modification.
- *
- * For the legacy single-process file-backed store, pass a LocalSessionStore
- * via the `store` option. When `storage` + `sessionsDir` are provided instead,
- * a LocalSessionStore is created automatically (backward-compatible path).
+ * Delegates to @dune/core's shared createSessionManager() (dec-identity-
+ * unification Phase 5c) — the same mechanism public-site auth sessions use,
+ * over whichever SessionStore backend (local/KV/Redis) is configured. This
+ * file exists to keep the original SessionManager interface stable for
+ * existing call sites (create() has no embeddedUser param — admin sessions
+ * never need one) and to preserve the storage/sessionsDir convenience
+ * construction path.
  */
 
-import { encodeHex } from "@std/encoding/hex";
 import type { StorageAdapter } from "@dune/core/storage";
-import type { AdminSession } from "../types.ts";
+import type { Session } from "../types.ts";
 import type { SessionStore } from "@dune/core/session";
-import { createLocalSessionStore } from "@dune/core/session";
+import { createLocalSessionStore, createSessionManager as createCoreSessionManager } from "@dune/core/session";
 
 export type { SessionStore };
 
@@ -43,9 +41,9 @@ export interface SessionManagerConfig {
 /** Creates and validates admin sessions. Obtain via {@link createSessionManager}. */
 export interface SessionManager {
   /** Create a new session for a user */
-  create(userId: string, ip?: string): Promise<AdminSession>;
+  create(userId: string, ip?: string): Promise<Session>;
   /** Get and validate a session by its ID. Returns null if expired or not found. */
-  get(sessionId: string): Promise<AdminSession | null>;
+  get(sessionId: string): Promise<Session | null>;
   /** Revoke (delete) a session */
   revoke(sessionId: string): Promise<void>;
   /** Revoke all sessions for a user */
@@ -77,42 +75,15 @@ export function createSessionManager(config: SessionManagerConfig): SessionManag
     });
   })();
 
-  async function create(userId: string, ip?: string): Promise<AdminSession> {
-    const id = await generateSessionId();
-    const now = Date.now();
+  const core = createCoreSessionManager(store, lifetime * 1000);
 
-    const session: AdminSession = {
-      id,
-      userId,
-      createdAt: now,
-      expiresAt: now + lifetime * 1000,
-      ip,
-    };
-
-    await store.set(session);
-    return session;
-  }
-
-  async function get(sessionId: string): Promise<AdminSession | null> {
-    return store.get(sessionId);
-  }
-
-  async function revoke(sessionId: string): Promise<void> {
-    await store.delete(sessionId);
-  }
-
-  async function revokeAll(userId: string): Promise<void> {
-    await store.deleteByUserId(userId);
-  }
-
-  async function cleanup(): Promise<number> {
-    return store.cleanup();
-  }
-
-  return { create, get, revoke, revokeAll, cleanup };
-}
-
-async function generateSessionId(): Promise<string> {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return encodeHex(bytes);
+  return {
+    // Admin sessions never carry an embeddedUser — the underlying factory's
+    // third param exists only for public auth's userStore: "session" mode.
+    create: (userId, ip) => core.create(userId, ip),
+    get: core.get,
+    revoke: core.revoke,
+    revokeAll: core.revokeAll,
+    cleanup: core.cleanup,
+  };
 }
