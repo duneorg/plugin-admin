@@ -30,7 +30,7 @@ async function callRenderMarkdown(body: unknown): Promise<Record<string, unknown
     req,
     url: new URL(req.url),
     state: {
-      auth: { authenticated: true, user: { id: "1", role: "admin" } },
+      auth: { authenticated: true, user: { id: "1", roles: ["admin"] } },
       adminContext: {
         auth: {
           hasPermission: (_auth: unknown, _perm: string) => true,
@@ -128,7 +128,7 @@ Deno.test("render-markdown: returns 400 when content is missing", async () => {
     req,
     url: new URL(req.url),
     state: {
-      auth: { authenticated: true, user: { id: "1", role: "admin" } },
+      auth: { authenticated: true, user: { id: "1", roles: ["admin"] } },
       adminContext: {
         auth: { hasPermission: () => true },
         auditLogger: null,

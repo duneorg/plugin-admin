@@ -201,13 +201,14 @@ export function getClientIp(req: Request): string | null {
 }
 
 export function actorFromAuth(
-  authResult: { user?: { id: string; username: string; name: string } | null },
+  authResult: { user?: { id: string; username?: string; name?: string } | null },
 ): import("@dune/core/audit").AuditActor | null {
   if (!authResult.user) return null;
+  const username = authResult.user.username ?? authResult.user.id;
   return {
     userId: authResult.user.id,
-    username: authResult.user.username,
-    name: authResult.user.name,
+    username,
+    name: authResult.user.name ?? username,
   };
 }
 

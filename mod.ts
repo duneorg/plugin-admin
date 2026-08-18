@@ -19,6 +19,7 @@ import type { DunePlugin, MountApi } from "@dune/core/hooks";
 import type { DuneConfig } from "@dune/core/config";
 import type { StorageAdapter } from "@dune/core/storage";
 import { createUserManager } from "./src/admin/auth/users.ts";
+import { highestValidRole } from "./src/admin/auth/role-utils.ts";
 import { createSessionManager } from "./src/admin/auth/sessions.ts";
 import { createSessionStore } from "@dune/core/session";
 import { createAuthMiddleware } from "./src/admin/auth/middleware.ts";
@@ -354,8 +355,15 @@ export function createAdminPlugin(
       // tuple gets registered too, instead of being locked out on first run.
       if (bootstrap.authz && bootstrap.authzAdapter) {
         try {
-          const allAdminUsers = await users.list();
-          const enabledAdminUsers = allAdminUsers.filter((u) => u.enabled !== false);
+          // users.list() returns every account in the unified store
+          // (data/users/) — not just admin-tier ones once public site
+          // visitors share the same store (Phase 5b). Only bootstrap tuples
+          // for accounts that actually carry an admin-tier role.
+          const allUsers = await users.list();
+          const enabledAdminUsers = allUsers
+            .filter((u) => u.enabled !== false)
+            .map((u) => ({ id: u.id, role: highestValidRole(u.roles) }))
+            .filter((u) => u.role !== undefined) as { id: string; role: string }[];
           await bootstrapAdminTuples(bootstrap.authz, bootstrap.authzAdapter, enabledAdminUsers);
         } catch (err) {
           console.warn(

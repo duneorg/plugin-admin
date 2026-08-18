@@ -7,7 +7,7 @@ import type { FreshContext } from "fresh";
 export const handler = {
   GET(ctx: FreshContext<AdminState>) {
     const { metrics } = ctx.state.adminContext;
-    if (ctx.state.auth.user?.role !== "admin") {
+    if (!ctx.state.auth.user?.roles.includes("admin")) {
       return json({ error: "Forbidden" }, 403);
     }
     if (!metrics) return json({ error: "Metrics not enabled" }, 404);

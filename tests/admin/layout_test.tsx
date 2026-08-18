@@ -59,7 +59,7 @@ Deno.test("_layout: wraps a normal authenticated admin route in the sidebar/topb
       Component={Marker}
       state={{
         adminContext: baseAdminContext(),
-        auth: { user: { name: "Admin", role: "admin" } },
+        auth: { user: { name: "Admin", roles: ["admin"] } },
         // deno-lint-ignore no-explicit-any
       } as any}
       url={new URL("http://localhost/admin/")}

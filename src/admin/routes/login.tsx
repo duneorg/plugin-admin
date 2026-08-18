@@ -10,6 +10,7 @@ import type { AdminState } from "../types.ts";
 import { verifyPassword, DUMMY_HASH, needsRehash } from "../auth/passwords.ts";
 import { findOrProvisionUser } from "../auth/provisioner.ts";
 import { RateLimiter, clientIp } from "@dune/core/security";
+import { actorFromAuth } from "./api/_utils.ts";
 
 // Module-level fallback limiter — used when no rateLimitStore is injected via
 // AdminContext (single-process deployments, tests, etc.).
@@ -109,7 +110,7 @@ export const handler = {
         if (authResult.user) {
           void auditLogger?.log({
             event: "auth.logout",
-            actor: { userId: authResult.user.id, username: authResult.user.username, name: authResult.user.name },
+            actor: actorFromAuth(authResult),
             ip: null,
             userAgent: ctx.req.headers.get("user-agent"),
             target: null,
@@ -213,7 +214,10 @@ export const handler = {
       }
       user = found;
       // Transparently upgrade legacy (low-iteration) hashes to current cost.
-      if (needsRehash(found.passwordHash)) {
+      // found.passwordHash is guaranteed set here: `valid` above can only be
+      // true if verifyPassword() matched a real hash, not the DUMMY_HASH
+      // fallback used when passwordHash is absent.
+      if (found.passwordHash && needsRehash(found.passwordHash)) {
         try {
           await users.changePassword(found.id, password);
         } catch {
@@ -232,7 +236,7 @@ export const handler = {
       clearAccountFailuresFallback(username);
     }
 
-    void auditLogger?.log({ event: "auth.login", actor: { userId: user.id, username: user.username, name: user.name }, ip: ip === "unknown" ? null : ip, userAgent: ctx.req.headers.get("user-agent"), target: null, detail: {}, outcome: "success" }).catch(() => {});
+    void auditLogger?.log({ event: "auth.login", actor: actorFromAuth({ user }), ip: ip === "unknown" ? null : ip, userAgent: ctx.req.headers.get("user-agent"), target: null, detail: {}, outcome: "success" }).catch(() => {});
 
     const safeNext = sanitizeNext(next, prefix, ctx.url);
     return new Response(null, {

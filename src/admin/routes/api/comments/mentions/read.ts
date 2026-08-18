@@ -15,7 +15,7 @@ export const handler = {
     if (!comments || !authResult.user) return json({ ok: true });
     const body = await ctx.req.json().catch(() => ({})) as { ids?: unknown };
     const ids: string[] = Array.isArray(body.ids) ? body.ids as string[] : [];
-    await comments.markRead(authResult.user.username, ids);
+    await comments.markRead(authResult.user.username ?? authResult.user.id, ids);
     return json({ ok: true });
   },
 };

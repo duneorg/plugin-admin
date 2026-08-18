@@ -11,6 +11,7 @@
 
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, validatePagePath } from "../../_utils.ts";
+import { highestValidRole } from "../../../../auth/role-utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -26,7 +27,7 @@ export const handler = {
     if (!pageIndex) return json({ error: "Page not found" }, 404);
 
     const status = workflow.getStatus(pageIndex);
-    const userRole = ctx.state.auth.user?.role;
+    const userRole = highestValidRole(ctx.state.auth.user?.roles);
     const transitionObjects = workflow.allowedTransitionObjects(status, userRole);
 
     return json({

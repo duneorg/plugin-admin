@@ -8,7 +8,7 @@ import type { FreshContext } from "fresh";
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
     const { auditLogger } = ctx.state.adminContext;
-    if (ctx.state.auth.user?.role !== "admin") {
+    if (!ctx.state.auth.user?.roles.includes("admin")) {
       return json({ error: "Forbidden" }, 403);
     }
     if (!auditLogger) return json({ error: "Audit logging not enabled" }, 501);

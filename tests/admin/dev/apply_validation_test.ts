@@ -49,7 +49,7 @@ async function callApply(body: unknown): Promise<Record<string, unknown>> {
     req,
     url: new URL(req.url),
     state: {
-      auth: { authenticated: true, user: { id: "1", role: "admin" } },
+      auth: { authenticated: true, user: { id: "1", roles: ["admin"] } },
       adminContext: {
         auth: {
           hasPermission: (_auth: unknown, _perm: string) => true,

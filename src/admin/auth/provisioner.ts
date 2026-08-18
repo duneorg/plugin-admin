@@ -25,36 +25,7 @@
 import type { AuthProviderUser } from "./provider.ts";
 import type { UserManager } from "./users.ts";
 import type { Role, User } from "../types.ts";
-
-const VALID_ROLES: ReadonlySet<Role> = new Set<Role>([
-  "admin", "editor", "author",
-]);
-const ROLE_RANK: Record<Role, number> = { admin: 3, editor: 2, author: 1 };
-
-function sanitizeProviderRole(role: string | undefined, fallback: Role): Role {
-  if (typeof role !== "string") return fallback;
-  if (!VALID_ROLES.has(role as Role)) return fallback;
-  return role as Role;
-}
-
-/**
- * Pick a single admin `Role` out of an `AuthProviderUser.roles` array.
- *
- * `AuthProviderUser.roles` is a generic string array (see provider.ts's
- * Phase 4 doc comment) — the admin store still holds one `Role` per user, so
- * this provisioner picks the highest-ranked valid `Role` found in the array
- * rather than just the first entry, so operators can list an LDAP/SAML
- * group's mapped roles in any order without it mattering.
- */
-function highestValidRole(roles: string[] | undefined): string | undefined {
-  if (!roles?.length) return undefined;
-  let best: Role | undefined;
-  for (const r of roles) {
-    if (!VALID_ROLES.has(r as Role)) continue;
-    if (!best || ROLE_RANK[r as Role] > ROLE_RANK[best]) best = r as Role;
-  }
-  return best;
-}
+import { highestValidRole, ROLE_RANK, sanitizeRole } from "./role-utils.ts";
 
 /**
  * Find or auto-provision a local User from external provider attributes.
@@ -75,14 +46,15 @@ export async function findOrProvisionUser(
   const existing = await users.getByUsername(providerUser.username);
 
   if (existing && existing.enabled) {
-    const proposedRole = sanitizeProviderRole(highestValidRole(providerUser.roles), existing.role);
+    const existingRole = highestValidRole(existing.roles) ?? defaultRole;
+    const proposedRole = sanitizeRole(highestValidRole(providerUser.roles), existingRole);
     // Refuse to elevate from external attributes: only allow if the proposed
     // role is at the same rank or lower than the existing role.
-    const safeRole = ROLE_RANK[proposedRole] <= ROLE_RANK[existing.role]
+    const safeRole = ROLE_RANK[proposedRole] <= ROLE_RANK[existingRole]
       ? proposedRole
-      : existing.role;
+      : existingRole;
 
-    const roleChanged = safeRole !== existing.role;
+    const roleChanged = safeRole !== existingRole;
     const nameChanged = providerUser.name !== undefined && existing.name !== providerUser.name;
 
     if (roleChanged || nameChanged) {
@@ -101,7 +73,7 @@ export async function findOrProvisionUser(
   // accepted at provisioning time only if they're valid Role strings.
   // Even then we cap new users at defaultRole (so a misconfigured provider
   // can't auto-create an admin user on first login).
-  const requestedRole = sanitizeProviderRole(highestValidRole(providerUser.roles), defaultRole);
+  const requestedRole = sanitizeRole(highestValidRole(providerUser.roles), defaultRole);
   const newRole = ROLE_RANK[requestedRole] <= ROLE_RANK[defaultRole]
     ? requestedRole
     : defaultRole;

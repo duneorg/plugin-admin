@@ -3,9 +3,11 @@
   "username": "admin",
   "email": "admin@e2e.test",
   "passwordHash": "pbkdf2:600000:000102030405060708090a0b0c0d0e0f:cae9c801374596f17de48ba4ed7061692b5d0ab433932a7d3cdf698dfd8bb3e8",
-  "role": "admin",
+  "provider": "local",
+  "roles": ["admin"],
   "name": "E2E Admin",
   "createdAt": 1751328000000,
   "updatedAt": 1751328000000,
+  "lastSeenAt": 1751328000000,
   "enabled": true
 }

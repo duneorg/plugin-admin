@@ -54,7 +54,7 @@ export const handler = {
 
     return inlineEdit.handleUpgrade(ctx.req, {
       id: authResult.user.id,
-      name: authResult.user.username,
+      name: authResult.user.username ?? authResult.user.id,
     });
   },
 };

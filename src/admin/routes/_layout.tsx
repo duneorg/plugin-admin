@@ -9,6 +9,7 @@ import type { AdminState } from "../types.ts";
 import { getNavItems } from "../nav.ts";
 import { isRtl } from "@dune/core/i18n";
 import { ROLE_PERMISSIONS } from "../types.ts";
+import { highestValidRole } from "../auth/role-utils.ts";
 import { normalizePrefix, PUBLIC_PATHS, toAdminRelative } from "./_middleware.ts";
 
 export default function AdminLayout(
@@ -40,7 +41,7 @@ export default function AdminLayout(
 
   const user = state.auth?.user;
   const userName = user?.name ?? user?.username ?? "Admin";
-  const role = user?.role ?? "author";
+  const role = highestValidRole(user?.roles) ?? "author";
   const userPermissions = ROLE_PERMISSIONS[role] ?? [];
 
   const allNavItems = getNavItems();

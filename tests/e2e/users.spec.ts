@@ -33,7 +33,7 @@ test.describe("User management", () => {
     expect([200, 201]).toContain(res.status());
     const body = await res.json();
     expect(body.username).toBe(TEST_USER.username);
-    expect(body.role).toBe(TEST_USER.role);
+    expect(body.roles).toContain(TEST_USER.role);
     // Password must NOT be echoed back.
     expect(JSON.stringify(body)).not.toContain(TEST_USER.password);
   });
@@ -61,7 +61,7 @@ test.describe("User management", () => {
     expect([200, 204]).toContain(updateRes.status());
     if (updateRes.status() === 200) {
       const updated = await updateRes.json();
-      expect(updated.role).toBe("editor");
+      expect(updated.roles).toContain("editor");
     }
   });
 

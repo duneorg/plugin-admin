@@ -264,8 +264,8 @@ export function createCollabManager(options: CollabManagerOptions): CollabManage
     const client: ClientState = {
       clientId,
       userId: user.id,
-      username: user.username,
-      name: user.name,
+      username: user.username ?? user.id,
+      name: user.name ?? user.username ?? user.id,
       color,
       socket,
     };

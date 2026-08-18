@@ -11,7 +11,7 @@ export const handler = {
     const { comments } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
     if (!comments || !authResult.user) return json([]);
-    const mentions = await comments.listMentions(authResult.user.username);
+    const mentions = await comments.listMentions(authResult.user.username ?? authResult.user.id);
     return json(mentions);
   },
 };

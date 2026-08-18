@@ -13,27 +13,17 @@ import type { Role } from "@dune/core/config";
 export type { Role };
 
 /**
- * Admin user stored in data/users/. Named `User`, not `AdminUser`, per
- * decisions/dec-identity-unification.md's Phase 3 — a bare name, since the
- * underlying identity concept isn't admin-panel-specific even though this
- * store currently only holds admin-panel accounts. Renamed as a breaking
- * change in @dune/plugin-admin 2.0.0 (this package is past its 1.0
- * API-stability line, unlike @dune/core).
+ * The unified account record — admin panel users and public site visitors
+ * share one type and one store (data/users/), per
+ * decisions/dec-identity-unification.md's Phase 5. Owned by @dune/core;
+ * re-exported here so existing `import type { User } from "../types.ts"`
+ * call sites across this package don't all need to change their import
+ * source. There is no closed `Role` union on this type — "admin"/"editor"/
+ * "author" are just conventional values inside `roles`, interpreted by
+ * ./auth/role-utils.ts's `highestValidRole()`/`VALID_ROLES`/`ROLE_RANK`.
  */
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  /** PBKDF2 hash of password */
-  passwordHash: string;
-  role: Role;
-  /** Display name */
-  name: string;
-  createdAt: number;
-  updatedAt: number;
-  /** Whether this account is active */
-  enabled: boolean;
-}
+import type { User } from "@dune/core/auth/types";
+export type { User };
 
 /** Permission definitions per role */
 export const ROLE_PERMISSIONS: Record<Role, AdminPermission[]> = {
@@ -104,7 +94,7 @@ export interface UserInfo {
   id: string;
   username: string;
   email: string;
-  role: Role;
+  roles: string[];
   name: string;
   createdAt: number;
   enabled: boolean;
@@ -125,10 +115,10 @@ export interface AdminState {
 export function toUserInfo(user: User): UserInfo {
   return {
     id: user.id,
-    username: user.username,
+    username: user.username ?? "",
     email: user.email,
-    role: user.role,
-    name: user.name,
+    roles: user.roles,
+    name: user.name ?? "",
     createdAt: user.createdAt,
     enabled: user.enabled,
   };

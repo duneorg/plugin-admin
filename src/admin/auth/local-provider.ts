@@ -23,10 +23,10 @@ export class LocalAuthProvider implements AuthProvider {
     if (!valid || !user || !user.enabled) return null;
     return {
       externalId: user.id,
-      username: user.username,
+      username: user.username ?? user.id,
       email: user.email,
       name: user.name,
-      roles: [user.role],
+      roles: user.roles,
     };
   }
 }

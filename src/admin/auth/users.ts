@@ -1,19 +1,27 @@
 /**
- * User management — CRUD operations for admin users.
+ * User management — admin-panel-facing convenience layer over @dune/core's
+ * unified UserStore (dec-identity-unification Phase 5b).
  *
- * Users are stored as JSON files in data/users/{id}.json (git-tracked).
- * This is persistent, user-authored data — not ephemeral runtime state.
+ * Delegates all storage to @dune/core's createLocalUserStore, so admin
+ * accounts live in the same store/format/directory (data/users/) as public
+ * site visitors, and get the same TOCTOU-safe duplicate-email protection
+ * (Phase 0) admin accounts never had before this. Adds admin-specific
+ * conveniences the generic UserStore has no reason to know about: a single
+ * `role: Role` create/update parameter (translated to/from `roles: string[]`
+ * via role-utils.ts), password hashing, and `ensureDefaultAdmin()`.
  */
 
-import { encodeHex } from "@std/encoding/hex";
 import type { StorageAdapter } from "@dune/core/storage";
+import { createLocalUserStore } from "@dune/core/auth/user-store";
+import type { UserStore } from "@dune/core/auth/user-store";
 import type { User, Role } from "../types.ts";
 import { hashPassword } from "./passwords.ts";
+import { withRole } from "./role-utils.ts";
 
 /** Options for {@link createUserManager}. */
 export interface UserManagerConfig {
   storage: StorageAdapter;
-  /** Directory for user files (e.g. ".dune/admin/users") */
+  /** Directory for user files (e.g. "data/users") */
   usersDir: string;
 }
 
@@ -37,7 +45,10 @@ export interface UserManager {
   /** List all users */
   list(): Promise<User[]>;
   /** Update a user (partial update) */
-  update(id: string, updates: Partial<Pick<User, "email" | "role" | "name" | "enabled">>): Promise<User | null>;
+  update(
+    id: string,
+    updates: { email?: string; role?: Role; name?: string; enabled?: boolean },
+  ): Promise<User | null>;
   /** Change a user's password */
   changePassword(id: string, newPassword: string): Promise<boolean>;
   /** Delete a user */
@@ -52,111 +63,48 @@ export interface UserManager {
 }
 
 /**
- * Create a user manager backed by the storage adapter.
+ * Create a user manager backed by @dune/core's UserStore.
  */
 export function createUserManager(config: UserManagerConfig): UserManager {
   const { storage, usersDir } = config;
+  const store: UserStore = createLocalUserStore({ storage, usersDir });
 
   async function create(input: CreateUserInput): Promise<User> {
-    const id = await generateId();
-    const now = Date.now();
-
-    const user: User = {
-      id,
+    return store.create({
       username: input.username,
       email: input.email,
       passwordHash: await hashPassword(input.password),
-      role: input.role,
+      provider: "local",
+      roles: [input.role],
       name: input.name,
-      createdAt: now,
-      updatedAt: now,
-      enabled: true,
-    };
-
-    await saveUser(user);
-    return user;
-  }
-
-  async function getById(id: string): Promise<User | null> {
-    const path = `${usersDir}/${id}.json`;
-    try {
-      if (!(await storage.exists(path))) return null;
-      const data = await storage.read(path);
-      return JSON.parse(new TextDecoder().decode(data)) as User;
-    } catch {
-      return null;
-    }
-  }
-
-  async function getByUsername(username: string): Promise<User | null> {
-    const users = await list();
-    return users.find((u) => u.username === username) ?? null;
-  }
-
-  async function list(): Promise<User[]> {
-    const users: User[] = [];
-    try {
-      const entries = await storage.list(usersDir);
-      for (const entry of entries) {
-        if (entry.isDirectory || !entry.name.endsWith(".json")) continue;
-        try {
-          const data = await storage.read(`${usersDir}/${entry.name}`);
-          users.push(JSON.parse(new TextDecoder().decode(data)) as User);
-        } catch (err) {
-          console.warn(`  ⚠️  Skipping corrupt user file: ${entry.name}`, err);
-        }
-      }
-    } catch (err) {
-      if (err instanceof Error && !err.message.includes("not found")) {
-        console.warn(`  ⚠️  Failed to list users directory:`, err);
-      }
-      // Directory may not exist yet on first run
-    }
-    return users;
+    });
   }
 
   async function update(
     id: string,
-    updates: Partial<Pick<User, "email" | "role" | "name" | "enabled">>,
+    updates: { email?: string; role?: Role; name?: string; enabled?: boolean },
   ): Promise<User | null> {
-    const user = await getById(id);
-    if (!user) return null;
+    const existing = await store.getById(id);
+    if (!existing) return null;
 
-    if (updates.email !== undefined) user.email = updates.email;
-    if (updates.role !== undefined) user.role = updates.role;
-    if (updates.name !== undefined) user.name = updates.name;
-    if (updates.enabled !== undefined) user.enabled = updates.enabled;
-    user.updatedAt = Date.now();
-
-    await saveUser(user);
-    return user;
+    return store.update(id, {
+      email: updates.email,
+      name: updates.name,
+      enabled: updates.enabled,
+      roles: updates.role !== undefined ? withRole(existing.roles, updates.role) : undefined,
+    });
   }
 
   async function changePassword(id: string, newPassword: string): Promise<boolean> {
-    const user = await getById(id);
-    if (!user) return false;
-
-    user.passwordHash = await hashPassword(newPassword);
-    user.updatedAt = Date.now();
-
-    await saveUser(user);
-    return true;
-  }
-
-  async function deleteUser(id: string): Promise<boolean> {
-    const path = `${usersDir}/${id}.json`;
-    try {
-      if (!(await storage.exists(path))) return false;
-      await storage.delete(path);
-      return true;
-    } catch {
-      return false;
-    }
+    const existing = await store.getById(id);
+    if (!existing) return false;
+    const updated = await store.update(id, { passwordHash: await hashPassword(newPassword) });
+    return updated !== null;
   }
 
   async function ensureDefaultAdmin(): Promise<{ created: boolean; passwordFile?: string }> {
-    const allUsers = await list();
-    const admins = allUsers.filter((u) => u.role === "admin" && u.enabled);
+    const allUsers = await store.list();
+    const admins = allUsers.filter((u) => u.enabled && u.roles.includes("admin"));
 
     if (admins.length > 0) {
       if (admins.length > 1) {
@@ -189,27 +137,16 @@ export function createUserManager(config: UserManagerConfig): UserManager {
     return { created: true, passwordFile };
   }
 
-  async function saveUser(user: User): Promise<void> {
-    const path = `${usersDir}/${user.id}.json`;
-    const data = new TextEncoder().encode(JSON.stringify(user, null, 2));
-    await storage.write(path, data);
-  }
-
   return {
     create,
-    getById,
-    getByUsername,
-    list,
+    getById: store.getById,
+    getByUsername: store.getByUsername,
+    list: store.list,
     update,
     changePassword,
-    delete: deleteUser,
+    delete: store.delete,
     ensureDefaultAdmin,
   };
-}
-
-async function generateId(): Promise<string> {
-  const bytes = crypto.getRandomValues(new Uint8Array(8));
-  return encodeHex(bytes);
 }
 
 function generatePassword(): string {

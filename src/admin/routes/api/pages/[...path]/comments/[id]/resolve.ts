@@ -21,7 +21,7 @@ export const handler = {
     if (!authResult.user) return json({ error: "Unauthorized" }, 401);
 
     try {
-      const resolved = await comments.resolve(pagePath, id, authResult.user.username);
+      const resolved = await comments.resolve(pagePath, id, authResult.user.username ?? authResult.user.id);
       if (!resolved) return json({ error: "Comment not found" }, 404);
       return json(resolved);
     } catch (err) {

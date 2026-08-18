@@ -8,6 +8,7 @@ import type { SessionManager } from "./sessions.ts";
 import type { UserManager } from "./users.ts";
 import type { AdminPermission, AuthResult } from "../types.ts";
 import { ROLE_PERMISSIONS } from "../types.ts";
+import { highestValidRole } from "./role-utils.ts";
 
 /** Options for {@link createAuthMiddleware}. */
 export interface AuthMiddlewareConfig {
@@ -100,7 +101,12 @@ export function createAuthMiddleware(config: AuthMiddlewareConfig): AuthMiddlewa
 
   function hasPermission(authResult: AuthResult, permission: AdminPermission): boolean {
     if (!authResult.authenticated || !authResult.user) return false;
-    const permissions = ROLE_PERMISSIONS[authResult.user.role];
+    // A user with no admin-tier string in roles[] (e.g. a public site member
+    // with only content-gating tags) has no admin-panel permissions at all —
+    // there is no "no role" entry in ROLE_PERMISSIONS to fall back to.
+    const role = highestValidRole(authResult.user.roles);
+    if (!role) return false;
+    const permissions = ROLE_PERMISSIONS[role];
     return permissions.includes(permission);
   }
 

@@ -60,7 +60,7 @@ function makeCtx(route: string | null, pages: PageIndex[], storageContent?: stri
     req: new Request(url.href, { method: "GET", headers: { host: "localhost" } }),
     url,
     state: {
-      auth: { authenticated: true, user: { id: "1", role: "admin" } },
+      auth: { authenticated: true, user: { id: "1", roles: ["admin"] } },
       adminContext: {
         auth: {
           hasPermission: (_auth: unknown, _perm: string) => true,

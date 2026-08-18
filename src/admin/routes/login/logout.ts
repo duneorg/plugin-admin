@@ -5,7 +5,7 @@
 
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";
-import { csrfCheck } from "../api/_utils.ts";
+import { actorFromAuth, csrfCheck } from "../api/_utils.ts";
 
 export const handler = {
   async POST(ctx: FreshContext<AdminState>) {
@@ -23,7 +23,7 @@ export const handler = {
       if (authResult.user) {
         void auditLogger?.log({
           event: "auth.logout",
-          actor: { userId: authResult.user.id, username: authResult.user.username, name: authResult.user.name },
+          actor: actorFromAuth(authResult),
           ip: null,
           userAgent: ctx.req.headers.get("user-agent"),
           target: null,

@@ -71,7 +71,7 @@ Deno.test("findOrProvisionUser: creates a new user at defaultRole when provider 
   const created = await findOrProvisionUser(providerUser(), users, { defaultRole: "editor" });
 
   assertEquals(created.username, "bob");
-  assertEquals(created.role, "editor");
+  assertEquals(created.roles, ["editor"]);
   assertEquals(created.enabled, true);
 });
 
@@ -85,7 +85,7 @@ Deno.test("findOrProvisionUser: accepts a provider-reported role at or below def
     { defaultRole: "editor" },
   );
 
-  assertEquals(created.role, "author");
+  assertEquals(created.roles, ["author"]);
 });
 
 Deno.test("findOrProvisionUser: caps a new user's role at defaultRole even if the provider reports higher", async () => {
@@ -98,7 +98,7 @@ Deno.test("findOrProvisionUser: caps a new user's role at defaultRole even if th
     { defaultRole: "author" },
   );
 
-  assertEquals(created.role, "author");
+  assertEquals(created.roles, ["author"]);
 });
 
 Deno.test("findOrProvisionUser: ignores unknown role strings in the roles array, falls back to defaultRole", async () => {
@@ -111,7 +111,7 @@ Deno.test("findOrProvisionUser: ignores unknown role strings in the roles array,
     { defaultRole: "editor" },
   );
 
-  assertEquals(created.role, "editor");
+  assertEquals(created.roles, ["editor"]);
 });
 
 Deno.test("findOrProvisionUser: picks the highest-ranked valid role when roles has multiple entries", async () => {
@@ -124,7 +124,7 @@ Deno.test("findOrProvisionUser: picks the highest-ranked valid role when roles h
     { defaultRole: "admin" },
   );
 
-  assertEquals(created.role, "editor");
+  assertEquals(created.roles, ["editor"]);
 });
 
 // === findOrProvisionUser: existing user sync ===
@@ -146,7 +146,7 @@ Deno.test("findOrProvisionUser: refuses to elevate an existing user's role from 
     { defaultRole: "author" },
   );
 
-  assertEquals(result.role, "author");
+  assertEquals(result.roles, ["author"]);
 });
 
 Deno.test("findOrProvisionUser: permits demoting an existing user's role from provider attributes", async () => {
@@ -166,7 +166,7 @@ Deno.test("findOrProvisionUser: permits demoting an existing user's role from pr
     { defaultRole: "author" },
   );
 
-  assertEquals(result.role, "author");
+  assertEquals(result.roles, ["author"]);
 });
 
 Deno.test("findOrProvisionUser: keeps existing user's role unchanged when provider reports no roles", async () => {
@@ -182,7 +182,7 @@ Deno.test("findOrProvisionUser: keeps existing user's role unchanged when provid
 
   const result = await findOrProvisionUser(providerUser(), users, { defaultRole: "author" });
 
-  assertEquals(result.role, "editor");
+  assertEquals(result.roles, ["editor"]);
 });
 
 Deno.test("findOrProvisionUser: syncs display name from the provider on each login", async () => {

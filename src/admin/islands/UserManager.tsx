@@ -11,7 +11,7 @@ interface User {
   username: string;
   name: string;
   email: string;
-  role: string;
+  roles: string[];
   enabled: boolean;
   createdAt: number;
 }
@@ -69,7 +69,7 @@ export default function UserManager({ prefix }: Props) {
   }
 
   function openEdit(user: User) {
-    setFName(user.name); setFEmail(user.email); setFRole(user.role);
+    setFName(user.name); setFEmail(user.email); setFRole(user.roles[0] ?? "author");
     setFEnabled(user.enabled); setFormError("");
     setModal({ kind: "edit", user });
   }
@@ -198,7 +198,7 @@ export default function UserManager({ prefix }: Props) {
                 </td>
                 <td>{u.name}</td>
                 <td>{u.email}</td>
-                <td>{u.role}</td>
+                <td>{u.roles.join(", ")}</td>
                 <td>
                   <button type="button"
                     class={`btn btn-xs ${u.enabled ? "btn-enabled" : "btn-disabled"}`}

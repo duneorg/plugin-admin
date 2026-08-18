@@ -205,8 +205,8 @@ export function createCommentManager(
       const comment: PageComment = {
         id: await generateId(),
         pageSourcePath,
-        author: author.name || author.username,
-        authorUsername: author.username,
+        author: author.name || author.username || author.id,
+        authorUsername: author.username ?? author.id,
         body: input.body,
         createdAt: now,
         updatedAt: now,

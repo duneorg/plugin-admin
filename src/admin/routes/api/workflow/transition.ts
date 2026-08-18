@@ -3,6 +3,7 @@
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
 import { applyWorkflowTransition } from "../../../workflow-actions.ts";
+import { highestValidRole } from "../../../auth/role-utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -25,7 +26,7 @@ export const handler = {
       if (!pageIndex) return json({ error: "Page not found" }, 404);
 
       const currentStatus = workflow.getStatus(pageIndex);
-      const userRole = authResult.user?.role;
+      const userRole = highestValidRole(authResult.user?.roles);
       if (!workflow.canTransition(currentStatus, newStatus, userRole)) {
         return json({ error: `Cannot transition from ${currentStatus} to ${newStatus}` }, 400);
       }

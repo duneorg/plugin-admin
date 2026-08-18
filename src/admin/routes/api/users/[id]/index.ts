@@ -3,6 +3,8 @@
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../../_utils.ts";
 import { toUserInfo } from "../../../../types.ts";
+import { highestValidRole } from "../../../../auth/role-utils.ts";
+import { DuplicateEmailError } from "@dune/core/auth/user-store";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -20,10 +22,10 @@ export const handler = {
       const body = await ctx.req.json();
       const { name, email, role, enabled } = body;
 
-      if (role !== undefined && authResult.user?.role !== "admin") {
+      if (role !== undefined && !authResult.user?.roles.includes("admin")) {
         return json({ error: "Only admins can change user roles" }, 403);
       }
-      if (role === "admin" && authResult.user?.role !== "admin") {
+      if (role === "admin" && !authResult.user?.roles.includes("admin")) {
         return json({ error: "Only admins can assign admin role" }, 403);
       }
       if (role !== undefined) {
@@ -43,10 +45,10 @@ export const handler = {
       const wouldDemote = role !== undefined && role !== "admin";
       const wouldDisable = enabled !== undefined && !enabled;
       const targetUser = await users.getById(userId);
-      if (targetUser?.role === "admin" && (wouldDemote || wouldDisable)) {
+      if (targetUser?.roles.includes("admin") && (wouldDemote || wouldDisable)) {
         const allUsers = await users.list();
         const remainingAdmins = allUsers.filter(
-          (u) => u.role === "admin" && u.enabled && u.id !== userId,
+          (u) => u.roles.includes("admin") && u.enabled && u.id !== userId,
         ).length;
         if (remainingAdmins === 0) {
           const action = wouldDemote ? "demote" : "disable";
@@ -60,15 +62,18 @@ export const handler = {
       if (authz && (role !== undefined || enabled !== undefined)) {
         const existing = targetUser;
         if (existing) {
+          const existingRole = highestValidRole(existing.roles);
           if (role !== undefined) {
-            // Role change: revoke old relation, grant new one.
-            await authz.disallowAllMatching({
-              who: { type: "user", id: userId },
-              was: existing.role as "admin" | "editor" | "author",
-              onWhat: { type: "app", id: "admin" },
-            }).catch((err) => {
-              console.warn(`[dune/authz] disallowAllMatching failed on role change for user ${userId}:`, err);
-            });
+            // Role change: revoke old relation (if the account had one), grant new one.
+            if (existingRole) {
+              await authz.disallowAllMatching({
+                who: { type: "user", id: userId },
+                was: existingRole,
+                onWhat: { type: "app", id: "admin" },
+              }).catch((err) => {
+                console.warn(`[dune/authz] disallowAllMatching failed on role change for user ${userId}:`, err);
+              });
+            }
             await authz.allow({
               who: { type: "user", id: userId },
               toBe: role,
@@ -86,20 +91,30 @@ export const handler = {
               });
             } else if (enabled && !existing.enabled) {
               // Re-enabling: restore the tuple for their current (or newly set) role.
-              const effectiveRole = (role ?? existing.role) as "admin" | "editor" | "author";
-              await authz.allow({
-                who: { type: "user", id: userId },
-                toBe: effectiveRole,
-                onWhat: { type: "app", id: "admin" },
-              }).catch((err) => {
-                console.warn(`[dune/authz] allow failed on re-enable for user ${userId}:`, err);
-              });
+              const effectiveRole = role ?? existingRole;
+              if (effectiveRole) {
+                await authz.allow({
+                  who: { type: "user", id: userId },
+                  toBe: effectiveRole,
+                  onWhat: { type: "app", id: "admin" },
+                }).catch((err) => {
+                  console.warn(`[dune/authz] allow failed on re-enable for user ${userId}:`, err);
+                });
+              }
             }
           }
         }
       }
 
-      const updated = await users.update(userId, updates);
+      let updated;
+      try {
+        updated = await users.update(userId, updates);
+      } catch (err) {
+        if (err instanceof DuplicateEmailError) {
+          return json({ error: "Email already in use" }, 409);
+        }
+        throw err;
+      }
       if (!updated) return json({ error: "User not found" }, 404);
 
       void auditLogger?.log({
@@ -136,10 +151,10 @@ export const handler = {
       // Prevent removing the last enabled admin — doing so would lock everyone
       // out of the admin panel with no recovery path via the UI.
       const targetUser = await users.getById(userId);
-      if (targetUser?.role === "admin") {
+      if (targetUser?.roles.includes("admin")) {
         const allUsers = await users.list();
         const remainingAdmins = allUsers.filter(
-          (u) => u.role === "admin" && u.enabled && u.id !== userId,
+          (u) => u.roles.includes("admin") && u.enabled && u.id !== userId,
         ).length;
         if (remainingAdmins === 0) {
           return json({ error: "Cannot delete the last admin account" }, 409);

@@ -175,7 +175,7 @@ Deno.test("UserManager: create stores user", async () => {
 
   assertEquals(user.username, "alice");
   assertEquals(user.email, "alice@example.com");
-  assertEquals(user.role, "admin");
+  assertEquals(user.roles, ["admin"]);
   assertEquals(user.enabled, true);
   assertEquals(user.id.length > 0, true);
 });
@@ -208,8 +208,8 @@ Deno.test("UserManager: list returns all users", async () => {
   const storage = createMemoryStorage();
   const mgr = createUserManager({ storage, usersDir: ".users" });
 
-  await mgr.create({ username: "u1", email: "", password: "p", role: "admin", name: "U1" });
-  await mgr.create({ username: "u2", email: "", password: "p", role: "editor", name: "U2" });
+  await mgr.create({ username: "u1", email: "u1@test.com", password: "p", role: "admin", name: "U1" });
+  await mgr.create({ username: "u2", email: "u2@test.com", password: "p", role: "editor", name: "U2" });
 
   const users = await mgr.list();
   assertEquals(users.length, 2);
@@ -230,7 +230,7 @@ Deno.test("UserManager: update modifies user fields", async () => {
   const updated = await mgr.update(user.id, { email: "new@test.com", role: "editor" });
   assertEquals(updated !== null, true);
   assertEquals(updated!.email, "new@test.com");
-  assertEquals(updated!.role, "editor");
+  assertEquals(updated!.roles, ["editor"]);
   assertEquals(updated!.username, "charlie"); // Unchanged
 });
 
@@ -252,8 +252,8 @@ Deno.test("UserManager: changePassword works", async () => {
   // Verify new password works
   const updatedUser = await mgr.getById(user.id);
   assertEquals(updatedUser !== null, true);
-  assertEquals(await verifyPassword("new-pass", updatedUser!.passwordHash), true);
-  assertEquals(await verifyPassword("old-pass", updatedUser!.passwordHash), false);
+  assertEquals(await verifyPassword("new-pass", updatedUser!.passwordHash ?? ""), true);
+  assertEquals(await verifyPassword("old-pass", updatedUser!.passwordHash ?? ""), false);
 });
 
 Deno.test("UserManager: delete removes user", async () => {
@@ -284,7 +284,7 @@ Deno.test("UserManager: ensureDefaultAdmin creates admin on first run", async ()
   // Admin user should exist
   const admin = await mgr.getByUsername("admin");
   assertEquals(admin !== null, true);
-  assertEquals(admin!.role, "admin");
+  assertEquals(admin!.roles, ["admin"]);
 });
 
 Deno.test("UserManager: ensureDefaultAdmin skips if admin exists", async () => {
@@ -352,14 +352,14 @@ Deno.test("AuthMiddleware: hasPermission checks role", () => {
   // Admin can delete pages
   const adminResult = {
     authenticated: true,
-    user: { role: "admin" } as any,
+    user: { roles: ["admin"] } as any,
   };
   assertEquals(auth.hasPermission(adminResult, "pages.delete"), true);
 
   // Author cannot delete pages
   const authorResult = {
     authenticated: true,
-    user: { role: "author" } as any,
+    user: { roles: ["author"] } as any,
   };
   assertEquals(auth.hasPermission(authorResult, "pages.delete"), false);
 });
@@ -401,10 +401,12 @@ Deno.test("toUserInfo: strips password hash", () => {
     username: "test",
     email: "test@test.com",
     passwordHash: "secret-hash",
-    role: "admin" as const,
+    provider: "local",
+    roles: ["admin"],
     name: "Test",
     createdAt: 1000,
     updatedAt: 2000,
+    lastSeenAt: 2000,
     enabled: true,
   };
 

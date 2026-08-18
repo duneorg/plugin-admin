@@ -41,8 +41,8 @@ export const handler = {
 
       if (format === "tsx") {
         const allowedRoles: string[] = config.system.content.allowTsxFormat ?? ["admin"];
-        const userRole = authResult.user?.role ?? "";
-        if (allowedRoles.length === 0 || !allowedRoles.includes(userRole)) {
+        const userRoles = authResult.user?.roles ?? [];
+        if (allowedRoles.length === 0 || !userRoles.some((r) => allowedRoles.includes(r))) {
           return json({
             error: "TSX format requires admin role. TSX pages execute server-side code and must be created by trusted authors.",
           }, 403);

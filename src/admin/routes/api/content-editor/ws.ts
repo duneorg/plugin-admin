@@ -51,7 +51,7 @@ export const handler = {
 
     return contentEditor.wsHandler!(ctx.req, {
       id: authResult.user.id,
-      name: authResult.user.username,
+      name: authResult.user.username ?? authResult.user.id,
     });
   },
 };

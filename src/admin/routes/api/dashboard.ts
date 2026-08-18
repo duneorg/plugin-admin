@@ -2,11 +2,8 @@
 
 import type { AdminState } from "../../types.ts";
 import { json, requirePermission } from "./_utils.ts";
+import { toUserInfo } from "../../types.ts";
 import type { FreshContext } from "fresh";
-
-function toUserInfo(u: { id: string; username: string; name: string; email: string; role: string; enabled: boolean }) {
-  return { id: u.id, username: u.username, name: u.name, email: u.email, role: u.role, enabled: u.enabled };
-}
 
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
@@ -25,7 +22,7 @@ export const handler = {
         mdx: engine.pages.filter((p) => p.format === "mdx").length,
         tsx: engine.pages.filter((p) => p.format === "tsx").length,
       },
-      user: authResult.user ? toUserInfo(authResult.user as Parameters<typeof toUserInfo>[0]) : null,
+      user: authResult.user ? toUserInfo(authResult.user) : null,
     });
   },
 };
