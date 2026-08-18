@@ -127,6 +127,26 @@ This project follows [Semantic Versioning](https://semver.org).
   `@dune/core` pin is bumped to require it; currently only resolvable via
   the local workspace link.
 
+### Fixed
+
+- **11 call sites bypassed the polizy `authz` system and checked
+  `ROLE_PERMISSIONS` directly.** `AuthMiddleware.hasPermission()` only
+  ever consults the flat `ROLE_PERMISSIONS` table — `requirePermission()`
+  already checked `authz.check()` first when configured, but page routes
+  (`config`, `metrics`, `search`, `audit`, `users`, `jobs`), the collab and
+  content-editor WebSocket upgrade handlers, the comment
+  ownership-or-permission check, and `mount.ts`'s plugin-registered
+  admin-page gate all called `AdminContext.auth.hasPermission()` directly
+  instead, silently bypassing `authz.check()` even when one was
+  configured — dec-identity-unification Phase 5c's second half. Extracted
+  a `checkPermission()` helper (also exported from `admin/guards.ts`) and
+  switched every direct call site to it. `hasPermission()` itself is
+  unchanged — it's still the correct fallback for the narrow case where
+  authz creation failed at startup — but is now documented as
+  fallback-only. 6 new tests in `tests/admin/public_guards_test.ts`
+  proving `authz.check()`'s answer overrides `ROLE_PERMISSIONS` in either
+  direction; full 178-test suite passing.
+
 ---
 
 ## [1.1.5] — 2026-08-16
