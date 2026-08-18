@@ -27,6 +27,23 @@ This project follows [Semantic Versioning](https://semver.org).
   Full 161-test suite and `deno check`/`deno lint` across `src/` pass
   unchanged — purely a rename, no behavioral change.
 
+- **`AuthProviderUser.role?: Role` → `roles?: string[]`.**
+  `decisions/dec-identity-unification.md`'s Phase 4: the LDAP/SAML
+  `AuthProvider` bind/ACS verification logic behind this interface isn't
+  admin-specific — only its current sole consumer (`findOrProvisionUser()`,
+  provisioning into the admin `data/users/` store) is. A plain string array,
+  matching `SiteUser.roles`'s shape, lets a future public-site consumer
+  (`mountDuneAuth()`) reuse the same provider implementations without a
+  second verification stack. `findOrProvisionUser()` now picks the
+  highest-ranked valid `Role` out of the array (previously just used the
+  single value directly) before applying its existing
+  never-escalate-from-external-attributes policy — behaviorally unchanged
+  for every provider shipped today, all of which report at most one role.
+  Folds into the same unpublished 2.0.0 bump above — no separate version
+  bump needed. Added `tests/admin/provisioner_test.ts` (11 tests): no prior
+  coverage existed for `findOrProvisionUser()` or `LocalAuthProvider` at
+  all.
+
 ### Added
 
 - **`@dune/plugin-admin/admin/guards`** — a new public subpath exporting
