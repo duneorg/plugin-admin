@@ -10,12 +10,12 @@
  */
 
 import type { AdminState } from "../../types.ts";
-import { validatePagePath } from "../api/_utils.ts";
+import { checkPermission, validatePagePath } from "../api/_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
-  GET(ctx: FreshContext<AdminState>) {
-    const { inlineEdit, auth } = ctx.state.adminContext;
+  async GET(ctx: FreshContext<AdminState>) {
+    const { inlineEdit } = ctx.state.adminContext;
     if (!inlineEdit) {
       return new Response("Inline editing not enabled", { status: 501 });
     }
@@ -30,7 +30,9 @@ export const handler = {
     if (origin) {
       try {
         if (new URL(origin).host !== ctx.url.host) {
-          return new Response("Cross-origin WebSocket rejected", { status: 403 });
+          return new Response("Cross-origin WebSocket rejected", {
+            status: 403,
+          });
         }
       } catch {
         return new Response("Cross-origin WebSocket rejected", { status: 403 });
@@ -41,7 +43,7 @@ export const handler = {
     if (!authResult?.authenticated || !authResult.user) {
       return new Response("Unauthorized", { status: 401 });
     }
-    if (!auth.hasPermission(authResult, "pages.update")) {
+    if (!await checkPermission(ctx, "pages.update")) {
       return new Response("Forbidden", { status: 403 });
     }
 

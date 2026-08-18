@@ -2,6 +2,7 @@
 /** GET /admin/jobs — background jobs dashboard */
 
 import type { AdminState } from "../../types.ts";
+import { checkPermission } from "../api/_utils.ts";
 import type { FreshContext } from "fresh";
 import type { JobState } from "@dune/core/jobs";
 import type { JobScheduler } from "@dune/core/jobs";
@@ -18,7 +19,11 @@ function statusBadge(status: JobState["status"]) {
     errored: "background:#fed7d7;color:#c53030",
   };
   return (
-    <span style={`${styles[status] ?? styles.idle};padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600`}>
+    <span
+      style={`${
+        styles[status] ?? styles.idle
+      };padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600`}
+    >
       {status}
     </span>
   );
@@ -40,7 +45,8 @@ export default function JobsPage({ data }: { data: PageData }) {
 
       {jobs.length === 0 && (
         <p class="s-17a730ae">
-          No jobs registered. Create a <code>jobs/</code> directory in your project root and add job files.
+          No jobs registered. Create a <code>jobs/</code>{" "}
+          directory in your project root and add job files.
         </p>
       )}
 
@@ -59,7 +65,9 @@ export default function JobsPage({ data }: { data: PageData }) {
           <tbody>
             {jobs.map((job) => (
               <tr key={job.name}>
-                <td><code class="s-6a037922">{job.name}</code></td>
+                <td>
+                  <code class="s-6a037922">{job.name}</code>
+                </td>
                 <td>{statusBadge(job.status)}</td>
                 <td class="s-b1c3a18b">{fmtDate(job.lastRun)}</td>
                 <td class="s-b1c3a18b">{fmtDate(job.nextRun)}</td>
@@ -67,7 +75,11 @@ export default function JobsPage({ data }: { data: PageData }) {
                   {job.lastError ?? "—"}
                 </td>
                 <td>
-                  <form method="post" action={`${prefix}/api/jobs/${job.name}/run`} class="s-5677b988">
+                  <form
+                    method="post"
+                    action={`${prefix}/api/jobs/${job.name}/run`}
+                    class="s-5677b988"
+                  >
                     <button
                       type="submit"
                       class="s-c7a8daea"
@@ -84,7 +96,8 @@ export default function JobsPage({ data }: { data: PageData }) {
       )}
 
       <p class="s-6059c7e1">
-        Jobs are triggered automatically by their cron schedule. "Run now" fires the job immediately regardless of schedule.
+        Jobs are triggered automatically by their cron schedule. "Run now" fires
+        the job immediately regardless of schedule.
       </p>
     </div>
   );
@@ -93,11 +106,13 @@ export default function JobsPage({ data }: { data: PageData }) {
 export const handler = {
   async GET(ctx: FreshContext<AdminState>): Promise<Response> {
     const { prefix } = ctx.state.adminContext;
-    const { jobScheduler } = ctx.state.adminContext as typeof ctx.state.adminContext & {
-      jobScheduler?: JobScheduler;
-    };
+    const { jobScheduler } = ctx.state.adminContext as
+      & typeof ctx.state.adminContext
+      & {
+        jobScheduler?: JobScheduler;
+      };
 
-    if (!ctx.state.adminContext.auth.hasPermission(ctx.state.auth, "config.read")) {
+    if (!await checkPermission(ctx, "config.read")) {
       return new Response("Forbidden", { status: 403 });
     }
 

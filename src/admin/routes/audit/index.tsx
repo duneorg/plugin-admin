@@ -1,56 +1,98 @@
 /** @jsxImportSource preact */
 /** GET /admin/audit — audit log viewer */
 
-
 import type { AdminState } from "../../types.ts";
+import { checkPermission } from "../api/_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
-    const { auditLogger, auth, prefix } = ctx.state.adminContext;
-    if (!auth.hasPermission(ctx.state.auth, "config.read")) {
+    const { auditLogger, prefix } = ctx.state.adminContext;
+    if (!await checkPermission(ctx, "config.read")) {
       return new Response("Forbidden", { status: 403 });
     }
     if (!auditLogger) {
-      return ctx.render(<AuditRoute data={{ entries: [], disabled: true, prefix }} />);
+      return ctx.render(
+        <AuditRoute data={{ entries: [], disabled: true, prefix }} />,
+      );
     }
     const eventFilter = ctx.url.searchParams.get("event") ?? "";
     const q: import("@dune/core/audit").AuditQuery = { limit: 50 };
-    if (eventFilter) q.event = eventFilter as import("@dune/core/audit").AuditEventType;
+    if (eventFilter) {
+      q.event = eventFilter as import("@dune/core/audit").AuditEventType;
+    }
     const result = await auditLogger.query(q);
-    return ctx.render(<AuditRoute data={{ entries: result.entries, disabled: false, eventFilter, prefix }} />);
+    return ctx.render(
+      <AuditRoute
+        data={{ entries: result.entries, disabled: false, eventFilter, prefix }}
+      />,
+    );
   },
 };
 
 export default function AuditRoute(
-  { data }: { data: { entries: unknown[]; disabled: boolean; eventFilter?: string; prefix: string } },
+  { data }: {
+    data: {
+      entries: unknown[];
+      disabled: boolean;
+      eventFilter?: string;
+      prefix: string;
+    };
+  },
 ) {
   if (data.disabled) {
     return (
       <div>
-        <div class="section-header"><h2>Audit Log</h2></div>
+        <div class="section-header">
+          <h2>Audit Log</h2>
+        </div>
         <p class="s-17a730ae">Audit logging is not enabled.</p>
       </div>
     );
   }
   return (
     <div>
-      <div class="section-header"><h2>Audit Log</h2></div>
+      <div class="section-header">
+        <h2>Audit Log</h2>
+      </div>
       <table class="admin-table">
-        <thead><tr><th>Time</th><th>Event</th><th>Actor</th><th>Target</th><th>IP</th><th>Outcome</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Event</th>
+            <th>Actor</th>
+            <th>Target</th>
+            <th>IP</th>
+            <th>Outcome</th>
+          </tr>
+        </thead>
         <tbody>
           {(data.entries as Array<Record<string, unknown>>).map((e, i) => (
             <tr key={i}>
-              <td class="s-b3f1a710">{String(e.ts ?? "").replace("T", " ").slice(0, 19)}</td>
-              <td><code class="s-6b9c179a">{String(e.event ?? "")}</code></td>
+              <td class="s-b3f1a710">
+                {String(e.ts ?? "").replace("T", " ").slice(0, 19)}
+              </td>
+              <td>
+                <code class="s-6b9c179a">{String(e.event ?? "")}</code>
+              </td>
               <td>{(e.actor as { username?: string })?.username ?? "—"}</td>
               <td class="s-6b9c179a">
                 {e.target
-                  ? `${(e.target as { type?: string }).type ?? "?"}:${(e.target as { id?: string }).id ?? "?"}`
+                  ? `${(e.target as { type?: string }).type ?? "?"}:${
+                    (e.target as { id?: string }).id ?? "?"
+                  }`
                   : "—"}
               </td>
               <td class="s-c866c7be">{String(e.ip ?? "—")}</td>
-              <td><span class={`badge ${e.outcome === "success" ? "badge-success" : "badge-failure"}`}>{String(e.outcome ?? "")}</span></td>
+              <td>
+                <span
+                  class={`badge ${
+                    e.outcome === "success" ? "badge-success" : "badge-failure"
+                  }`}
+                >
+                  {String(e.outcome ?? "")}
+                </span>
+              </td>
             </tr>
           ))}
         </tbody>

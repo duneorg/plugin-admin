@@ -4,11 +4,12 @@
  */
 
 import type { AdminState } from "../../types.ts";
+import { checkPermission } from "../api/_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
-  GET(ctx: FreshContext<AdminState>) {
-    const { collab, auth } = ctx.state.adminContext;
+  async GET(ctx: FreshContext<AdminState>) {
+    const { collab } = ctx.state.adminContext;
     if (!collab) {
       return new Response("Collaboration not enabled", { status: 501 });
     }
@@ -24,7 +25,9 @@ export const handler = {
     if (origin) {
       try {
         if (new URL(origin).host !== ctx.url.host) {
-          return new Response("Cross-origin WebSocket rejected", { status: 403 });
+          return new Response("Cross-origin WebSocket rejected", {
+            status: 403,
+          });
         }
       } catch {
         return new Response("Cross-origin WebSocket rejected", { status: 403 });
@@ -41,7 +44,7 @@ export const handler = {
     }
     // Per-document authorization: bind WebSocket access to the same
     // permission a non-realtime page edit would require.
-    if (!auth.hasPermission(authResult, "pages.update")) {
+    if (!await checkPermission(ctx, "pages.update")) {
       return new Response("Forbidden", { status: 403 });
     }
     return collab.handleUpgrade(ctx.req, authResult.user);

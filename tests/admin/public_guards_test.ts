@@ -24,6 +24,7 @@ import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 // this is what actually proves the deno.json "./admin/guards" export map
 // entry resolves, not just that src/admin/guards.ts itself is well-formed.
 import {
+  checkPermission,
   csrfCheck,
   requirePermission,
   validatePagePath,
@@ -38,6 +39,12 @@ function makeCtx(
     authenticated?: boolean;
     permissions?: string[];
     params?: Record<string, string>;
+    /**
+     * When set, adminContext gets an `authz` field with a `check()` that
+     * always returns this value — exercises the authz-first path instead
+     * of the ROLE_PERMISSIONS fallback.
+     */
+    authzAllows?: boolean;
   } = {},
 ): any {
   const authenticated = opts.authenticated ?? true;
@@ -51,8 +58,11 @@ function makeCtx(
     state: {
       adminContext: {
         auditLogger: null,
-        // No `authz` field — exercises the ROLE_PERMISSIONS fallback path,
-        // the same one a plugin author would hit without polizy configured.
+        // No `authz` field by default — exercises the ROLE_PERMISSIONS
+        // fallback path, the same one hit without polizy configured.
+        ...(opts.authzAllows !== undefined
+          ? { authz: { check: () => Promise.resolve(opts.authzAllows) } }
+          : {}),
         auth: {
           hasPermission: (_authResult: unknown, permission: string) =>
             (opts.permissions ?? []).includes(permission),
@@ -71,9 +81,66 @@ Deno.test("public guards: csrfCheck/requirePermission/validatePagePath/withGuard
   // deno.json "./admin/guards" mapping) were broken, this file would fail
   // to even parse/type-check. Assert each is the right kind of value too.
   assertEquals(typeof csrfCheck, "function");
+  assertEquals(typeof checkPermission, "function");
   assertEquals(typeof requirePermission, "function");
   assertEquals(typeof validatePagePath, "function");
   assertEquals(typeof withGuards, "function");
+});
+
+// ── checkPermission: authz-first, ROLE_PERMISSIONS fallback-only ────────────
+//
+// dec-identity-unification Phase 5c (second half): authz.check() must be
+// the sole authority whenever it's configured — not a routine, silently-
+// coexisting alternative to ROLE_PERMISSIONS. These prove checkPermission()
+// actually consults authz.check() (and that its answer wins over what
+// ROLE_PERMISSIONS would say), rather than just documenting the intent.
+
+Deno.test("checkPermission: uses authz.check() when authz is configured, ignoring ROLE_PERMISSIONS", async () => {
+  // ROLE_PERMISSIONS-backed hasPermission would deny (no permissions
+  // granted), but authz.check() allows — authz's answer must win.
+  const ctx = makeCtx("GET", { permissions: [], authzAllows: true });
+  assertEquals(await checkPermission(ctx, "config.update" as never), true);
+});
+
+Deno.test("checkPermission: authz.check() denial wins even when ROLE_PERMISSIONS would allow", async () => {
+  const ctx = makeCtx("GET", {
+    permissions: ["config.update"],
+    authzAllows: false,
+  });
+  assertEquals(await checkPermission(ctx, "config.update" as never), false);
+});
+
+Deno.test("checkPermission: falls back to ROLE_PERMISSIONS when authz is not configured", async () => {
+  const allowed = makeCtx("GET", { permissions: ["config.update"] });
+  assertEquals(await checkPermission(allowed, "config.update" as never), true);
+
+  const denied = makeCtx("GET", { permissions: [] });
+  assertEquals(await checkPermission(denied, "config.update" as never), false);
+});
+
+Deno.test("checkPermission: falls back to ROLE_PERMISSIONS when authz is configured but the actor isn't authenticated", async () => {
+  const ctx = makeCtx("GET", {
+    authenticated: false,
+    permissions: [],
+    authzAllows: true,
+  });
+  // Not authenticated — no user id to check authz against, and the
+  // ROLE_PERMISSIONS fallback denies an unauthenticated result too.
+  assertEquals(await checkPermission(ctx, "config.update" as never), false);
+});
+
+Deno.test("requirePermission: returns null (allowed) when authz.check() allows", async () => {
+  const ctx = makeCtx("GET", { permissions: [], authzAllows: true });
+  assertEquals(await requirePermission(ctx, "config.update" as never), null);
+});
+
+Deno.test("requirePermission: returns 403 when authz.check() denies, even with ROLE_PERMISSIONS granting it", async () => {
+  const ctx = makeCtx("GET", {
+    permissions: ["config.update"],
+    authzAllows: false,
+  });
+  const res = await requirePermission(ctx, "config.update" as never);
+  assertEquals(res?.status, 403);
 });
 
 Deno.test("withGuards: CSRF denial short-circuits before the permission check or handler run", async () => {

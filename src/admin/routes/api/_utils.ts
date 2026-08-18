@@ -3,7 +3,7 @@
  */
 
 import type { FreshContext } from "fresh";
-import type { AdminState, AdminPermission } from "../../types.ts";
+import type { AdminPermission, AdminState } from "../../types.ts";
 
 export function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -75,7 +75,9 @@ function logAuthzDenial(
 /** CSRF check: reject cross-origin mutating requests. */
 export function csrfCheck(ctx: FreshContext<AdminState>): Response | null {
   const method = ctx.req.method;
-  if (method === "GET" || method === "HEAD" || method === "OPTIONS") return null;
+  if (method === "GET" || method === "HEAD" || method === "OPTIONS") {
+    return null;
+  }
   const requestHost = ctx.url.host;
   const deny = (detail: Record<string, unknown>): Response => {
     logAuthzDenial(ctx, "auth.csrf_denied", { method, ...detail });
@@ -95,7 +97,10 @@ export function csrfCheck(ctx: FreshContext<AdminState>): Response | null {
   // No Origin header (some browsers/clients omit it). Fall back to the
   // Fetch-metadata and Referer signals rather than allowing unconditionally.
   const secFetchSite = ctx.req.headers.get("sec-fetch-site");
-  if (secFetchSite !== null && secFetchSite !== "same-origin" && secFetchSite !== "none") {
+  if (
+    secFetchSite !== null && secFetchSite !== "same-origin" &&
+    secFetchSite !== "none"
+  ) {
     // "cross-site" / "same-site" are not same-origin — reject.
     return deny({ secFetchSite });
   }
@@ -115,35 +120,51 @@ export function csrfCheck(ctx: FreshContext<AdminState>): Response | null {
 }
 
 /**
- * Permission check — returns 403 response if denied, null if allowed.
+ * Permission check — the sole authority every admin route (and any
+ * ad-hoc ownership-or-permission check) should go through, rather than
+ * calling `AdminContext.auth.hasPermission()` directly. That method only
+ * ever consults the flat `ROLE_PERMISSIONS` table — calling it straight
+ * bypasses the polizy `authz` system even when one is configured, which is
+ * exactly the "parallel, separately-maintained flat table" dec-auth-storage
+ * said should be fully replaced, not coexist with (dec-identity-unification
+ * Phase 5c, second half).
  *
- * When the polizy authz system is wired (auth.mode = "dune", authzStore = "local"),
- * uses `authz.check()` as the authority. Falls back to `ROLE_PERMISSIONS` when
- * authz is not configured (external-jwt mode or headless setups without authz).
+ * When the polizy authz system is wired (created whenever the admin panel
+ * is enabled — see `admin.authzStore`'s doc comment in
+ * `src/config/admin-config.ts`), uses `authz.check()` as the sole
+ * authority. Falls back to `ROLE_PERMISSIONS` only in the narrow,
+ * exceptional case where authz creation itself failed at startup (already
+ * logged loudly there) — not as a routine, silently-coexisting path.
  */
-export async function requirePermission(
+export async function checkPermission(
   ctx: FreshContext<AdminState>,
   permission: AdminPermission,
-): Promise<Response | null> {
+): Promise<boolean> {
   const { auth, authz } = ctx.state.adminContext;
   const authResult = ctx.state.auth;
 
   if (authz && authResult.authenticated && authResult.user) {
     // deno-lint-ignore no-explicit-any
-    const allowed = await authz.check({
+    return await authz.check({
       who: { type: "user", id: authResult.user.id },
       canThey: permission as any,
       onWhat: { type: "app", id: "admin" },
     });
-    if (!allowed) {
-      logAuthzDenial(ctx, "auth.permission_denied", { permission });
-      return json({ error: "Forbidden" }, 403);
-    }
-    return null;
   }
 
-  // Fallback: ROLE_PERMISSIONS (external-jwt mode or authz not configured)
-  if (!auth.hasPermission(authResult, permission)) {
+  // Fallback: ROLE_PERMISSIONS (authz creation failed at startup — see the
+  // console.warn in src/runtime/bootstrap.ts — or, in external-jwt mode,
+  // authz was never configured to begin with)
+  return auth.hasPermission(authResult, permission);
+}
+
+/** Permission check — returns 403 response if denied, null if allowed. See {@link checkPermission}. */
+export async function requirePermission(
+  ctx: FreshContext<AdminState>,
+  permission: AdminPermission,
+): Promise<Response | null> {
+  const allowed = await checkPermission(ctx, permission);
+  if (!allowed) {
     logAuthzDenial(ctx, "auth.permission_denied", { permission });
     return json({ error: "Forbidden" }, 403);
   }
@@ -195,13 +216,15 @@ export function validatePagePath(p: string): boolean {
  * trusted-proxy-aware helper in src/security/rate-limit.ts.
  */
 export function getClientIp(req: Request): string | null {
-  return req.headers.get("x-forwarded-for")?.split(",")[0].trim()
-    ?? req.headers.get("x-real-ip")
-    ?? null;
+  return req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    req.headers.get("x-real-ip") ??
+    null;
 }
 
 export function actorFromAuth(
-  authResult: { user?: { id: string; username?: string; name?: string } | null },
+  authResult: {
+    user?: { id: string; username?: string; name?: string } | null;
+  },
 ): import("@dune/core/audit").AuditActor | null {
   if (!authResult.user) return null;
   const username = authResult.user.username ?? authResult.user.id;

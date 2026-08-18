@@ -36,7 +36,15 @@ export interface AuthMiddlewareConfig {
 export interface AuthMiddleware {
   /** Extract and validate session from request. Returns auth result. */
   authenticate(req: Request): Promise<AuthResult>;
-  /** Check if the authenticated user has a specific permission */
+  /**
+   * Check permission against the flat `ROLE_PERMISSIONS` table only — does
+   * NOT consult the polizy `authz` system. Route handlers should use
+   * `checkPermission()`/`requirePermission()` (`routes/api/_utils.ts`)
+   * instead, which check `authz.check()` first when configured and only
+   * fall back to this method in the narrow, exceptional case where authz
+   * creation itself failed at startup. Calling this directly bypasses
+   * authz even when one is configured (dec-identity-unification Phase 5c).
+   */
   hasPermission(authResult: AuthResult, permission: AdminPermission): boolean;
   /** Create a session cookie value for Set-Cookie header */
   createSessionCookie(sessionId: string, maxAge: number): string;
@@ -45,7 +53,9 @@ export interface AuthMiddleware {
 }
 
 /** Create an auth middleware for validating admin session cookies. */
-export function createAuthMiddleware(config: AuthMiddlewareConfig): AuthMiddleware {
+export function createAuthMiddleware(
+  config: AuthMiddlewareConfig,
+): AuthMiddleware {
   const { sessions, users } = config;
   const cookieName = config.cookieName ?? "dune_session";
   const secure = config.secure !== false; // default true
@@ -77,9 +87,9 @@ export function createAuthMiddleware(config: AuthMiddlewareConfig): AuthMiddlewa
     if (session.ip) {
       let requestIp: string | undefined;
       if (trustForwardedFor) {
-        requestIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim()
-          ?? req.headers.get("x-real-ip")
-          ?? undefined;
+        requestIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+          req.headers.get("x-real-ip") ??
+          undefined;
       }
       if (requestIp && requestIp !== session.ip) {
         return { authenticated: false, error: "Session IP mismatch" };
@@ -99,7 +109,11 @@ export function createAuthMiddleware(config: AuthMiddlewareConfig): AuthMiddlewa
     return { authenticated: true, user, session };
   }
 
-  function hasPermission(authResult: AuthResult, permission: AdminPermission): boolean {
+  /** ROLE_PERMISSIONS-only check — see the doc comment on {@link AuthMiddleware.hasPermission}. */
+  function hasPermission(
+    authResult: AuthResult,
+    permission: AdminPermission,
+  ): boolean {
     if (!authResult.authenticated || !authResult.user) return false;
     // A user with no admin-tier string in roles[] (e.g. a public site member
     // with only content-gating tags) has no admin-panel permissions at all —
@@ -120,7 +134,12 @@ export function createAuthMiddleware(config: AuthMiddlewareConfig): AuthMiddlewa
     return `${cookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secureFlag}`;
   }
 
-  return { authenticate, hasPermission, createSessionCookie, clearSessionCookie };
+  return {
+    authenticate,
+    hasPermission,
+    createSessionCookie,
+    clearSessionCookie,
+  };
 }
 
 /**

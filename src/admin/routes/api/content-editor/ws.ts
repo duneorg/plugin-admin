@@ -9,14 +9,16 @@
  */
 
 import type { AdminState } from "../../../types.ts";
-import { validatePagePath } from "../_utils.ts";
+import { checkPermission, validatePagePath } from "../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
-  GET(ctx: FreshContext<AdminState>) {
-    const { contentEditor, auth } = ctx.state.adminContext;
+  async GET(ctx: FreshContext<AdminState>) {
+    const { contentEditor } = ctx.state.adminContext;
     if (!contentEditor?.wsHandler) {
-      return new Response("Content editor WebSocket not available", { status: 501 });
+      return new Response("Content editor WebSocket not available", {
+        status: 501,
+      });
     }
     if (ctx.req.headers.get("upgrade")?.toLowerCase() !== "websocket") {
       return new Response("Expected WebSocket upgrade", { status: 426 });
@@ -29,7 +31,9 @@ export const handler = {
     if (origin) {
       try {
         if (new URL(origin).host !== ctx.url.host) {
-          return new Response("Cross-origin WebSocket rejected", { status: 403 });
+          return new Response("Cross-origin WebSocket rejected", {
+            status: 403,
+          });
         }
       } catch {
         return new Response("Cross-origin WebSocket rejected", { status: 403 });
@@ -40,7 +44,7 @@ export const handler = {
     if (!authResult?.authenticated || !authResult.user) {
       return new Response("Unauthorized", { status: 401 });
     }
-    if (!auth.hasPermission(authResult, "pages.update")) {
+    if (!await checkPermission(ctx, "pages.update")) {
       return new Response("Forbidden", { status: 403 });
     }
 

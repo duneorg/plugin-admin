@@ -39,6 +39,7 @@
  * @module
  */
 export {
+  checkPermission,
   csrfCheck,
   requirePermission,
   validatePagePath,

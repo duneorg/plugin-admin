@@ -35,9 +35,11 @@
  */
 
 // deno-lint-ignore no-explicit-any
-import type { App, Middleware } from "fresh";
+import type { App, FreshContext, Middleware } from "fresh";
 import type { BootstrapResult } from "@dune/core/bootstrap";
 import { registerPluginPublicRoutes } from "@dune/core/fresh-app";
+import { checkPermission } from "./routes/api/_utils.ts";
+import type { AdminState } from "./types.ts";
 import {
   adminIslands,
   adminLayout,
@@ -102,10 +104,9 @@ export async function mountDuneAdmin(
     // restrict access to a subset of admin roles.
     const pluginAdminPages = adminContext?.pluginPages;
     if (pluginAdminPages && pluginAdminPages.length > 0 && adminContext) {
-      const adminCtx = adminContext;
       for (const page of pluginAdminPages) {
         const fullPath = `${adminPrefix}${page.path}`;
-        app.get(fullPath, (fc) => {
+        app.get(fullPath, async (fc) => {
           // deno-lint-ignore no-explicit-any
           const authResult = (fc.state as any).auth;
           if (!authResult?.authenticated) {
@@ -116,8 +117,8 @@ export async function mountDuneAdmin(
           }
           if (page.permission) {
             // deno-lint-ignore no-explicit-any
-            const ok = adminCtx.auth.hasPermission(
-              authResult,
+            const ok = await checkPermission(
+              fc as unknown as FreshContext<AdminState>,
               page.permission as any,
             );
             if (!ok) {

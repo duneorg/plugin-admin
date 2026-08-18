@@ -1,7 +1,14 @@
 /** PATCH + DELETE /admin/api/pages/:path/comments/:id */
 
 import type { AdminState } from "../../../../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck, validatePagePath } from "../../../../_utils.ts";
+import {
+  checkPermission,
+  csrfCheck,
+  json,
+  requirePermission,
+  serverError,
+  validatePagePath,
+} from "../../../../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -11,11 +18,13 @@ export const handler = {
     const denied = await requirePermission(ctx, "pages.read");
     if (denied) return denied;
 
-    const { comments, auth } = ctx.state.adminContext;
+    const { comments } = ctx.state.adminContext;
     if (!comments) return json({ error: "Comments not available" }, 503);
     const { path: rawPath, id } = ctx.params;
     const pagePath = decodeURIComponent(rawPath);
-    if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
+    if (!validatePagePath(pagePath)) {
+      return json({ error: "Invalid path" }, 400);
+    }
     const authResult = ctx.state.auth;
 
     try {
@@ -23,11 +32,13 @@ export const handler = {
       if (!existing) return json({ error: "Comment not found" }, 404);
 
       const canModify = existing.authorUsername === authResult.user?.username ||
-        auth.hasPermission(authResult, "pages.delete");
+        await checkPermission(ctx, "pages.delete");
       if (!canModify) return json({ error: "Forbidden" }, 403);
 
       const body = await ctx.req.json() as { body?: unknown };
-      if (!body.body || typeof body.body !== "string") return json({ error: "Missing body" }, 400);
+      if (!body.body || typeof body.body !== "string") {
+        return json({ error: "Missing body" }, 400);
+      }
       const updated = await comments.update(pagePath, id, body.body);
       return json(updated);
     } catch (err) {
@@ -41,11 +52,13 @@ export const handler = {
     const denied = await requirePermission(ctx, "pages.read");
     if (denied) return denied;
 
-    const { comments, auth } = ctx.state.adminContext;
+    const { comments } = ctx.state.adminContext;
     if (!comments) return json({ error: "Comments not available" }, 503);
     const { path: rawPath, id } = ctx.params;
     const pagePath = decodeURIComponent(rawPath);
-    if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
+    if (!validatePagePath(pagePath)) {
+      return json({ error: "Invalid path" }, 400);
+    }
     const authResult = ctx.state.auth;
 
     try {
@@ -53,7 +66,7 @@ export const handler = {
       if (!existing) return json({ error: "Comment not found" }, 404);
 
       const canModify = existing.authorUsername === authResult.user?.username ||
-        auth.hasPermission(authResult, "pages.delete");
+        await checkPermission(ctx, "pages.delete");
       if (!canModify) return json({ error: "Forbidden" }, 403);
 
       await comments.delete(pagePath, id);
