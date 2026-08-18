@@ -1,9 +1,10 @@
 /**
  * Tests for findOrProvisionUser() and LocalAuthProvider — covers the Phase 4
  * generalization of AuthProviderUser.role (single Role) to
- * AuthProviderUser.roles (string[], matching SiteUser's shape) and the
- * pre-existing role-escalation-refusal security policy, which must keep
- * working unchanged now that the input is an array.
+ * AuthProviderUser.roles (string[], matching @dune/core's unified
+ * User.roles's shape) and the pre-existing role-escalation-refusal
+ * security policy, which must keep working unchanged now that the input
+ * is an array.
  */
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";

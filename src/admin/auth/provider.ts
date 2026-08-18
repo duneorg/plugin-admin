@@ -12,14 +12,15 @@ import type { Role } from "@dune/core/config";
 /**
  * User attributes returned by an external auth provider after successful authentication.
  *
- * `roles` is a plain string array — matching `SiteUser.roles`'s shape — rather
- * than the admin panel's closed `Role` union, per
- * decisions/dec-identity-unification.md's Phase 4: this interface (and the
- * LDAP/SAML bind/ACS verification logic behind it) isn't admin-specific, only
- * its current sole consumer (`findOrProvisionUser()`, which provisions into
- * the admin `data/users/` store) is. A future public-site consumer
- * (`mountDuneAuth()`) can use the array directly against `SiteUser.roles`;
- * `findOrProvisionUser()` picks a single `Role` out of it (see that file).
+ * `roles` is a plain string array — matching `@dune/core`'s unified
+ * `User.roles`'s shape — rather than the admin panel's closed `Role` union,
+ * per decisions/dec-identity-unification.md's Phase 4: this interface (and
+ * the LDAP/SAML bind/ACS verification logic behind it) isn't admin-specific,
+ * only its current sole consumer (`findOrProvisionUser()`, which provisions
+ * into `data/users/` — the same store public site visitors live in as of
+ * Phase 5b) is. A future public-site consumer (`mountDuneAuth()`) can use
+ * the array directly against `User.roles`; `findOrProvisionUser()` picks a
+ * single admin-tier `Role` out of it (see that file).
  */
 export interface AuthProviderUser {
   /** Stable external identifier (LDAP DN, SAML NameID, OpenID sub, local user ID, etc.) */
