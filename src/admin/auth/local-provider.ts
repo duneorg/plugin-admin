@@ -26,7 +26,7 @@ export class LocalAuthProvider implements AuthProvider {
       username: user.username,
       email: user.email,
       name: user.name,
-      role: user.role,
+      roles: [user.role],
     };
   }
 }

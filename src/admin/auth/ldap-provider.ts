@@ -40,7 +40,7 @@
  *         username: creds.username,
  *         email: entry[emailAttr] as string | undefined,
  *         name: entry[nameAttr] as string | undefined,
- *         role,
+ *         roles: [role],
  *       };
  *     } else {
  *       // Direct bind: construct user DN from template
@@ -49,7 +49,7 @@
  *       return {
  *         externalId: userDn,
  *         username: creds.username,
- *         role: this.config.defaultRole ?? "author",
+ *         roles: [this.config.defaultRole ?? "author"],
  *       };
  *     }
  *   } catch {

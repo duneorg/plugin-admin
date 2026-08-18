@@ -65,7 +65,7 @@
  *       username: (attrs[usernameAttr] as string) ?? nameId,
  *       email: attrs[emailAttr] as string | undefined,
  *       name: attrs[nameAttr] as string | undefined,
- *       role,
+ *       roles: [role],
  *     };
  *   } catch {
  *     return null; // Signature verification or parsing failure

@@ -38,6 +38,25 @@ function sanitizeProviderRole(role: string | undefined, fallback: Role): Role {
 }
 
 /**
+ * Pick a single admin `Role` out of an `AuthProviderUser.roles` array.
+ *
+ * `AuthProviderUser.roles` is a generic string array (see provider.ts's
+ * Phase 4 doc comment) — the admin store still holds one `Role` per user, so
+ * this provisioner picks the highest-ranked valid `Role` found in the array
+ * rather than just the first entry, so operators can list an LDAP/SAML
+ * group's mapped roles in any order without it mattering.
+ */
+function highestValidRole(roles: string[] | undefined): string | undefined {
+  if (!roles?.length) return undefined;
+  let best: Role | undefined;
+  for (const r of roles) {
+    if (!VALID_ROLES.has(r as Role)) continue;
+    if (!best || ROLE_RANK[r as Role] > ROLE_RANK[best]) best = r as Role;
+  }
+  return best;
+}
+
+/**
  * Find or auto-provision a local User from external provider attributes.
  *
  * Lookup order:
@@ -56,7 +75,7 @@ export async function findOrProvisionUser(
   const existing = await users.getByUsername(providerUser.username);
 
   if (existing && existing.enabled) {
-    const proposedRole = sanitizeProviderRole(providerUser.role, existing.role);
+    const proposedRole = sanitizeProviderRole(highestValidRole(providerUser.roles), existing.role);
     // Refuse to elevate from external attributes: only allow if the proposed
     // role is at the same rank or lower than the existing role.
     const safeRole = ROLE_RANK[proposedRole] <= ROLE_RANK[existing.role]
@@ -82,7 +101,7 @@ export async function findOrProvisionUser(
   // accepted at provisioning time only if they're valid Role strings.
   // Even then we cap new users at defaultRole (so a misconfigured provider
   // can't auto-create an admin user on first login).
-  const requestedRole = sanitizeProviderRole(providerUser.role, defaultRole);
+  const requestedRole = sanitizeProviderRole(highestValidRole(providerUser.roles), defaultRole);
   const newRole = ROLE_RANK[requestedRole] <= ROLE_RANK[defaultRole]
     ? requestedRole
     : defaultRole;
