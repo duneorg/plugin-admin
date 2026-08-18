@@ -72,6 +72,18 @@ This project follows [Semantic Versioning](https://semver.org).
   unpublished 2.0.0 bump — no separate version bump. Full 172-test suite,
   `deno check` across `src/`+`tests/`, and `deno lint` all pass.
 
+- **`AdminSession` → `Session`.** `decisions/dec-identity-unification.md`'s
+  Phase 5c unified admin and public-site sessions onto one
+  `SessionStore`/`SessionManager` mechanism in `@dune/core/session` — the
+  type is no longer admin-specific, so it drops the prefix, matching the
+  `User`/`Role` precedent. This package's own `createSessionManager()`/
+  `SessionManager` (`src/admin/auth/sessions.ts`) keep their exact
+  original public interface — `create(userId, ip?)`, no new param — but
+  now delegate to `@dune/core`'s new shared factory internally instead of
+  re-implementing the same logic. No behavior change for existing
+  callers; folds into the same unpublished 2.0.0 bump. Full 172-test
+  suite, `deno check`, and `deno lint` all pass.
+
 ### Added
 
 - **`@dune/plugin-admin/admin/guards`** — a new public subpath exporting
