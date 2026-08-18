@@ -44,6 +44,34 @@ This project follows [Semantic Versioning](https://semver.org).
   coverage existed for `findOrProvisionUser()` or `LocalAuthProvider` at
   all.
 
+- **Deleted this package's own `User`/`UserManager` in favor of
+  `@dune/core`'s unified `User`/`UserStore`.**
+  `decisions/dec-identity-unification.md`'s Phase 5b — the second of three
+  ordered sub-phases merging admin accounts and public site visitors into
+  one record and store (5a built the unified type/store in `@dune/core`;
+  5c will unify the session mechanisms). `UserManager` (`src/admin/auth/
+  users.ts`) is now a thin admin-convenience wrapper delegating storage to
+  `createLocalUserStore` — admin accounts get the same TOCTOU-safe
+  duplicate-email protection public site accounts already had. New
+  `src/admin/auth/role-utils.ts` (`VALID_ROLES`/`ROLE_RANK`/
+  `highestValidRole`/`sanitizeRole`/`withRole`) centralizes interpreting
+  the admin-tier `"admin"`/`"editor"`/`"author"` strings inside the merged
+  type's generic `roles: string[]` — used by `middleware.ts`'s
+  `hasPermission()` (a user with no admin-tier role now correctly gets
+  zero permissions, not a default), `provisioner.ts`, `_layout.tsx`'s nav
+  gating, and the users/workflow API routes. `UserInfo.roles: string[]`
+  replaces `UserInfo.role: Role`; `comments.ts`/`collab/` fall back to
+  `id` when `username`/`name` are absent (public-auth-originated accounts
+  may have neither). Real gap fixed along the way: the users API routes
+  now actually catch `UserStore.update()`'s new `DuplicateEmailError`
+  (added in the companion `@dune/core` commit) as a 409 instead of a raw
+  500, and the create route synthesizes a unique `{username}@local`
+  placeholder instead of defaulting every email-less admin account to the
+  same `""` — which would have collided on the second such account now
+  that email uniqueness is actually enforced. Folds into the same
+  unpublished 2.0.0 bump — no separate version bump. Full 172-test suite,
+  `deno check` across `src/`+`tests/`, and `deno lint` all pass.
+
 ### Added
 
 - **`@dune/plugin-admin/admin/guards`** — a new public subpath exporting
