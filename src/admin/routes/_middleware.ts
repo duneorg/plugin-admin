@@ -17,8 +17,13 @@ export const PUBLIC_PATHS = new Set(["/login", "/login/logout"]);
  * panel on /admin/themes) and therefore need `frame-ancestors 'self'` /
  * `X-Frame-Options: SAMEORIGIN` instead of the default deny-all framing
  * policy. Every other admin response stays fully non-frameable.
+ *
+ * `/pages/edit` is here so a content page's own admin bar (see
+ * @dune/plugin-inline-edit's bar.ts) can open it in an on-page overlay
+ * iframe ("Edit source") instead of a full-page navigation — same-origin
+ * embedding only, per `frame-ancestors 'self'` above.
  */
-const FRAMEABLE_PATHS = new Set(["/api/theme-preview", "/api/preview"]);
+const FRAMEABLE_PATHS = new Set(["/api/theme-preview", "/api/preview", "/pages/edit"]);
 
 /**
  * Nonce-based CSP for rendered admin pages. Fresh auto-stamps a per-request
