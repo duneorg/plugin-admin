@@ -32,6 +32,8 @@ interface Props {
   pagePath: string;
   pageIndex: unknown;
   prefix: string;
+  /** Rendered inside @dune/plugin-inline-edit's on-page overlay iframe — hide chrome that's redundant there (see _layout.tsx's `?embedded=1` handling). */
+  embedded?: boolean;
 }
 
 /**
@@ -45,7 +47,7 @@ function pagePathUrlSegment(pagePath: string): string {
   return pagePath.split("/").map(encodeURIComponent).join("/");
 }
 
-export default function PageEditor({ pagePath, prefix }: Props) {
+export default function PageEditor({ pagePath, prefix, embedded = false }: Props) {
   const apiBase = `${prefix}/api`;
 
   const [loading, setLoading] = useState(true);
@@ -136,7 +138,7 @@ export default function PageEditor({ pagePath, prefix }: Props) {
       {/* Top toolbar */}
       <header class="editor-toolbar">
         <div class="toolbar-left">
-          <a href={`${prefix}/pages`} class="btn btn-sm btn-outline">← Pages</a>
+          {!embedded && <a href={`${prefix}/pages`} class="btn btn-sm btn-outline">← Pages</a>}
           <span class="editor-title">{String(fm.title ?? page.title)}</span>
           <span class={`badge badge-${page.format}`}>{page.format}</span>
           {page.format === "tsx" && (
@@ -151,6 +153,11 @@ export default function PageEditor({ pagePath, prefix }: Props) {
           </button>
           <a
             href={`${prefix}/pages/builder?path=${encodeURIComponent(pagePath)}`}
+            // /pages/builder isn't in _middleware.ts's FRAMEABLE_PATHS — inside
+            // the embedded overlay this iframe already IS framed, so a
+            // same-frame navigation there would be blocked by its response's
+            // own frame-ancestors. Open a real tab instead of a dead click.
+            target={embedded ? "_blank" : undefined}
             class="btn btn-sm btn-outline"
           >
             Builder
@@ -158,6 +165,7 @@ export default function PageEditor({ pagePath, prefix }: Props) {
           <a href={page.route} target="_blank" class="btn btn-sm btn-outline">View →</a>
           <a
             href={`${prefix}/pages/history?path=${encodeURIComponent(pagePath)}`}
+            target={embedded ? "_blank" : undefined}
             class="btn btn-sm btn-outline"
           >
             History{page.revisionCount ? ` (${page.revisionCount})` : ""}
@@ -264,7 +272,9 @@ export default function PageEditor({ pagePath, prefix }: Props) {
                     <span class="badge badge-lang">{t.lang}</span>
                     {t.exists ? (
                       <a
-                        href={`${prefix}/pages/edit?path=${encodeURIComponent(t.sourcePath)}`}
+                        href={`${prefix}/pages/edit?path=${encodeURIComponent(t.sourcePath)}${
+                          embedded ? "&embedded=1" : ""
+                        }`}
                         class="btn btn-xs btn-outline"
                       >
                         Edit
@@ -326,7 +336,9 @@ export default function PageEditor({ pagePath, prefix }: Props) {
     });
     if (res.ok) {
       const { path: newPath } = await res.json() as { path: string };
-      location.href = `${prefix}/pages/edit?path=${encodeURIComponent(newPath)}`;
+      location.href = `${prefix}/pages/edit?path=${encodeURIComponent(newPath)}${
+        embedded ? "&embedded=1" : ""
+      }`;
     }
   }
 }

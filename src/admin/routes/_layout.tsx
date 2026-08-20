@@ -39,6 +39,33 @@ export default function AdminLayout(
   const rtlOverride = config.system.languages?.rtl_override;
   const dir = isRtl(siteLang, rtlOverride) ? "rtl" : "ltr";
 
+  // `?embedded=1` — used by @dune/plugin-inline-edit's "Edit source" overlay,
+  // which opens /pages/edit inside an on-page iframe (see FRAMEABLE_PATHS in
+  // _middleware.ts). The sidebar/topbar chrome makes sense standing alone on
+  // its own page; floated over a content page in a modal it's redundant
+  // (nowhere to navigate to — the surrounding page IS the site) and just eats
+  // vertical space from an already-small iframe. Still emits a full document
+  // with the shared admin stylesheet — only the shell markup is skipped, not
+  // the CSS the editor itself depends on.
+  if (url.searchParams.get("embedded") === "1") {
+    return (
+      <html lang={siteLang} dir={dir}>
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>Dune Admin</title>
+          <style>{adminCss(dir === "rtl")}</style>
+          <style>{`body { height: 100vh; overflow: hidden; } .admin-content { padding: 0; height: 100%; } .s-763f1850 { height: 100% !important; }`}</style>
+        </head>
+        <body>
+          <div class="admin-content">
+            <Component />
+          </div>
+        </body>
+      </html>
+    );
+  }
+
   const user = state.auth?.user;
   const userName = user?.name ?? user?.username ?? "Admin";
   const role = highestValidRole(user?.roles) ?? "author";
@@ -280,6 +307,57 @@ function adminCss(rtl: boolean): string {
 
     /* Island mount targets */
     .island-root { min-height: 60px; }
+
+    /* Page editor (islands/PageEditor.tsx) — was entirely unstyled: no rule
+       anywhere gave .editor-body a height, so the textarea's own
+       height:100% resolved against an auto-height parent and collapsed to
+       the browser's default ~2-row textarea instead of filling the pane. */
+    .editor-layout { display: flex; flex-direction: column; height: 100%; }
+    .editor-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; flex-wrap: wrap; flex-shrink: 0;
+      padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--surface);
+    }
+    .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .editor-title {
+      font-weight: 600; font-size: 14px; max-width: 320px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .toolbar-dirty {
+      font-size: 12px; color: #b45309; background: #fffbeb;
+      border: 1px solid #fde68a; border-radius: 4px; padding: 2px 8px;
+    }
+    .editor-body { display: flex; flex: 1; min-height: 0; }
+    .editor-sidebar {
+      width: 260px; flex-shrink: 0; overflow-y: auto;
+      padding: 16px; border-${rtl ? "left" : "right"}: 1px solid var(--border); background: var(--surface);
+    }
+    .editor-sidebar h4 {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--text-muted); margin-bottom: 14px;
+    }
+    .editor-main { flex: 1; min-width: 0; display: flex; }
+    .editor-main-split { flex: 0 0 50%; }
+    .editor-content { flex: 1; }
+    .editor-preview {
+      flex: 1; min-width: 0; display: flex;
+      border-${rtl ? "right" : "left"}: 1px solid var(--border);
+    }
+    .translation-links { display: flex; flex-direction: column; gap: 6px; }
+    .translation-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .badge-warning { background: #fffbeb; color: #b45309; }
+    .badge-lang { background: #eef2ff; color: #4338ca; text-transform: uppercase; }
+    @media (max-width: 900px) {
+      .editor-body { flex-direction: column; }
+      .editor-sidebar { width: 100%; border-${rtl ? "left" : "right"}: none; border-bottom: 1px solid var(--border); }
+    }
+
+    /* Dismissable toast (PageEditor, PageBuilder) */
+    .toast {
+      padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+    .toast-error { background: #fff5f5; border: 1px solid #fed7d7; color: var(--danger); }
 
     /* Section headers */
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }

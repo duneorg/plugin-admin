@@ -12,7 +12,7 @@ import type { ContentEditorPlugin } from "@dune/core/hooks";
 import PageEditor from "./islands/PageEditor.tsx";
 
 function PageEditorRoute(
-  { data }: { data: { pagePath: string; pageIndex: unknown; prefix: string } },
+  { data }: { data: { pagePath: string; pageIndex: unknown; prefix: string; embedded: boolean } },
 ) {
   return (
     <div class="s-763f1850">
@@ -20,6 +20,7 @@ function PageEditorRoute(
         pagePath={data.pagePath}
         pageIndex={data.pageIndex}
         prefix={data.prefix}
+        embedded={data.embedded}
       />
     </div>
   );
@@ -38,8 +39,9 @@ export function createBlockEditorPlugin(): ContentEditorPlugin {
       }
       // deno-lint-ignore no-explicit-any
       const pageIndex = (engine.pages as any[]).find((p) => p.sourcePath === pagePath);
+      const embedded = ctx.url.searchParams.get("embedded") === "1";
       return ctx.render(
-        <PageEditorRoute data={{ pagePath, pageIndex, prefix }} />,
+        <PageEditorRoute data={{ pagePath, pageIndex, prefix, embedded }} />,
       );
     },
   };
