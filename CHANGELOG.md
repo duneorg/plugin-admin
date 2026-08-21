@@ -5,7 +5,7 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ---
 
-## [Unreleased]
+## [2.0.0] — 2026-08-22
 
 ### Breaking
 
@@ -121,11 +121,9 @@ This project follows [Semantic Versioning](https://semver.org).
   (headless, `admin.enabled: false`, `dune mcp:serve`) — this delegation
   keeps headless-mode callers of `mountDuneAdmin()` (who never call
   `createDuneApp()` at all) working the same way, off one shared
-  implementation instead of two. **Requires a `@dune/core` release
-  containing `registerPluginPublicRoutes()`** — not yet safe to publish
-  this package to JSR until that release exists and this package's
-  `@dune/core` pin is bumped to require it; currently only resolvable via
-  the local workspace link.
+  implementation instead of two. Requires `@dune/core@0.32.0`, which
+  shipped `registerPluginPublicRoutes()` — this package's `@dune/core`
+  pin is bumped to `^0.32` accordingly.
 
 ### Fixed
 

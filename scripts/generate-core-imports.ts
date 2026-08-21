@@ -42,7 +42,7 @@
 /** Bump at every core minor this package needs. Bare-minor form (e.g. "0.31")
  * auto-tracks patch releases within that minor — confirmed via `deno cache`:
  * "0.28" resolved to the latest 0.28.x, not just 0.28.0. */
-const CORE_RANGE = "0.31";
+const CORE_RANGE = "0.32";
 
 const DENO_JSON = "deno.json";
 const SCAN_ROOTS = ["mod.ts", "src", "tests"];
