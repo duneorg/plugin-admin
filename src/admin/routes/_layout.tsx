@@ -10,10 +10,18 @@ import { getNavItems } from "../nav.ts";
 import { isRtl } from "@dune/core/i18n";
 import { ROLE_PERMISSIONS } from "../types.ts";
 import { highestValidRole } from "../auth/role-utils.ts";
-import { normalizePrefix, PUBLIC_PATHS, toAdminRelative } from "./_middleware.ts";
+import {
+  normalizePrefix,
+  PUBLIC_PATHS,
+  toAdminRelative,
+} from "./_middleware.ts";
 
 export default function AdminLayout(
-  { Component, state, url }: { Component: () => h.JSX.Element; state: AdminState; url: URL },
+  { Component, state, url }: {
+    Component: () => h.JSX.Element;
+    state: AdminState;
+    url: URL;
+  },
 ) {
   // Fresh applies _layout.tsx globally, not scoped to the fsRoutes prefix.
   // For non-admin paths, render the component directly without the admin shell.
@@ -55,7 +63,9 @@ export default function AdminLayout(
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <title>Dune Admin</title>
           <style>{adminCss(dir === "rtl")}</style>
-          <style>{`body { height: 100vh; overflow: hidden; } .admin-content { padding: 0; height: 100%; } .s-763f1850 { height: 100% !important; }`}</style>
+          <style>
+            {`body { height: 100vh; overflow: hidden; } .admin-content { padding: 0; height: 100%; } .s-763f1850 { height: 100% !important; }`}
+          </style>
         </head>
         <body>
           <div class="admin-content">
@@ -74,12 +84,16 @@ export default function AdminLayout(
   const allNavItems = getNavItems();
   const navItems = allNavItems.filter((item) => {
     if (item.adminOnly && role !== "admin") return false;
-    if (item.permission && !userPermissions.includes(item.permission)) return false;
+    if (item.permission && !userPermissions.includes(item.permission)) {
+      return false;
+    }
     return true;
   });
 
   const pathname = url.pathname;
-  const adminRelative = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : pathname;
+  const adminRelative = pathname.startsWith(prefix)
+    ? pathname.slice(prefix.length)
+    : pathname;
 
   function isActive(path: string): boolean {
     if (path === "/") return adminRelative === "/" || adminRelative === "";
@@ -109,7 +123,14 @@ export default function AdminLayout(
           <aside class="admin-sidebar" id="admin-sidebar">
             <div class="sidebar-brand">
               <a href={`${prefix}/`}>🏜️ Dune</a>
-              <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close menu">✕</button>
+              <button
+                type="button"
+                class="sidebar-close"
+                id="sidebar-close"
+                aria-label="Close menu"
+              >
+                ✕
+              </button>
             </div>
             <nav class="sidebar-nav">
               {groups.map((group) => {
@@ -122,7 +143,9 @@ export default function AdminLayout(
                       <a
                         key={item.path}
                         href={`${prefix}${item.path}`}
-                        class={`nav-item${isActive(item.path) ? " active" : ""}`}
+                        class={`nav-item${
+                          isActive(item.path) ? " active" : ""
+                        }`}
                       >
                         <span class="nav-label">{item.label}</span>
                       </a>
@@ -140,7 +163,9 @@ export default function AdminLayout(
                       <a
                         key={item.path}
                         href={`${prefix}${item.path}`}
-                        class={`nav-item${isActive(item.path) ? " active" : ""}`}
+                        class={`nav-item${
+                          isActive(item.path) ? " active" : ""
+                        }`}
                       >
                         <span class="nav-label">{item.label}</span>
                       </a>
@@ -151,10 +176,21 @@ export default function AdminLayout(
           </aside>
           <main class="admin-main">
             <header class="admin-topbar">
-              <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Open menu">☰</button>
+              <button
+                type="button"
+                class="sidebar-toggle"
+                id="sidebar-toggle"
+                aria-label="Open menu"
+              >
+                ☰
+              </button>
               <div class="topbar-right">
                 <span class="topbar-user">{userName}</span>
-                <form method="POST" action={`${prefix}/login/logout`} class="s-5677b988">
+                <form
+                  method="POST"
+                  action={`${prefix}/login/logout`}
+                  class="s-5677b988"
+                >
                   <button type="submit" class="btn btn-sm">Sign out</button>
                 </form>
               </div>
@@ -261,7 +297,9 @@ function adminCss(rtl: boolean): string {
 
     /* Tables */
     .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .admin-table th { text-align: ${rtl ? "right" : "left"}; padding: 10px 12px; background: var(--bg); border-bottom: 1px solid var(--border); font-weight: 600; }
+    .admin-table th { text-align: ${
+    rtl ? "right" : "left"
+  }; padding: 10px 12px; background: var(--bg); border-bottom: 1px solid var(--border); font-weight: 600; }
     .admin-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
     .admin-table tr:hover td { background: var(--bg); }
 
@@ -330,7 +368,9 @@ function adminCss(rtl: boolean): string {
     .editor-body { display: flex; flex: 1; min-height: 0; }
     .editor-sidebar {
       width: 260px; flex-shrink: 0; overflow-y: auto;
-      padding: 16px; border-${rtl ? "left" : "right"}: 1px solid var(--border); background: var(--surface);
+      padding: 16px; border-${
+    rtl ? "left" : "right"
+  }: 1px solid var(--border); background: var(--surface);
     }
     .editor-sidebar h4 {
       font-size: 12px; font-weight: 600; text-transform: uppercase;
@@ -349,7 +389,9 @@ function adminCss(rtl: boolean): string {
     .badge-lang { background: #eef2ff; color: #4338ca; text-transform: uppercase; }
     @media (max-width: 900px) {
       .editor-body { flex-direction: column; }
-      .editor-sidebar { width: 100%; border-${rtl ? "left" : "right"}: none; border-bottom: 1px solid var(--border); }
+      .editor-sidebar { width: 100%; border-${
+    rtl ? "left" : "right"
+  }: none; border-bottom: 1px solid var(--border); }
     }
 
     /* Dismissable toast (PageEditor, PageBuilder) */
@@ -374,6 +416,175 @@ function adminCss(rtl: boolean): string {
     .bar-fill-warn { background: #f59e0b; }
     .bar-fill-danger { background: var(--danger); }
     .text-danger { color: var(--danger); }
+
+    /* Buttons — additional variants referenced across admin islands but never
+       previously defined (the underlying .btn base already existed). */
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-outline { background: transparent; }
+    .btn-xs { padding: 2px 8px; font-size: 12px; }
+    .btn-enabled { background: #ecfdf5; color: #059669; border-color: #a7f3d0; }
+    .btn-disabled { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+    /* Badges — additional variants (badge-md/mdx/tsx already existed above) */
+    .badge-fmt { background: #edf2f7; color: #4a5568; text-transform: uppercase; font-size: 10px; }
+    .badge-draft { background: #fffbeb; color: #b45309; }
+    .badge-latest { background: #ecfdf5; color: #059669; }
+
+    /* Forms — additional pieces (.form-group/label/inputs already existed above) */
+    .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+    .form-error { color: var(--danger); font-size: 13px; margin-bottom: 12px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+
+    /* Modals (PageTree create dialog, MediaLibrary detail view) */
+    .modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+    .modal-content {
+      position: relative; background: var(--surface); border-radius: 10px; padding: 24px;
+      width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,.2);
+    }
+    .modal-content h3 { font-size: 18px; margin-bottom: 16px; }
+    .modal-wide { max-width: 720px; }
+
+    /* Pages list (islands/PageTree.tsx) */
+    .page-tree-wrap { display: flex; flex-direction: column; gap: 16px; }
+    .page-tree-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .tree-search-form { flex: 1; min-width: 200px; }
+    .tree-search-form input { width: 100%; }
+    .page-tree { display: flex; flex-direction: column; gap: 2px; }
+    .page-tree-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 6px; transition: background .1s;
+    }
+    .page-tree-row:hover { background: var(--bg); }
+    .tree-toggle { width: 16px; text-align: center; color: var(--text-muted); font-size: 11px; user-select: none; }
+    .page-tree-title {
+      flex: 1; min-width: 0; font-weight: 500; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .page-tree-title:hover { color: var(--accent); }
+    .tree-route { color: var(--text-muted); font-size: 12px; font-family: ui-monospace, monospace; }
+    .tree-actions { display: flex; gap: 6px; opacity: 0; transition: opacity .1s; }
+    .page-tree-row:hover .tree-actions { opacity: 1; }
+    .tree-children { border-${
+    rtl ? "right" : "left"
+  }: 1px solid var(--border); margin-${rtl ? "right" : "left"}: 8px; padding-${
+    rtl ? "right" : "left"
+  }: 8px; }
+
+    /* Media library (islands/MediaLibrary.tsx) */
+    .media-wrap { display: flex; flex-direction: column; gap: 16px; }
+    .media-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .media-toolbar select { width: auto; min-width: 140px; }
+    .media-search { flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+    .media-count { color: var(--text-muted); font-size: 13px; margin-${
+    rtl ? "right" : "left"
+  }: auto; }
+    .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    .media-item {
+      border: 1px solid var(--border); border-radius: 8px; padding: 8px;
+      cursor: pointer; background: var(--surface); transition: border-color .1s; text-align: center;
+    }
+    .media-item:hover { border-color: var(--accent); }
+    .media-item-selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,70,229,.15); }
+    .media-icon {
+      display: flex; align-items: center; justify-content: center; height: 90px;
+      font-size: 32px; background: var(--bg); border-radius: 6px; margin-bottom: 8px; overflow: hidden;
+    }
+    .media-icon img { max-width: 100%; max-height: 100%; object-fit: cover; }
+    .media-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .media-size { font-size: 11px; color: var(--text-muted); }
+    .media-detail { display: flex; gap: 20px; flex-wrap: wrap; }
+    .media-detail-preview { flex: 1; min-width: 200px; }
+    .media-detail-info { flex: 1; min-width: 200px; font-size: 14px; }
+    .media-detail-info p { margin-bottom: 8px; }
+    .focal-picker-wrap { position: relative; cursor: crosshair; border-radius: 6px; overflow: hidden; }
+    .focal-picker-wrap img { width: 100%; display: block; }
+
+    /* Page builder (islands/PageBuilder.tsx) */
+    .bld-layout { display: flex; flex-direction: column; height: 100%; }
+    .bld-toolbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+      padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--surface);
+    }
+    .bld-toolbar-left, .bld-toolbar-right { display: flex; align-items: center; gap: 8px; }
+    .bld-title { font-weight: 600; font-size: 14px; }
+    .bld-body { display: flex; flex: 1; min-height: 0; }
+    .bld-palette {
+      width: 220px; flex-shrink: 0; overflow-y: auto; padding: 16px;
+      border-${
+    rtl ? "left" : "right"
+  }: 1px solid var(--border); background: var(--surface);
+    }
+    .bld-palette-item {
+      display: flex; align-items: center; gap: 8px; width: 100%; text-align: ${
+    rtl ? "right" : "left"
+  };
+      padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--bg); cursor: pointer; margin-bottom: 6px; font-size: 13px;
+    }
+    .bld-palette-item:hover { border-color: var(--accent); }
+    .bld-palette-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 4px; background: var(--accent); color: #fff;
+      font-size: 12px; flex-shrink: 0;
+    }
+    .bld-canvas { flex: 1; overflow-y: auto; padding: 20px; background: var(--bg); }
+    .bld-canvas-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); font-size: 14px; }
+    .bld-section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; padding: 12px 16px; cursor: pointer; }
+    .bld-section-selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,70,229,.15); }
+    .bld-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .bld-section-type { font-weight: 600; font-size: 13px; }
+    .bld-section-controls { display: flex; gap: 4px; }
+    .bld-section-preview { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--text-muted); }
+    .bld-settings {
+      width: 280px; flex-shrink: 0; overflow-y: auto; padding: 16px;
+      border-${
+    rtl ? "right" : "left"
+  }: 1px solid var(--border); background: var(--surface);
+    }
+    .bld-settings h4 { font-size: 14px; margin-bottom: 12px; }
+
+    /* Config editor (islands/ConfigEditor.tsx) */
+    .cfg-wrap { display: flex; flex-direction: column; gap: 24px; max-width: 720px; }
+    .cfg-section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+    .cfg-section h3 { font-size: 15px; margin-bottom: 16px; }
+
+    /* Marketplace (islands/Marketplace.tsx) */
+    .marketplace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .marketplace-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+    /* Themes (islands/ThemeSwitcher.tsx) */
+    .theme-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; cursor: pointer; transition: border-color .1s; }
+    .theme-card:hover { border-color: var(--accent); }
+    .theme-card-active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,70,229,.15); }
+
+    /* Translation memory (islands/TranslationMemory.tsx) */
+    .tm-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .tm-tabs { display: flex; gap: 6px; }
+    .tm-table td, .tm-table th { vertical-align: top; }
+
+    /* Revision history (islands/RevisionHistory.tsx) */
+    .revision-wrap { display: flex; gap: 20px; flex-wrap: wrap; }
+    .revision-timeline { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 10px; }
+    .revision-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+    .revision-latest { border-color: var(--accent); }
+    .revision-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .revision-number { font-weight: 600; font-size: 13px; }
+    .revision-date { color: var(--text-muted); font-size: 12px; margin-${
+    rtl ? "right" : "left"
+  }: auto; }
+    .revision-message { font-size: 13px; margin-top: 4px; }
+    .revision-author { font-size: 12px; color: var(--text-muted); }
+    .revision-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .revision-content-panel { flex: 2; min-width: 300px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+
+    /* Metrics dashboard container (metric-card/-value etc. already existed above) */
+    .metrics-wrap { display: flex; flex-direction: column; gap: 20px; }
+    .metrics-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+
+    /* Workflow panel (islands/WorkflowPanel.tsx) */
+    .workflow-panel { display: flex; flex-direction: column; gap: 16px; }
 
     /* Extracted from inline style="" attributes across admin islands/routes —
        plugin-admin's CSP (useNonce: true) drops 'unsafe-inline' from style-src,
@@ -523,10 +734,14 @@ function adminCss(rtl: boolean): string {
     .s-724242e3 { width:100%;height:100%;font-family:monospace;font-size:14px;border:none;outline:none;resize:none;padding:1rem }
     .s-5285a128 { flex:1;max-width:320px }
 
-    ${rtl ? `
+    ${
+    rtl
+      ? `
     /* RTL adjustments */
     .admin-topbar { flex-direction: row-reverse; }
     .nav-item { flex-direction: row-reverse; }
-    ` : ""}
+    `
+      : ""
+  }
   `;
 }

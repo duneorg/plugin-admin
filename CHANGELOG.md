@@ -147,6 +147,21 @@ This project follows [Semantic Versioning](https://semver.org).
   proving `authz.check()`'s answer overrides `ROLE_PERMISSIONS` in either
   direction; full 178-test suite passing.
 
+- **~70 CSS classes referenced across admin routes/islands (Pages tree,
+  Media Library, Page Builder, Config, Marketplace, Themes, Translation
+  Memory, Revision History, Metrics, Workflow panel) had no matching rule
+  in `adminCss()`.** The admin panel wasn't broken so much as
+  incomplete — most of the design system (CSS custom properties, `.btn`/
+  `.admin-table`/`.form-group`/`.badge`/`.stats-grid` families) was already
+  in place, but a large block of newer UI (added after those primitives)
+  never got its own rules, so it rendered unstyled. Added the missing
+  rules to `_layout.tsx`'s `adminCss()`, RTL-aware where applicable. Also
+  fixed the two bare `<select>` elements in `MediaLibrary.tsx`'s toolbar
+  stacking full-width instead of flowing inline — they were falling back
+  to a global `select { width: 100% }` rule meant for `.form-group`
+  contexts (`.media-toolbar select { width: auto }`). Verified visually
+  across all 13 admin sections.
+
 ---
 
 ## [1.1.5] — 2026-08-16
