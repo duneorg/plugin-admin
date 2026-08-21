@@ -13,7 +13,7 @@ import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import { parseUserYaml as parseYaml } from "@dune/core/security";
-import { validateFrontmatter } from "@dune/core/blueprints";
+import { resolveBlueprint, validateFrontmatter } from "@dune/core/blueprints";
 import { fireContentWebhooks } from "../../../../../admin/webhooks.ts";
 import type { PageFrontmatter } from "@dune/core/content/types";
 import type { FreshContext } from "fresh";
@@ -46,10 +46,21 @@ export const handler = {
       const pageIndex = engine.pages.find((p) => p.sourcePath === pagePath);
       if (!pageIndex) return json({ error: "Page not found" }, 404);
       const page = await engine.loadPage(pageIndex.sourcePath);
+      // The blueprint (if the template has one) drives PageEditor's "Page
+      // Settings" custom-field rendering — was never actually sent to the
+      // client, so that whole section of the editor silently rendered
+      // nothing for every site with blueprints configured. Resolve
+      // inheritance (`extends`) the same way PUT's validateFrontmatter()
+      // does, rather than sending the raw unresolved definition.
+      const rawBlueprint = engine.blueprints[page.template];
+      const blueprint = rawBlueprint
+        ? resolveBlueprint(page.template, rawBlueprint, engine.blueprints, 0)
+        : null;
       return json({
         sourcePath: page.sourcePath, route: page.route, format: page.format,
         template: page.template, frontmatter: page.frontmatter, rawContent: page.rawContent,
         media: page.media.map((m) => ({ name: m.name, url: m.url, type: m.type, size: m.size })),
+        blueprint,
       });
     } catch (err) {
       return serverError(err);
@@ -83,6 +94,15 @@ export const handler = {
         const fmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
         const existingFm = fmMatch ? (parseYaml(fmMatch[1]) as Record<string, unknown> ?? {}) : {};
         const mergedFm = { ...existingFm, ...fm };
+        // An explicit null in the incoming frontmatter means "delete this
+        // key" (e.g. clearing an optional numeric blueprint field back to
+        // "no override") — plain `undefined` can't carry that instruction
+        // at all, since JSON.stringify drops undefined-valued keys before
+        // the request body is even sent, which would otherwise silently
+        // leave the old value in place after a reload.
+        for (const key of Object.keys(mergedFm)) {
+          if (mergedFm[key] === null) delete mergedFm[key];
+        }
 
         const template = (mergedFm.template as string) ?? page.template;
         if (engine.blueprints[template]) {

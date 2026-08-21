@@ -12,6 +12,7 @@ interface BpField {
   default?: unknown;
   required?: boolean;
   options?: Record<string, string>;
+  validate?: { min?: number; max?: number; pattern?: string };
 }
 
 interface PageData {
@@ -241,7 +242,31 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
                   value={String(fm[key] ?? field.default ?? "")}
                   onInput={(e) => setFmField(key, (e.target as HTMLTextAreaElement).value)}
                 />
-              ) : field.type === "checkbox" || field.type === "bool" ? (
+              ) : field.type === "number" ? (
+                // Stored as a real number (not a string) — blueprint
+                // validation (validateFrontmatter) requires typeof "number"
+                // for this field type, and an empty input clears the key
+                // entirely rather than writing NaN/"" into frontmatter, so
+                // an optional numeric override round-trips as "absent",
+                // not as a stray empty string.
+                <input
+                  type="number"
+                  step="any"
+                  min={field.validate?.min}
+                  max={field.validate?.max}
+                  value={typeof fm[key] === "number" ? String(fm[key]) : ""}
+                  placeholder={field.default != null ? String(field.default) : undefined}
+                  onInput={(e) => {
+                    const raw = (e.target as HTMLInputElement).value;
+                    // null (not undefined) — JSON.stringify drops undefined-
+                    // valued keys entirely, so the server would never see a
+                    // "clear this field" instruction and would keep the old
+                    // saved value after a reload. save()'s PUT handler
+                    // treats an explicit null as "delete this key".
+                    setFmField(key, raw === "" ? null : Number(raw));
+                  }}
+                />
+              ) : field.type === "toggle" || field.type === "checkbox" || field.type === "bool" ? (
                 <label>
                   <input
                     type="checkbox"
