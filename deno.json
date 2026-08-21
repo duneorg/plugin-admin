@@ -4,7 +4,9 @@
   "license": "MIT",
   "minimumDependencyAge": {
     "age": "P1D",
-    "exclude": ["jsr:@dune/core"]
+    "exclude": [
+      "jsr:@dune/core"
+    ]
   },
   "exports": {
     ".": "./mod.ts",
@@ -42,6 +44,7 @@
   },
   "tasks": {
     "test": "deno test -A tests/",
+    "check": "deno lint src/ && deno check src/**/*.ts src/**/*.tsx",
     "test:e2e": "deno run --allow-all --unstable-kv npm:playwright test --config playwright.config.ts",
     "test:e2e:install": "deno run --allow-all npm:playwright install chromium",
     "gen:admin-manifest": "deno run --allow-read --allow-write scripts/generate-admin-manifest.ts",

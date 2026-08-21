@@ -120,7 +120,7 @@ export default function Marketplace({ prefix, initialTab }: Props) {
           "Content-Type": "application/json",
           "X-CSRF-Token": getCsrf(),
         },
-        body: JSON.stringify({ jsr: entry.jsr, name: entry.name }),
+        body: JSON.stringify({ name: entry.name }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));

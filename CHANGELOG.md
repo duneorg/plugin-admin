@@ -162,6 +162,35 @@ This project follows [Semantic Versioning](https://semver.org).
   contexts (`.media-toolbar select { width: auto }`). Verified visually
   across all 13 admin sections.
 
+- **`POST /admin/api/plugins/install` trusted a client-supplied `jsr`
+  specifier verbatim, unlike the equivalent theme-install route.** Any
+  authenticated `config.update`-permitted request could point the install
+  route at an arbitrary `jsr:`/`npm:` specifier that got written straight
+  into `site.yaml` — a request could name a real plugin's registry entry
+  but supply a different, unreviewed (or typosquatted) package for it to
+  actually install. Now mirrors `themes/install.ts`: the client sends only
+  `{ name }`, and the route looks the name up in the bundled
+  `registry/plugins.json` server-side, using the registry's own `jsr`
+  field — client input can no longer choose what gets imported. Also
+  fixed `registry/plugins.json`'s three entries, which stored unpinned
+  caret ranges (`jsr:@dune/plugin-inline-edit@^2.1.0`) that would have
+  failed the route's own pinned-specifier check the moment client input
+  stopped being trusted — repinned to each entry's own declared `version`
+  (e.g. `@2.1.4`). `Marketplace.tsx` no longer sends `jsr` in the install
+  request body. Verified live: install now round-trips through the
+  registry lookup end to end, and a spoofed name/jsr pair is rejected
+  with 404 before anything is written.
+
+- **No CI gate on this repo at all** — only `publish.yml` (tag-push →
+  `deno publish`), so a lint or type error could land on `main` unnoticed
+  until the next publish. Added `.github/workflows/ci.yml` mirroring
+  `@dune/core`'s pattern (`deno task check`, `deno task check:core-imports`
+  on every PR/push to main); added the `check` task itself
+  (`deno lint src/ && deno check src/**/*.ts src/**/*.tsx`) since none
+  existed. Fixed a pre-existing `check:core-imports` failure this
+  surfaced — `deno.json`'s `minimumDependencyAge.exclude` array had
+  drifted from `generate-core-imports.ts`'s canonical formatting.
+
 ---
 
 ## [1.1.5] — 2026-08-16
