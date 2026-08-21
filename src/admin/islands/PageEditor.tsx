@@ -37,6 +37,61 @@ interface Props {
   embedded?: boolean;
 }
 
+/** Frontmatter keys the sidebar always renders its own dedicated control for. */
+const HARDCODED_FIELD_KEYS = ["title", "template", "slug", "published", "date"];
+
+/**
+ * Keys present in `fm` that have no editable control anywhere in the sidebar
+ * — neither the hardcoded fields above nor a blueprint-declared field. These
+ * are the ones a one-off `content` file edit is currently the only way to
+ * change; the raw-frontmatter view exists mainly to surface them.
+ */
+export function unmanagedFrontmatterKeys(
+  fm: Record<string, unknown>,
+  blueprintFields?: Record<string, BpField>,
+): string[] {
+  const known = new Set([...HARDCODED_FIELD_KEYS, ...Object.keys(blueprintFields ?? {})]);
+  return Object.keys(fm).filter((k) => !known.has(k));
+}
+
+function formatYamlScalar(value: unknown): string {
+  if (typeof value !== "string") return String(value);
+  // Not a full YAML-scalar-safety check — this view is read-only display
+  // only, never parsed back, so it just needs to avoid obviously misleading
+  // unquoted output (empty string, leading/trailing whitespace, or text that
+  // looks like YAML punctuation).
+  if (value === "" || /^\s|\s$|[:#\[\]{}]|^[-?]/.test(value)) return JSON.stringify(value);
+  return value;
+}
+
+function formatYamlEntry(key: string, value: unknown, indent: number): string {
+  const pad = "  ".repeat(indent);
+  if (value === null || value === undefined) return `${pad}${key}: null`;
+  if (Array.isArray(value)) {
+    if (value.length === 0) return `${pad}${key}: []`;
+    return `${pad}${key}:\n${value.map((v) => `${pad}  - ${formatYamlScalar(v)}`).join("\n")}`;
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>);
+    if (entries.length === 0) return `${pad}${key}: {}`;
+    return `${pad}${key}:\n${entries.map(([k, v]) => formatYamlEntry(k, v, indent + 1)).join("\n")}`;
+  }
+  return `${pad}${key}: ${formatYamlScalar(value)}`;
+}
+
+/**
+ * Read-only, YAML-ish rendering of the full frontmatter object for the
+ * sidebar's "Raw frontmatter" view. Derived from the same `fm` state the
+ * structured fields read/write, so it can never diverge from them — it's
+ * always exactly what a save would currently write, never a separate
+ * editable buffer that could race with it.
+ */
+export function formatRawFrontmatter(fm: Record<string, unknown>): string {
+  const keys = Object.keys(fm);
+  if (keys.length === 0) return "";
+  return keys.map((k) => formatYamlEntry(k, fm[k], 0)).join("\n");
+}
+
 /**
  * The REST endpoint (/admin/api/pages/:path*) is a wildcard route — a
  * literal "/" is what it matches between segments. encodeURIComponent()
@@ -133,6 +188,8 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
   if (!page) {
     return <div class="s-d36754cf">{error || "Page not found."}</div>;
   }
+
+  const unmanagedKeys = unmanagedFrontmatterKeys(fm, page.blueprint?.fields);
 
   return (
     <div class="editor-layout">
@@ -286,6 +343,38 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
               ) : null}
             </div>
           ))}
+
+          {/* Raw frontmatter — visibility for any key with no dedicated
+              control above (not hardcoded, not blueprint-declared). Always
+              derived live from `fm`, so it reflects structured-field edits
+              instantly and can't drift out of sync with them. Read-only by
+              design: editing arbitrary keys here would bypass blueprint
+              validation and risk clobbering keys the structured fields are
+              also writing to `fm` — declare a blueprint field instead for
+              anything that needs to be truly editable. */}
+          <div class="form-group">
+            <details class="raw-frontmatter">
+              <summary>
+                Raw frontmatter
+                {unmanagedKeys.length > 0 && (
+                  <span class="badge badge-warning">{unmanagedKeys.length} unmanaged</span>
+                )}
+              </summary>
+              <textarea
+                class="raw-frontmatter-view"
+                readOnly
+                rows={Math.min(20, Math.max(4, Object.keys(fm).length + 1))}
+                value={formatRawFrontmatter(fm)}
+              />
+              {unmanagedKeys.length > 0 && (
+                <p class="raw-frontmatter-hint">
+                  {unmanagedKeys.join(", ")} {unmanagedKeys.length === 1 ? "has" : "have"}{" "}
+                  no field above — declare {unmanagedKeys.length === 1 ? "it" : "them"} as a blueprint field to edit
+                  from this sidebar.
+                </p>
+              )}
+            </details>
+          </div>
 
           {/* Translations */}
           {page.translations && page.translations.length > 0 && (

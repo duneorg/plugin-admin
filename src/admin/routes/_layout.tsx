@@ -383,6 +383,12 @@ function adminCss(rtl: boolean): string {
       flex: 1; min-width: 0; display: flex;
       border-${rtl ? "right" : "left"}: 1px solid var(--border);
     }
+    .raw-frontmatter summary { cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .raw-frontmatter-view {
+      margin-top: 8px; font-family: monospace; font-size: 12px; resize: vertical;
+      background: var(--bg); color: var(--text-muted);
+    }
+    .raw-frontmatter-hint { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
     .translation-links { display: flex; flex-direction: column; gap: 6px; }
     .translation-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .badge-warning { background: #fffbeb; color: #b45309; }
