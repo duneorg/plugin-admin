@@ -9,6 +9,7 @@ import type { UserManager } from "./users.ts";
 import type { AdminPermission, AuthResult } from "../types.ts";
 import { ROLE_PERMISSIONS } from "../types.ts";
 import { highestValidRole } from "./role-utils.ts";
+import { clientIp } from "@dune/core/security";
 
 /** Options for {@link createAuthMiddleware}. */
 export interface AuthMiddlewareConfig {
@@ -85,16 +86,11 @@ export function createAuthMiddleware(
     // also send a forged forwarded header that matches the original session
     // IP, and the binding check is meaningless.
     if (session.ip) {
-      let requestIp: string | undefined;
-      if (trustForwardedFor) {
-        requestIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-          req.headers.get("x-real-ip") ??
-          undefined;
-      }
-      // A stolen cookie that simply omits forwarded headers used to skip
-      // this check (undefined !== session.ip was never evaluated). When
-      // the session was bound to an IP, a missing request IP is a mismatch.
-      if (!requestIp || requestIp !== session.ip) {
+      const requestIp = clientIp(req, { trustForwardedFor });
+      // "unknown" is a missing peer (no socket stamp, no trusted XFF).
+      // A stolen cookie that omits forwarded headers used to skip this
+      // check; treat a missing IP as a mismatch when the session is bound.
+      if (requestIp === "unknown" || requestIp !== session.ip) {
         return { authenticated: false, error: "Session IP mismatch" };
       }
     }
