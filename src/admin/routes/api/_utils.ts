@@ -5,6 +5,7 @@
 import type { FreshContext } from "fresh";
 import type { AdminPermission, AdminState } from "../../types.ts";
 import { highestValidRole } from "../../auth/role-utils.ts";
+import { csrfTokenMatches, resolveCsrfSecret } from "../../auth/csrf.ts";
 
 export function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -93,7 +94,18 @@ export function websocketOriginCheck(ctx: FreshContext<AdminState>): Response | 
   return null;
 }
 
-/** CSRF check: reject cross-origin mutating requests. */
+/**
+ * CSRF check: reject cross-origin mutating requests.
+ *
+ * Passes when any of:
+ *   - a matching session-bound `X-CSRF-Token` (agents / MCP that omit Origin)
+ *   - same-origin `Origin` (browsers)
+ *   - no Origin, but Sec-Fetch-Site is same-origin / none
+ *   - no Origin, but Referer host matches
+ *
+ * A request with none of those is denied. An empty `X-CSRF-Token` (the
+ * islands' previous default when the layout meta was missing) is not a match.
+ */
 export function csrfCheck(ctx: FreshContext<AdminState>): Response | null {
   const method = ctx.req.method;
   if (method === "GET" || method === "HEAD" || method === "OPTIONS") {
@@ -104,6 +116,11 @@ export function csrfCheck(ctx: FreshContext<AdminState>): Response | null {
     logAuthzDenial(ctx, "auth.csrf_denied", { method, ...detail });
     return json({ error: "Forbidden: cross-origin request rejected" }, 403);
   };
+
+  const sessionId = ctx.state.auth?.session?.id;
+  const secret = resolveCsrfSecret(ctx.state);
+  const presented = ctx.req.headers.get("x-csrf-token");
+  if (csrfTokenMatches(sessionId, secret, presented)) return null;
 
   const origin = ctx.req.headers.get("origin");
   if (origin !== null) {
@@ -125,19 +142,19 @@ export function csrfCheck(ctx: FreshContext<AdminState>): Response | null {
     // "cross-site" / "same-site" are not same-origin — reject.
     return deny({ secFetchSite });
   }
+  if (secFetchSite === "same-origin" || secFetchSite === "none") return null;
 
   const referer = ctx.req.headers.get("referer");
   if (referer !== null) {
     try {
       if (new URL(referer).host !== requestHost) return deny({ referer });
+      return null;
     } catch {
       return deny({ referer, parseError: true });
     }
   }
 
-  // No Origin, no contradicting Fetch-metadata, no cross-origin Referer.
-  // SameSite=Lax session cookies are the remaining backstop.
-  return null;
+  return deny({ reason: "missing origin and csrf token" });
 }
 
 /**

@@ -58,8 +58,11 @@ Deno.test("_layout: wraps a normal authenticated admin route in the sidebar/topb
     <AdminLayout
       Component={Marker}
       state={{
-        adminContext: baseAdminContext(),
-        auth: { user: { name: "Admin", roles: ["admin"] } },
+        adminContext: { ...baseAdminContext(), csrfSecret: "test-csrf-secret" },
+        auth: {
+          user: { name: "Admin", roles: ["admin"] },
+          session: { id: "sess-1" },
+        },
         // deno-lint-ignore no-explicit-any
       } as any}
       url={new URL("http://localhost/admin/")}
@@ -69,4 +72,5 @@ Deno.test("_layout: wraps a normal authenticated admin route in the sidebar/topb
   assertStringIncludes(html, "component-output");
   assertStringIncludes(html, "admin-sidebar");
   assertStringIncludes(html, "admin-topbar");
+  assertStringIncludes(html, 'name="csrf-token"');
 });

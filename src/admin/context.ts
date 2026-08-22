@@ -102,6 +102,11 @@ export interface AdminContext {
    * The Fresh app registers these as programmatic routes after fsRoutes().
    */
   pluginPages?: AdminPageRegistration[];
+  /**
+   * HMAC key for session-bound CSRF tokens. Tests inject this; production
+   * loads or creates `runtimeDir/csrf-secret` on first use.
+   */
+  csrfSecret?: string;
 }
 
 let _ctx: AdminContext | null = null;

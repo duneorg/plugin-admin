@@ -41,6 +41,7 @@ function makeCtx(opts: {
   return {
     req: new Request("https://cms.example.com/admin/api/config/theme-config", {
       method: opts.method,
+      headers: { origin: "https://cms.example.com" },
       body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     }),
     url: new URL("https://cms.example.com/admin/api/config/theme-config"),

@@ -15,6 +15,13 @@ import {
   PUBLIC_PATHS,
   toAdminRelative,
 } from "./_middleware.ts";
+import { csrfTokenFromState } from "../auth/csrf.ts";
+
+function csrfMeta(state: AdminState) {
+  const token = csrfTokenFromState(state);
+  if (!token) return null;
+  return <meta name="csrf-token" content={token} />;
+}
 
 export default function AdminLayout(
   { Component, state, url }: {
@@ -61,6 +68,7 @@ export default function AdminLayout(
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
+          {csrfMeta(state)}
           <title>Dune Admin</title>
           <style>{adminCss(dir === "rtl")}</style>
           <style>
@@ -111,12 +119,13 @@ export default function AdminLayout(
 
   return (
     <html lang={siteLang} dir={dir}>
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Dune Admin</title>
-        <style>{adminCss(dir === "rtl")}</style>
-      </head>
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          {csrfMeta(state)}
+          <title>Dune Admin</title>
+          <style>{adminCss(dir === "rtl")}</style>
+        </head>
       <body>
         <div class="admin-layout">
           <div class="sidebar-overlay" id="sidebar-overlay" />
