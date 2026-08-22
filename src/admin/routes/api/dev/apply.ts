@@ -8,7 +8,10 @@
  *    in a production-like environment. Protects against accidental exposure
  *    of file-write capabilities in deployed sites.
  *
- * Requires: pages.update permission (editor or admin).
+ * Requires: pages.update for the route and for content ops. `config` and
+ * `plugin.install` also need config.update — the same split as the
+ * production routes — so turning debug on in a public site does not
+ * promote an author/editor to admin.
  *
  * Request body:
  * {
@@ -337,6 +340,20 @@ export const handler = {
       if (errors.length > 0) {
         results.push({ op: change.op, path: change.path, key: change.key, spec: change.spec, status: "error", errors });
         continue;
+      }
+
+      if (change.op === "config" || change.op === "plugin.install") {
+        const configDenied = await requirePermission(ctx, "config.update");
+        if (configDenied) {
+          results.push({
+            op: change.op,
+            key: change.key,
+            spec: change.spec,
+            status: "error",
+            errors: ["config and plugin changes require config.update"],
+          });
+          continue;
+        }
       }
 
       if (

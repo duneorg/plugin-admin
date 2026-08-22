@@ -31,7 +31,10 @@ type Change = { op: string; path: string; content?: string; patch?: Record<strin
  * Invoke the route handler with a fake request and admin context.
  * Returns the parsed JSON response body.
  */
-async function callApply(body: unknown): Promise<Record<string, unknown>> {
+async function callApply(
+  body: unknown,
+  permissions?: string[],
+): Promise<Record<string, unknown>> {
   const { handler } = await import("../../../src/admin/routes/api/dev/apply.ts");
 
   const req = new Request("http://localhost/admin/api/dev/apply", {
@@ -52,7 +55,8 @@ async function callApply(body: unknown): Promise<Record<string, unknown>> {
       auth: { authenticated: true, user: { id: "1", roles: ["admin"] } },
       adminContext: {
         auth: {
-          hasPermission: (_auth: unknown, _perm: string) => true,
+          hasPermission: (_auth: unknown, perm: string) =>
+            permissions ? permissions.includes(perm) : true,
         },
         auditLogger: null,
         config: {
@@ -328,4 +332,29 @@ Deno.test("dev/apply: plugin.install rejects invalid spec format", async () => {
   const results = res.results as { status: string; errors: string[] }[];
   assertEquals(results[0].status, "error");
   assertEquals(results[0].errors.some((e: string) => e.includes("jsr:")), true);
+});
+
+Deno.test("dev/apply: pages.update alone cannot config or install plugins", async () => {
+  const res = await callApply(
+    {
+      dry_run: true,
+      changes: [
+        { op: "write", path: "content/hello.md", content: "---\ntitle: Hi\n---" },
+        { op: "config", key: "admin.path", value: "/cms" },
+        { op: "plugin.install", spec: "jsr:@dune/blog@1.0.0" },
+      ],
+    },
+    ["pages.update"],
+  );
+  const results = res.results as { op: string; status: string; errors: string[] }[];
+  assertEquals(results[0].op, "write");
+  assertEquals(results[0].errors, []);
+  assertEquals(results[1].status, "error");
+  assertEquals(results[1].errors.some((e) => e.includes("config.update")), true);
+  assertEquals(results[2].status, "error");
+  assertEquals(results[2].errors.some((e) => e.includes("config.update")), true);
+  const summary = res.summary as { total: number; valid: number; errors: number };
+  assertEquals(summary.total, 3);
+  assertEquals(summary.valid, 1);
+  assertEquals(summary.errors, 2);
 });
