@@ -38,7 +38,7 @@ interface Props {
 }
 
 /** Frontmatter keys the sidebar always renders its own dedicated control for. */
-const HARDCODED_FIELD_KEYS = ["title", "template", "slug", "published", "date"];
+const HARDCODED_FIELD_KEYS = ["title", "template", "slug", "published", "date", "createdBy"];
 
 /**
  * Keys present in `fm` that have no editable control anywhere in the sidebar

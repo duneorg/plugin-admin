@@ -1,7 +1,7 @@
 /** POST /admin/api/workflow/schedule */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck, validatePagePath } from "../../_utils.ts";
+import { requirePermission, requireOwnedPage, json, serverError, csrfCheck, validatePagePath } from "../../_utils.ts";
 import type { FreshContext } from "fresh";
 
 const VALID_ACTIONS = ["publish", "unpublish", "archive"] as const;
@@ -34,6 +34,8 @@ export const handler = {
       }
       const pageIndex = engine.pages.find((p) => p.sourcePath === sourcePath);
       if (!pageIndex) return json({ error: "Page not found" }, 404);
+      const ownerDenied = await requireOwnedPage(ctx, sourcePath);
+      if (ownerDenied) return ownerDenied;
 
       // Allowlist action values so the scheduler cannot be driven with an
       // unrecognised or injected action string.

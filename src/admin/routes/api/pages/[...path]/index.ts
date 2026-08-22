@@ -10,7 +10,7 @@
  */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, requireTsxWrite, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
+import { requirePermission, requireTsxWrite, requirePageOwner, requireOwnedPage, pageOwnerId, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import { parseUserYaml as parseYaml } from "@dune/core/security";
 import { resolveBlueprint, validateFrontmatter } from "@dune/core/blueprints";
@@ -91,10 +91,14 @@ export const handler = {
       const filePath = `${contentDir}/${page.sourcePath}`;
       const existing = await storage.read(filePath);
       let raw = new TextDecoder().decode(existing);
+      const existingFmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
+      const existingFm = existingFmMatch
+        ? (parseYaml(existingFmMatch[1]) as Record<string, unknown> ?? {})
+        : {};
+      const ownerDenied = requirePageOwner(ctx, pageOwnerId(existingFm));
+      if (ownerDenied) return ownerDenied;
 
       if (fm) {
-        const fmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
-        const existingFm = fmMatch ? (parseYaml(fmMatch[1]) as Record<string, unknown> ?? {}) : {};
         const mergedFm = { ...existingFm, ...fm };
         // An explicit null in the incoming frontmatter means "delete this
         // key" (e.g. clearing an optional numeric blueprint field back to
@@ -105,6 +109,9 @@ export const handler = {
         for (const key of Object.keys(mergedFm)) {
           if (mergedFm[key] === null) delete mergedFm[key];
         }
+        // Ownership is not client-writable — restore the stamped value.
+        if (existingFm.createdBy !== undefined) mergedFm.createdBy = existingFm.createdBy;
+        else delete mergedFm.createdBy;
 
         const template = (mergedFm.template as string) ?? page.template;
         if (engine.blueprints[template]) {
@@ -161,6 +168,8 @@ export const handler = {
     try {
       const page = engine.pages.find((p) => p.sourcePath === pagePath);
       if (!page) return json({ error: "Page not found" }, 404);
+      const ownerDenied = await requireOwnedPage(ctx, pagePath);
+      if (ownerDenied) return ownerDenied;
 
       const contentDir = config.system.content.dir;
       await storage.delete(`${contentDir}/${page.sourcePath}`);

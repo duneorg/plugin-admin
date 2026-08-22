@@ -21,7 +21,7 @@
  */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, requireTsxWrite, json, serverError, csrfCheck, validatePagePath } from "../_utils.ts";
+import { requirePermission, requireTsxWrite, requireOwnedPage, json, serverError, csrfCheck, validatePagePath } from "../_utils.ts";
 import { splitFile } from "../../../../collab/manager.ts";
 import type { FreshContext } from "fresh";
 
@@ -77,6 +77,8 @@ export const handler = {
     if (!validatePagePath(sourcePath)) return json({ error: "Invalid path" }, 400);
     const tsxDenied = requireTsxWrite(ctx, sourcePath);
     if (tsxDenied) return tsxDenied;
+    const ownerDenied = await requireOwnedPage(ctx, sourcePath);
+    if (ownerDenied) return ownerDenied;
 
     const action = parts[1];
     if (action !== "commit") {
@@ -116,6 +118,8 @@ export const handler = {
     if (!validatePagePath(sourcePath)) return json({ error: "Invalid path" }, 400);
     const tsxDenied = requireTsxWrite(ctx, sourcePath);
     if (tsxDenied) return tsxDenied;
+    const ownerDenied = await requireOwnedPage(ctx, sourcePath);
+    if (ownerDenied) return ownerDenied;
 
     const action = parts[1];
     if (action !== "fields") {

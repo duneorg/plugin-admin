@@ -1,7 +1,7 @@
 /** POST /admin/api/workflow/transition */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
+import { requirePermission, requireOwnedPage, json, serverError, csrfCheck } from "../_utils.ts";
 import { applyWorkflowTransition } from "../../../workflow-actions.ts";
 import { highestValidRole } from "../../../auth/role-utils.ts";
 import type { FreshContext } from "fresh";
@@ -22,8 +22,11 @@ export const handler = {
       const { path: sourcePath, to: newStatus } = body;
       if (!sourcePath || !newStatus) return json({ error: "path and to are required" }, 400);
 
+      if (typeof sourcePath !== "string") return json({ error: "path and to are required" }, 400);
       const pageIndex = engine.pages.find((p) => p.sourcePath === sourcePath);
       if (!pageIndex) return json({ error: "Page not found" }, 404);
+      const ownerDenied = await requireOwnedPage(ctx, sourcePath);
+      if (ownerDenied) return ownerDenied;
 
       const currentStatus = workflow.getStatus(pageIndex);
       const userRole = highestValidRole(authResult.user?.roles);

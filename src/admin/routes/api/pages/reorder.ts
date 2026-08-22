@@ -1,7 +1,7 @@
 /** POST /admin/api/pages/reorder */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, validatePagePath, csrfCheck } from "../_utils.ts";
+import { requirePermission, requireEditorOrAdmin, json, serverError, validatePagePath, csrfCheck } from "../_utils.ts";
 import { dirname, basename } from "@std/path";
 import type { FreshContext } from "fresh";
 
@@ -11,6 +11,8 @@ export const handler = {
     if (csrf) return csrf;
     const denied = await requirePermission(ctx, "pages.update");
     if (denied) return denied;
+    const structureDenied = requireEditorOrAdmin(ctx);
+    if (structureDenied) return structureDenied;
 
     const { engine, storage, config } = ctx.state.adminContext;
     try {

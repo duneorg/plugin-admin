@@ -57,7 +57,7 @@ function makeCtx(opts: {
     url: new URL(`https://cms.example.com/admin/api/pages/${opts.path}`),
     params: { path: opts.path },
     state: {
-      auth: { authenticated: true, user: { id: "1", username: "admin" } },
+      auth: { authenticated: true, user: { id: "1", username: "admin", roles: ["admin"] } },
       adminContext: {
         engine,
         storage: opts.storage,

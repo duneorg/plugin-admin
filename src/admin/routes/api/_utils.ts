@@ -4,6 +4,7 @@
 
 import type { FreshContext } from "fresh";
 import type { AdminPermission, AdminState } from "../../types.ts";
+import { highestValidRole } from "../../auth/role-utils.ts";
 
 export function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -217,6 +218,61 @@ export function requireTsxWrite(
     }, 403);
   }
   return null;
+}
+
+/** Frontmatter key stamped on create — stable user id, not display name. */
+export const PAGE_OWNER_KEY = "createdBy";
+
+export function pageOwnerId(
+  frontmatter: Record<string, unknown> | null | undefined,
+): string | null {
+  const value = frontmatter?.[PAGE_OWNER_KEY];
+  return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+/**
+ * Authors may mutate only pages they own. Editors and admins may mutate any
+ * page. A missing `createdBy` is unowned — authors are denied so a first
+ * deploy does not hand every legacy page to every author.
+ *
+ * Publish stays allowed on owned pages; sites that want review deny
+ * `author → published` in workflow config.
+ */
+export function requirePageOwner(
+  ctx: FreshContext<AdminState>,
+  createdBy: string | null | undefined,
+): Response | null {
+  const role = highestValidRole(ctx.state.auth?.user?.roles);
+  if (role === "admin" || role === "editor") return null;
+  const userId = ctx.state.auth?.user?.id;
+  if (userId && createdBy === userId) return null;
+  return json({ error: "Forbidden" }, 403);
+}
+
+/** Load a page and apply {@link requirePageOwner}. 404 if the path is unknown. */
+export async function requireOwnedPage(
+  ctx: FreshContext<AdminState>,
+  sourcePath: string,
+): Promise<Response | null> {
+  const role = highestValidRole(ctx.state.auth?.user?.roles);
+  if (role === "admin" || role === "editor") return null;
+
+  const { engine } = ctx.state.adminContext;
+  const pageIndex = engine.pages.find((p) => p.sourcePath === sourcePath);
+  if (!pageIndex) return json({ error: "Page not found" }, 404);
+  try {
+    const page = await engine.loadPage(pageIndex.sourcePath);
+    return requirePageOwner(ctx, pageOwnerId(page.frontmatter as Record<string, unknown>));
+  } catch {
+    return json({ error: "Page not found" }, 404);
+  }
+}
+
+/** Site-structure mutations (reorder) are editor/admin only. */
+export function requireEditorOrAdmin(ctx: FreshContext<AdminState>): Response | null {
+  const role = highestValidRole(ctx.state.auth?.user?.roles);
+  if (role === "admin" || role === "editor") return null;
+  return json({ error: "Forbidden" }, 403);
 }
 
 /**

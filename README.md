@@ -75,8 +75,8 @@ The admin panel uses a three-tier role system:
 | Role | Capabilities |
 |------|-------------|
 | `admin` | Full access — users, config, plugins, TSX content |
-| `editor` | Content CRUD, media, workflow transitions |
-| `author` | Own content only, cannot publish directly |
+| `editor` | Any content, media, workflow transitions, site structure |
+| `author` | Own pages only (create, edit, publish). Review gates belong in workflow config, not the role. |
 
 ## What's included
 

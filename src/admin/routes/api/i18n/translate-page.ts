@@ -1,7 +1,7 @@
 /** POST /admin/api/i18n/translate-page */
 
 import type { AdminState } from "../../../types.ts";
-import { json, serverError, csrfCheck, requirePermission, requireTsxWrite, validatePagePath } from "../_utils.ts";
+import { json, serverError, csrfCheck, requirePermission, requireTsxWrite, requireOwnedPage, validatePagePath } from "../_utils.ts";
 import type { FreshContext } from "fresh";
 
 function splitFrontmatter(content: string): { fm: string; body: string } {
@@ -37,6 +37,8 @@ export const handler = {
       if (!pageIndex) return json({ error: "Source file not found" }, 404);
       const tsxDenied = requireTsxWrite(ctx, pageIndex.format);
       if (tsxDenied) return tsxDenied;
+      const ownerDenied = await requireOwnedPage(ctx, pageIndex.sourcePath);
+      if (ownerDenied) return ownerDenied;
 
       const supported = config.system.languages?.supported ?? [];
       if (!supported.includes(targetLang)) return json({ error: "Unsupported target language" }, 400);

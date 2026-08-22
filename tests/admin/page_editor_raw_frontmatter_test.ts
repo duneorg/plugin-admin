@@ -16,7 +16,14 @@ import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { formatRawFrontmatter, unmanagedFrontmatterKeys } from "../../src/admin/islands/PageEditor.tsx";
 
 Deno.test("unmanagedFrontmatterKeys: excludes the hardcoded sidebar fields", () => {
-  const fm = { title: "Test", template: "default", slug: "test", published: true, date: "2026-01-01" };
+  const fm = {
+    title: "Test",
+    template: "default",
+    slug: "test",
+    published: true,
+    date: "2026-01-01",
+    createdBy: "user-1",
+  };
   assertEquals(unmanagedFrontmatterKeys(fm), []);
 });
 

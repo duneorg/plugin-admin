@@ -53,6 +53,7 @@ export const handler = {
         template: template ?? "default",
         published: true,
       };
+      if (authResult.user?.id) fmObj.createdBy = authResult.user.id;
       if (file && typeof file === "string") fmObj.file = file;
       if (file_url && typeof file_url === "string") fmObj.file_url = file_url;
       const fm = `---\n${stringifyYaml(fmObj).trimEnd()}\n---\n`;

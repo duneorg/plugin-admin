@@ -36,7 +36,7 @@
 
 import type { FreshContext } from "fresh";
 import type { AdminState } from "../../../types.ts";
-import { json, requirePermission, requireTsxWrite, csrfCheck, validatePagePath } from "../_utils.ts";
+import { json, requirePermission, requireTsxWrite, requireOwnedPage, csrfCheck, validatePagePath } from "../_utils.ts";
 import { join } from "@std/path";
 import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
 
@@ -352,6 +352,21 @@ export const handler = {
             errors: ["TSX format requires admin role"],
           });
           continue;
+        }
+        const known = ctx.state.adminContext.engine?.pages?.some(
+          (p) => p.sourcePath === change.path,
+        ) ?? false;
+        if (known) {
+          const ownerDenied = await requireOwnedPage(ctx, change.path);
+          if (ownerDenied) {
+            results.push({
+              op: change.op,
+              path: change.path,
+              status: "error",
+              errors: ["Forbidden"],
+            });
+            continue;
+          }
         }
       }
 

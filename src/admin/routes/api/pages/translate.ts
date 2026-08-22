@@ -1,7 +1,7 @@
 /** POST /admin/api/pages/translate */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, requireTsxWrite, json, serverError, csrfCheck, validatePagePath } from "../_utils.ts";
+import { requirePermission, requireTsxWrite, requireOwnedPage, json, serverError, csrfCheck, validatePagePath } from "../_utils.ts";
 import { dirname, basename } from "@std/path";
 import { parseContentFilename } from "@dune/core/content/path-utils";
 import type { FreshContext } from "fresh";
@@ -28,6 +28,8 @@ export const handler = {
       if (!pageIndex) return json({ error: "Source file not found" }, 404);
       const tsxDenied = requireTsxWrite(ctx, pageIndex.format);
       if (tsxDenied) return tsxDenied;
+      const ownerDenied = await requireOwnedPage(ctx, pageIndex.sourcePath);
+      if (ownerDenied) return ownerDenied;
 
       const filename = basename(pageIndex.sourcePath);
       const fileInfo = parseContentFilename(filename, supportedLangs);

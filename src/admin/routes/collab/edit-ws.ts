@@ -10,7 +10,7 @@
  */
 
 import type { AdminState } from "../../types.ts";
-import { checkPermission, requireTsxWrite, validatePagePath, websocketOriginCheck } from "../api/_utils.ts";
+import { checkPermission, requireTsxWrite, requireOwnedPage, validatePagePath, websocketOriginCheck } from "../api/_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -42,6 +42,8 @@ export const handler = {
     }
     const tsxDenied = requireTsxWrite(ctx, sourcePath);
     if (tsxDenied) return tsxDenied;
+    const ownerDenied = await requireOwnedPage(ctx, sourcePath);
+    if (ownerDenied) return ownerDenied;
 
     return inlineEdit.handleUpgrade(ctx.req, {
       id: authResult.user.id,

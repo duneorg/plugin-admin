@@ -1,7 +1,7 @@
 /** POST /admin/api/media/upload */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../_utils.ts";
+import { requirePermission, requireOwnedPage, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../_utils.ts";
 import { dirname } from "@std/path";
 import { isMediaFile, dirPathToRoute } from "@dune/core/content/path-utils";
 import { getMimeType } from "@dune/core/content/page-loader";
@@ -46,6 +46,8 @@ export const handler = {
 
       const contentDir = config.system.content.dir;
       if (!validatePagePath(pagePath)) return json({ error: "invalid pagePath" }, 400);
+      const ownerDenied = await requireOwnedPage(ctx, pagePath);
+      if (ownerDenied) return ownerDenied;
       const pageDir = dirname(pagePath);
 
       const destPath = `${contentDir}/${pageDir}/${safeName}`;
