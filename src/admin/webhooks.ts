@@ -36,6 +36,12 @@ export interface WebhookDeliveryLog {
   endpointLabel?: string;
   event: WebhookContentEvent;
   /**
+   * Page that triggered the delivery, when the payload included one.
+   * Stored so the workflow view can answer "did this page's hook fire?"
+   * without retaining the POST body.
+   */
+  sourcePath?: string;
+  /**
    * Payload metadata stored for diagnostic purposes.
    * Full content is intentionally omitted to avoid retaining PII (page body,
    * form submission fields) in the delivery log for the 7-day retention window.
@@ -45,6 +51,55 @@ export interface WebhookDeliveryLog {
   /** "success" if any attempt succeeded; "failed" after all retries exhausted */
   finalStatus: "success" | "failed" | "pending";
   createdAt: number;
+}
+
+/**
+ * Content/workflow projection of a delivery log. Destination URL and
+ * attempt error text are omitted — both can be the secret (Slack/Discord
+ * hook URLs, fetch errors that echo the URL).
+ */
+export interface WebhookWorkflowDelivery {
+  id: string;
+  endpointLabel?: string;
+  event: WebhookContentEvent;
+  sourcePath?: string;
+  payloadSize: number;
+  attempts: Array<{
+    attemptNumber: number;
+    timestamp: number;
+    statusCode?: number;
+    success: boolean;
+  }>;
+  finalStatus: "success" | "failed" | "pending";
+  createdAt: number;
+}
+
+/** Pull `sourcePath` off a content-event payload, if present. */
+export function sourcePathFromPayload(payload: unknown): string | undefined {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return undefined;
+  }
+  const path = (payload as { sourcePath?: unknown }).sourcePath;
+  return typeof path === "string" && path.length > 0 ? path : undefined;
+}
+
+/** Redact ops-only fields for callers with `pages.read` but not `config.read`. */
+export function toWorkflowDelivery(log: WebhookDeliveryLog): WebhookWorkflowDelivery {
+  return {
+    id: log.id,
+    endpointLabel: log.endpointLabel,
+    event: log.event,
+    sourcePath: log.sourcePath,
+    payloadSize: log.payloadSize,
+    attempts: log.attempts.map(({ attemptNumber, timestamp, statusCode, success }) => ({
+      attemptNumber,
+      timestamp,
+      statusCode,
+      success,
+    })),
+    finalStatus: log.finalStatus,
+    createdAt: log.createdAt,
+  };
 }
 
 // === Internal helpers ===
@@ -165,6 +220,7 @@ async function deliverWithRetry(
     endpointUrl: endpoint.url,
     endpointLabel: endpoint.label,
     event,
+    sourcePath: sourcePathFromPayload(payload),
     payloadSize: body.length,
     attempts: [],
     finalStatus: "pending",
@@ -231,6 +287,13 @@ export function fireContentWebhooks(
   });
 }
 
+export interface ListDeliveryLogsOptions {
+  /** Maximum records to return (default: 50) */
+  limit?: number;
+  /** When set, only return logs whose stored `sourcePath` matches. */
+  sourcePath?: string;
+}
+
 /**
  * List recent delivery log records, newest first.
  *
@@ -238,12 +301,16 @@ export function fireContentWebhooks(
  * records. Silently returns an empty array if the log directory doesn't exist.
  *
  * @param logDir - Base directory (admin.runtimeDir)
- * @param limit  - Maximum records to return (default: 50)
+ * @param limitOrOpts  - Maximum records, or `{ limit, sourcePath }`
  */
 export async function listDeliveryLogs(
   logDir: string,
-  limit = 50,
+  limitOrOpts: number | ListDeliveryLogsOptions = 50,
 ): Promise<WebhookDeliveryLog[]> {
+  const opts: ListDeliveryLogsOptions = typeof limitOrOpts === "number"
+    ? { limit: limitOrOpts }
+    : limitOrOpts;
+  const limit = opts.limit ?? 50;
   const baseDir = join(logDir, "webhook-logs");
   const results: WebhookDeliveryLog[] = [];
 
@@ -274,7 +341,9 @@ export async function listDeliveryLogs(
         if (results.length >= limit) break;
         try {
           const raw = await Deno.readTextFile(join(dir, fname));
-          results.push(JSON.parse(raw) as WebhookDeliveryLog);
+          const record = JSON.parse(raw) as WebhookDeliveryLog;
+          if (opts.sourcePath && record.sourcePath !== opts.sourcePath) continue;
+          results.push(record);
         } catch {
           // Skip malformed log files
         }
