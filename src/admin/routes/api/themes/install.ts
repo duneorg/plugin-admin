@@ -5,7 +5,7 @@ import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
 import { safeFetch } from "@dune/core/security";
 import type { StorageAdapter } from "@dune/core/storage";
 import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
-import { fetchThemeRegistrySafe, type RegistryTheme } from "../../../theme-registry.ts";
+import { fetchThemeRegistrySafe, isThemeSha256, type RegistryTheme } from "../../../theme-registry.ts";
 import type { FreshContext } from "fresh";
 
 interface ThemePackageEntry {
@@ -84,6 +84,9 @@ async function installZipTheme(
   if (typeof entry.downloadUrl !== "string") {
     throw new Error(`Theme "${slug}" has no downloadUrl`);
   }
+  if (!isThemeSha256(entry.sha256)) {
+    throw new Error(`Theme "${slug}" is missing a sha256 integrity hash`);
+  }
 
   let fetchResp: Response;
   try {
@@ -100,13 +103,11 @@ async function installZipTheme(
   }
 
   const zipBytes = new Uint8Array(await fetchResp.arrayBuffer());
-  if (entry.sha256) {
-    const got = await sha256Hex(zipBytes);
-    if (got.toLowerCase() !== entry.sha256.toLowerCase()) {
-      throw new Error(
-        `Theme integrity check failed: expected ${entry.sha256}, got ${got}`,
-      );
-    }
+  const got = await sha256Hex(zipBytes);
+  if (got.toLowerCase() !== entry.sha256.toLowerCase()) {
+    throw new Error(
+      `Theme integrity check failed: expected ${entry.sha256}, got ${got}`,
+    );
   }
 
   const { ZipReader, Uint8ArrayReader, Uint8ArrayWriter } = await import("@zip-js/zip-js");
@@ -173,6 +174,11 @@ export const handler = {
       }
 
       if (typeof entry.downloadUrl === "string") {
+        if (!isThemeSha256(entry.sha256)) {
+          return json({
+            error: `Registry entry for "${slug}" is missing a sha256 integrity hash`,
+          }, 502);
+        }
         const { filesWritten } = await installZipTheme(storage, slug, entry);
         console.log(`  📦 Installed theme "${slug}" (${filesWritten} files)`);
         return json({ success: true, slug, filesWritten, method: "zip" });

@@ -21,7 +21,7 @@ export interface RegistryTheme {
   /** Pinned JSR specifier — preferred install path (no ZIP download). */
   jsr?: string;
   downloadUrl?: string;
-  /** SHA-256 of the theme ZIP, hex-encoded. */
+  /** SHA-256 of the theme ZIP, hex-encoded. Required for ZIP installs. */
   sha256?: string;
   demoUrl?: string;
   screenshotUrl?: string | null;
@@ -34,6 +34,11 @@ interface Registry {
 
 const REGISTRY_URL = "https://raw.githubusercontent.com/duneorg/dune-themes/main/registry.json";
 const CACHE_TTL_MS = 5 * 60 * 1000;
+
+/** 64-char hex digest — required on every ZIP install. */
+export function isThemeSha256(value: unknown): value is string {
+  return typeof value === "string" && /^[0-9a-f]{64}$/i.test(value);
+}
 
 let cache: { body: Registry; fetchedAt: number } | null = null;
 
