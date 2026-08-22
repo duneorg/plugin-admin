@@ -36,7 +36,7 @@
 
 import type { FreshContext } from "fresh";
 import type { AdminState } from "../../../types.ts";
-import { json, requirePermission, csrfCheck, validatePagePath } from "../_utils.ts";
+import { json, requirePermission, requireTsxWrite, csrfCheck, validatePagePath } from "../_utils.ts";
 import { join } from "@std/path";
 import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
 
@@ -337,6 +337,22 @@ export const handler = {
       if (errors.length > 0) {
         results.push({ op: change.op, path: change.path, key: change.key, spec: change.spec, status: "error", errors });
         continue;
+      }
+
+      if (
+        change.path &&
+        ["write", "delete", "frontmatter"].includes(change.op)
+      ) {
+        const tsxDenied = requireTsxWrite(ctx, change.path);
+        if (tsxDenied) {
+          results.push({
+            op: change.op,
+            path: change.path,
+            status: "error",
+            errors: ["TSX format requires admin role"],
+          });
+          continue;
+        }
       }
 
       // ── config op ──────────────────────────────────────────────────────────

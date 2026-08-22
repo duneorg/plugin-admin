@@ -364,6 +364,43 @@ Deno.test("AuthMiddleware: hasPermission checks role", () => {
   assertEquals(auth.hasPermission(authorResult, "pages.delete"), false);
 });
 
+Deno.test("AuthMiddleware: bound session fails when forwarded IP is omitted", async () => {
+  const storage = createMemoryStorage();
+  const sessions = createSessionManager({ storage, sessionsDir: ".sess", lifetime: 3600 });
+  const userMgr = createUserManager({ storage, usersDir: ".users" });
+  const auth = createAuthMiddleware({
+    sessions,
+    users: userMgr,
+    trustForwardedFor: true,
+  });
+
+  const user = await userMgr.create({
+    username: "admin",
+    email: "a@localhost",
+    password: "pass",
+    role: "admin",
+    name: "Admin",
+  });
+  const session = await sessions.create(user.id, "203.0.113.10");
+
+  const omitted = await auth.authenticate(
+    new Request("http://localhost/admin/", {
+      headers: { "Cookie": `dune_session=${session.id}` },
+    }),
+  );
+  assertEquals(omitted.authenticated, false);
+
+  const matching = await auth.authenticate(
+    new Request("http://localhost/admin/", {
+      headers: {
+        "Cookie": `dune_session=${session.id}`,
+        "x-forwarded-for": "203.0.113.10",
+      },
+    }),
+  );
+  assertEquals(matching.authenticated, true);
+});
+
 Deno.test("AuthMiddleware: createSessionCookie formats correctly", () => {
   const storage = createMemoryStorage();
   const sessions = createSessionManager({ storage, sessionsDir: ".sess", lifetime: 3600 });

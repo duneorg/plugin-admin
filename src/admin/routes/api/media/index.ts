@@ -1,7 +1,7 @@
 /** GET /admin/api/media — list; DELETE /admin/api/media — delete */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../_utils.ts";
+import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../_utils.ts";
 import { dirname } from "@std/path";
 import { isMediaFile } from "@dune/core/content/path-utils";
 import type { FreshContext } from "fresh";
@@ -65,7 +65,7 @@ export const handler = {
       if (!pagePath || typeof pagePath !== "string" || !name || typeof name !== "string") {
         return json({ error: "pagePath and name required" }, 400);
       }
-      if (pagePath.includes("..") || name.includes("..") || name.includes("/") || name.includes("\\")) {
+      if (!validatePagePath(pagePath) || name.includes("..") || name.includes("/") || name.includes("\\")) {
         return json({ error: "invalid path" }, 400);
       }
       if (!isMediaFile(name)) return json({ error: "not a media file" }, 400);

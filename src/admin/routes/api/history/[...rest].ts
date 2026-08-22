@@ -11,7 +11,7 @@
  */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck, validatePagePath } from "../_utils.ts";
+import { requirePermission, requireTsxWrite, json, serverError, csrfCheck, validatePagePath } from "../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import type { FreshContext } from "fresh";
 
@@ -96,6 +96,8 @@ export const handler = {
 
       const pageIndex = engine.pages.find((p) => p.sourcePath === pagePath);
       if (!pageIndex) return json({ error: "Page not found" }, 404);
+      const tsxDenied = requireTsxWrite(ctx, pageIndex.format);
+      if (tsxDenied) return tsxDenied;
 
       const contentDir = config.system.content.dir;
       const filePath = `${contentDir}/${pageIndex.sourcePath}`;

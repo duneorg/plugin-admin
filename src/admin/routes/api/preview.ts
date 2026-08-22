@@ -22,8 +22,16 @@ import type { FreshContext } from "fresh";
 import type { DuneEngine } from "@dune/core/engine";
 import { sanitizeHtml } from "@dune/core/security";
 
+const PREVIEW_CSP = "sandbox; script-src 'none'; object-src 'none'";
+
 function htmlResponse(html: string, status = 200): Response {
-  return new Response(html, { status, headers: { "Content-Type": "text/html; charset=utf-8" } });
+  return new Response(html, {
+    status,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Content-Security-Policy": PREVIEW_CSP,
+    },
+  });
 }
 
 const PREVIEW_STYLE =
@@ -40,7 +48,7 @@ async function renderSavedPage(engine: DuneEngine, sourcePath: string): Promise<
     );
   }
   const page = await engine.loadPage(pageIndex.sourcePath);
-  const html = await page.html();
+  const html = sanitizeHtml(await page.html());
   return htmlResponse(
     `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${PREVIEW_STYLE}</style></head><body>${html}</body></html>`,
   );

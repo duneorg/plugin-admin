@@ -10,7 +10,7 @@
  */
 
 import type { AdminState } from "../../types.ts";
-import { checkPermission, validatePagePath } from "../api/_utils.ts";
+import { checkPermission, requireTsxWrite, validatePagePath, websocketOriginCheck } from "../api/_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -23,21 +23,8 @@ export const handler = {
       return new Response("Expected WebSocket upgrade", { status: 426 });
     }
 
-    // Origin check: reject cross-origin WebSocket upgrades (CSWSH).
-    // SameSite=Lax cookies are sent on WS upgrades from top-level navigation,
-    // so a cookie check alone is not sufficient here.
-    const origin = ctx.req.headers.get("origin");
-    if (origin) {
-      try {
-        if (new URL(origin).host !== ctx.url.host) {
-          return new Response("Cross-origin WebSocket rejected", {
-            status: 403,
-          });
-        }
-      } catch {
-        return new Response("Cross-origin WebSocket rejected", { status: 403 });
-      }
-    }
+    const originDenied = websocketOriginCheck(ctx);
+    if (originDenied) return originDenied;
 
     const authResult = ctx.state.auth;
     if (!authResult?.authenticated || !authResult.user) {
@@ -53,6 +40,8 @@ export const handler = {
     if (!sourcePath || !validatePagePath(sourcePath)) {
       return new Response("Invalid path", { status: 400 });
     }
+    const tsxDenied = requireTsxWrite(ctx, sourcePath);
+    if (tsxDenied) return tsxDenied;
 
     return inlineEdit.handleUpgrade(ctx.req, {
       id: authResult.user.id,

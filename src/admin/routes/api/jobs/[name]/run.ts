@@ -27,8 +27,8 @@ export const handler = {
       });
       return json({ triggered: true, name });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return json({ error: msg }, 404);
+      console.error(`[dune/jobs] Manual run of ${name} failed:`, err);
+      return json({ error: "Job not found" }, 404);
     }
   },
 };

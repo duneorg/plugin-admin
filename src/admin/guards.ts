@@ -41,7 +41,9 @@
 export {
   checkPermission,
   csrfCheck,
+  isTsxSource,
   requirePermission,
+  requireTsxWrite,
   validatePagePath,
   withGuards,
 } from "./routes/api/_utils.ts";

@@ -12,7 +12,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "users.update");
     if (denied) return denied;
 
-    const { users, auditLogger } = ctx.state.adminContext;
+    const { users, sessions, auth, config, auditLogger } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
     const userId = ctx.params.id;
 
@@ -24,6 +24,16 @@ export const handler = {
       const changed = await users.changePassword(userId, password);
       if (!changed) return json({ error: "User not found" }, 404);
 
+      await sessions.revokeAll(userId);
+      const res = json({ ok: true });
+      if (authResult.user?.id === userId) {
+        const session = await sessions.create(userId);
+        res.headers.set(
+          "Set-Cookie",
+          auth.createSessionCookie(session.id, config.admin?.sessionLifetime ?? 86400),
+        );
+      }
+
       void auditLogger?.log({
         event: "user.password",
         actor: actorFromAuth(authResult),
@@ -34,7 +44,7 @@ export const handler = {
         outcome: "success",
       }).catch(() => {});
 
-      return json({ ok: true });
+      return res;
     } catch (err) {
       return serverError(err);
     }

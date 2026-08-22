@@ -91,7 +91,10 @@ export function createAuthMiddleware(
           req.headers.get("x-real-ip") ??
           undefined;
       }
-      if (requestIp && requestIp !== session.ip) {
+      // A stolen cookie that simply omits forwarded headers used to skip
+      // this check (undefined !== session.ip was never evaluated). When
+      // the session was bound to an IP, a missing request IP is a mismatch.
+      if (!requestIp || requestIp !== session.ip) {
         return { authenticated: false, error: "Session IP mismatch" };
       }
     }

@@ -1,7 +1,7 @@
 /** GET + POST /admin/api/pages */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, actorFromAuth, getClientIp, validatePagePath, csrfCheck } from "../_utils.ts";
+import { requirePermission, requireTsxWrite, json, serverError, actorFromAuth, getClientIp, validatePagePath, csrfCheck } from "../_utils.ts";
 import { fireContentWebhooks } from "../../../../admin/webhooks.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import type { FreshContext } from "fresh";
@@ -39,15 +39,8 @@ export const handler = {
         return json({ error: "Invalid page path: must not contain '..' or absolute segments" }, 400);
       }
 
-      if (format === "tsx") {
-        const allowedRoles: string[] = config.system.content.allowTsxFormat ?? ["admin"];
-        const userRoles = authResult.user?.roles ?? [];
-        if (allowedRoles.length === 0 || !userRoles.some((r) => allowedRoles.includes(r))) {
-          return json({
-            error: "TSX format requires admin role. TSX pages execute server-side code and must be created by trusted authors.",
-          }, 403);
-        }
-      }
+      const tsxDenied = requireTsxWrite(ctx, format ?? "");
+      if (tsxDenied) return tsxDenied;
 
       const ext = format === "mdx" ? ".mdx" : format === "tsx" ? ".tsx" : ".md";
       // Serialize frontmatter via @std/yaml to ensure correct quoting/

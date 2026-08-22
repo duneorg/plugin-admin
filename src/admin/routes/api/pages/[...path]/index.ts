@@ -10,7 +10,7 @@
  */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
+import { requirePermission, requireTsxWrite, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import { parseUserYaml as parseYaml } from "@dune/core/security";
 import { resolveBlueprint, validateFrontmatter } from "@dune/core/blueprints";
@@ -84,6 +84,8 @@ export const handler = {
 
       const page = engine.pages.find((p) => p.sourcePath === pagePath);
       if (!page) return json({ error: "Page not found" }, 404);
+      const tsxDenied = requireTsxWrite(ctx, page.format);
+      if (tsxDenied) return tsxDenied;
 
       const contentDir = config.system.content.dir;
       const filePath = `${contentDir}/${page.sourcePath}`;

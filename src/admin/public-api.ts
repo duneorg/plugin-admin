@@ -35,6 +35,26 @@ function serverError(err: unknown): Response {
   return json({ error: "Internal server error" }, 500);
 }
 
+/** Same-origin path only — form.success_url is otherwise an open redirect. */
+function safeRedirectPath(target: string, req: Request): string {
+  if (typeof target !== "string" || target.length === 0 || target.length > 2048) {
+    return "/";
+  }
+  if (target.includes("\0") || target.includes("\r") || target.includes("\n")) {
+    return "/";
+  }
+  if (target.startsWith("//") || target.startsWith("\\\\")) return "/";
+  try {
+    const requestUrl = new URL(req.url);
+    const parsed = new URL(target, requestUrl);
+    if (parsed.origin !== requestUrl.origin) return "/";
+    if (!parsed.pathname.startsWith("/")) return "/";
+    return parsed.pathname + parsed.search + parsed.hash;
+  } catch {
+    return "/";
+  }
+}
+
 // Hard ceiling on a single form submission body (multipart or urlencoded).
 // Mirrors the per-file (10 MB) × per-submission (5 files) budget plus a small
 // allowance for boundaries, headers, and non-file fields.
@@ -221,7 +241,7 @@ export async function handleFormSubmission(ctx: AdminContext, req: Request, form
     const acceptsJson = req.headers.get("accept")?.includes("application/json");
     if (acceptsJson) return json({ ok: true });
 
-    const successUrl = form.success_url ?? "/";
+    const successUrl = safeRedirectPath(form.success_url ?? "/", req);
     return new Response(null, { status: 302, headers: { Location: successUrl } });
   } catch (err) {
     return serverError(err);
@@ -286,15 +306,16 @@ export async function handleIncomingWebhook(ctx: AdminContext, req: Request): Pr
   // attacker from progressively recovering the configured token by
   // measuring response timing.
   const tokenBytes = new TextEncoder().encode(token);
-  const matched = incomingWebhooks.find((wh) => {
+  let matched: (typeof incomingWebhooks)[number] | undefined;
+  for (const wh of incomingWebhooks) {
     const candidate = new TextEncoder().encode(expandToken(wh.token));
-    if (candidate.byteLength !== tokenBytes.byteLength) return false;
-    let diff = 0;
-    for (let i = 0; i < candidate.byteLength; i++) {
-      diff |= candidate[i] ^ tokenBytes[i];
+    const maxLen = Math.max(candidate.byteLength, tokenBytes.byteLength);
+    let diff = candidate.byteLength ^ tokenBytes.byteLength;
+    for (let i = 0; i < maxLen; i++) {
+      diff |= (candidate[i] ?? 0) ^ (tokenBytes[i] ?? 0);
     }
-    return diff === 0;
-  });
+    if (diff === 0) matched = wh;
+  }
 
   if (!matched) {
     return json({ error: "Invalid token" }, 401);

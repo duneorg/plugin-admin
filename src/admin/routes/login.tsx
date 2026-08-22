@@ -10,7 +10,7 @@ import type { AdminState } from "../types.ts";
 import { verifyPassword, DUMMY_HASH, needsRehash } from "../auth/passwords.ts";
 import { findOrProvisionUser } from "../auth/provisioner.ts";
 import { RateLimiter, clientIp } from "@dune/core/security";
-import { actorFromAuth } from "./api/_utils.ts";
+import { actorFromAuth, csrfCheck } from "./api/_utils.ts";
 
 // Module-level fallback limiter — used when no rateLimitStore is injected via
 // AdminContext (single-process deployments, tests, etc.).
@@ -98,6 +98,9 @@ export const handler = {
   },
 
   async POST(ctx: FreshContext<AdminState>) {
+    const csrfDenied = csrfCheck(ctx);
+    if (csrfDenied) return csrfDenied;
+
     const { auth, users, sessions, prefix, auditLogger, authProvider, config, rateLimitStore } = ctx.state.adminContext;
     const adminConfig = config.admin!;
     const url = ctx.url;

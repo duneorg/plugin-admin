@@ -2,13 +2,20 @@
 
 import type { AdminState } from "../../types.ts";
 import { requirePermission, serverError } from "./_utils.ts";
+import { sanitizeHtml } from "@dune/core/security";
 import { h, type ComponentType } from "preact";
 import { render as renderJsxToString } from "preact-render-to-string";
 import { buildPageTitle } from "@dune/core/content/types";
 import type { FreshContext } from "fresh";
 
 function htmlResponse(html: string, status = 200): Response {
-  return new Response(html, { status, headers: { "Content-Type": "text/html; charset=utf-8" } });
+  return new Response(html, {
+    status,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Content-Security-Policy": "sandbox; script-src 'none'; object-src 'none'",
+    },
+  });
 }
 
 function escapeHtml(s: string): string {
@@ -52,7 +59,7 @@ export const handler = {
         engine.createPreviewTheme(themeName),
       ]);
 
-      const html = await page.html();
+      const html = sanitizeHtml(await page.html());
       const templateName = previewLoader.resolveTemplateName(page) ?? "default";
       const template = await previewLoader.loadTemplate(templateName);
 

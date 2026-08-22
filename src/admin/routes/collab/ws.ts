@@ -4,7 +4,7 @@
  */
 
 import type { AdminState } from "../../types.ts";
-import { checkPermission } from "../api/_utils.ts";
+import { checkPermission, requireTsxWrite, websocketOriginCheck } from "../api/_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -17,22 +17,8 @@ export const handler = {
       return new Response("Expected WebSocket upgrade", { status: 426 });
     }
 
-    // Origin check: cross-site pages can attempt WebSocket upgrades with
-    // cookies attached (CSWSH). Reject any upgrade whose Origin doesn't
-    // match the request host. This is the defence-in-depth equivalent of
-    // the CSRF Origin check applied to admin API mutations.
-    const origin = ctx.req.headers.get("origin");
-    if (origin) {
-      try {
-        if (new URL(origin).host !== ctx.url.host) {
-          return new Response("Cross-origin WebSocket rejected", {
-            status: 403,
-          });
-        }
-      } catch {
-        return new Response("Cross-origin WebSocket rejected", { status: 403 });
-      }
-    }
+    const originDenied = websocketOriginCheck(ctx);
+    if (originDenied) return originDenied;
 
     const docId = ctx.url.searchParams.get("docId");
     if (!docId) {
@@ -47,6 +33,8 @@ export const handler = {
     if (!await checkPermission(ctx, "pages.update")) {
       return new Response("Forbidden", { status: 403 });
     }
+    const tsxDenied = requireTsxWrite(ctx, docId);
+    if (tsxDenied) return tsxDenied;
     return collab.handleUpgrade(ctx.req, authResult.user);
   },
 };

@@ -72,6 +72,26 @@ function logAuthzDenial(
   }).catch(() => {});
 }
 
+/**
+ * Reject WebSocket upgrades with a missing or cross-origin Origin.
+ * Browsers send Origin on WS upgrades; omitting it is how non-browser
+ * CSWSH clients used to skip the host check.
+ */
+export function websocketOriginCheck(ctx: FreshContext<AdminState>): Response | null {
+  const origin = ctx.req.headers.get("origin");
+  if (!origin) {
+    return new Response("Cross-origin WebSocket rejected", { status: 403 });
+  }
+  try {
+    if (new URL(origin).host !== ctx.url.host) {
+      return new Response("Cross-origin WebSocket rejected", { status: 403 });
+    }
+  } catch {
+    return new Response("Cross-origin WebSocket rejected", { status: 403 });
+  }
+  return null;
+}
+
 /** CSRF check: reject cross-origin mutating requests. */
 export function csrfCheck(ctx: FreshContext<AdminState>): Response | null {
   const method = ctx.req.method;
@@ -167,6 +187,34 @@ export async function requirePermission(
   if (!allowed) {
     logAuthzDenial(ctx, "auth.permission_denied", { permission });
     return json({ error: "Forbidden" }, 403);
+  }
+  return null;
+}
+
+/** True when `formatOrPath` is the TSX page format or a `.tsx` source path. */
+export function isTsxSource(formatOrPath: string): boolean {
+  return formatOrPath === "tsx" || /\.tsx$/i.test(formatOrPath);
+}
+
+/**
+ * TSX pages execute server-side Deno. Create already consults
+ * `system.content.allowTsxFormat` (default: admin only). Every other write
+ * path must use this helper so an author/editor cannot rewrite an existing
+ * TSX page via PUT, restore, staging, collab, or translate.
+ */
+export function requireTsxWrite(
+  ctx: FreshContext<AdminState>,
+  formatOrPath: string,
+): Response | null {
+  if (!isTsxSource(formatOrPath)) return null;
+  const allowedRoles: string[] =
+    ctx.state.adminContext.config.system.content.allowTsxFormat ?? ["admin"];
+  const userRoles = ctx.state.auth?.user?.roles ?? [];
+  if (allowedRoles.length === 0 || !userRoles.some((r) => allowedRoles.includes(r))) {
+    return json({
+      error:
+        "TSX format requires admin role. TSX pages execute server-side code and must be edited by trusted authors.",
+    }, 403);
   }
   return null;
 }

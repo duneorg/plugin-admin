@@ -1,7 +1,7 @@
 /** POST /admin/api/i18n/translate-page */
 
 import type { AdminState } from "../../../types.ts";
-import { json, serverError, csrfCheck, requirePermission, validatePagePath } from "../_utils.ts";
+import { json, serverError, csrfCheck, requirePermission, requireTsxWrite, validatePagePath } from "../_utils.ts";
 import type { FreshContext } from "fresh";
 
 function splitFrontmatter(content: string): { fm: string; body: string } {
@@ -35,6 +35,8 @@ export const handler = {
       }
       const pageIndex = engine.pages.find((p) => p.sourcePath === sourcePath);
       if (!pageIndex) return json({ error: "Source file not found" }, 404);
+      const tsxDenied = requireTsxWrite(ctx, pageIndex.format);
+      if (tsxDenied) return tsxDenied;
 
       const supported = config.system.languages?.supported ?? [];
       if (!supported.includes(targetLang)) return json({ error: "Unsupported target language" }, 400);
@@ -57,7 +59,8 @@ export const handler = {
       try {
         translatedBody = await mt.translate(body, defaultLang, targetLang);
       } catch (err) {
-        return json({ error: `Translation failed: ${err}` }, 502);
+        console.error("[dune] MT translate-page body error:", err);
+        return json({ error: "Translation failed" }, 502);
       }
 
       let translatedFm = fm;
@@ -70,7 +73,8 @@ export const handler = {
             (_: string, pre: string, _val: string, post: string) => pre + translatedTitle + post,
           );
         } catch (err) {
-          return json({ error: `Title translation failed: ${err}` }, 502);
+          console.error("[dune] MT translate-page title error:", err);
+          return json({ error: "Title translation failed" }, 502);
         }
       }
 

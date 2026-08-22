@@ -1,7 +1,7 @@
 /** POST /admin/api/media/upload */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../_utils.ts";
+import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../_utils.ts";
 import { dirname } from "@std/path";
 import { isMediaFile, dirPathToRoute } from "@dune/core/content/path-utils";
 import { getMimeType } from "@dune/core/content/page-loader";
@@ -45,8 +45,8 @@ export const handler = {
       if (file.size > MAX_FILE_SIZE) return json({ error: "file too large (max 50 MB)" }, 400);
 
       const contentDir = config.system.content.dir;
+      if (!validatePagePath(pagePath)) return json({ error: "invalid pagePath" }, 400);
       const pageDir = dirname(pagePath);
-      if (pageDir.includes("..") || pagePath.includes("..")) return json({ error: "invalid pagePath" }, 400);
 
       const destPath = `${contentDir}/${pageDir}/${safeName}`;
       const bytes = new Uint8Array(await file.arrayBuffer());
