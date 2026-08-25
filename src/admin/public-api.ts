@@ -19,6 +19,7 @@ import { RateLimiter, clientIp } from "@dune/core/security";
 import { encodeHex } from "@std/encoding/hex";
 import type { SubmissionFile } from "./submissions.ts";
 import type { WebhookNotificationConfig } from "@dune/core/config";
+import { timingSafeEqual } from "./timing-safe.ts";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -302,19 +303,14 @@ export async function handleIncomingWebhook(ctx: AdminContext, req: Request): Pr
     return t;
   };
 
-  // Compare in constant time: equal-length byte comparison prevents an
+  // Compare in constant time (shared timingSafeEqual helper) to prevent an
   // attacker from progressively recovering the configured token by
   // measuring response timing.
   const tokenBytes = new TextEncoder().encode(token);
   let matched: (typeof incomingWebhooks)[number] | undefined;
   for (const wh of incomingWebhooks) {
     const candidate = new TextEncoder().encode(expandToken(wh.token));
-    const maxLen = Math.max(candidate.byteLength, tokenBytes.byteLength);
-    let diff = candidate.byteLength ^ tokenBytes.byteLength;
-    for (let i = 0; i < maxLen; i++) {
-      diff |= (candidate[i] ?? 0) ^ (tokenBytes[i] ?? 0);
-    }
-    if (diff === 0) matched = wh;
+    if (timingSafeEqual(candidate, tokenBytes)) matched = wh;
   }
 
   if (!matched) {

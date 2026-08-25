@@ -13,6 +13,7 @@
  */
 
 import { encodeHex } from "@std/encoding/hex";
+import { timingSafeEqual } from "../timing-safe.ts";
 
 /**
  * Pre-computed PBKDF2 hash used for constant-time dummy comparisons.
@@ -120,19 +121,3 @@ function hexToBytes(hex: string): Uint8Array {
   return bytes;
 }
 
-/**
- * Constant-time comparison of two byte arrays.
- *
- * Runs for max(a.length, b.length) iterations regardless of content,
- * and captures a length difference in the initial XOR — no early returns.
- * Operating on raw bytes (not hex strings) removes the encoding layer.
- */
-function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
-  const maxLen = Math.max(a.length, b.length);
-  // Start with the length difference: if lengths differ, result is already non-zero.
-  let result = a.length ^ b.length;
-  for (let i = 0; i < maxLen; i++) {
-    result |= (a[i] ?? 0) ^ (b[i] ?? 0);
-  }
-  return result === 0;
-}
