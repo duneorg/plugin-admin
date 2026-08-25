@@ -1,5 +1,5 @@
 /**
- * Admin shell stylesheet, extracted from _layout.tsx (Q-6, Aug 2026 quality audit)
+ * Admin shell stylesheet, extracted from _layout.tsx (Q-6, Aug 2026 quality audit; lives outside routes/ because the manifest generator treats every routes/* file as a route module)
  * so the layout component is readable and the CSS lives in one reviewable place.
  */
 

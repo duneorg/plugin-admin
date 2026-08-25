@@ -16,7 +16,7 @@ import {
   toAdminRelative,
 } from "./_middleware.ts";
 import { csrfTokenFromState } from "../auth/csrf.ts";
-import { adminCss } from "./admin-css.ts";
+import { adminCss } from "../admin-css.ts";
 
 function csrfMeta(state: AdminState) {
   const token = csrfTokenFromState(state);
