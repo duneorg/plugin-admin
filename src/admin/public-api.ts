@@ -23,18 +23,10 @@ import { timingSafeEqual } from "./timing-safe.ts";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data, null, 2), {
-    status,
-    headers: { "Content-Type": "application/json; charset=utf-8" },
-  });
-}
-
-function serverError(err: unknown): Response {
-  console.error("[dune public-api]", err);
-  // Never reflect internal error strings on the public, unauthenticated API.
-  return json({ error: "Internal server error" }, 500);
-}
+// json()/serverError() shared with the admin API (Q-5) — the public variant
+// previously pretty-printed with 2-space indent; compact JSON is equivalent
+// for machine consumers and matches the admin API's output.
+import { json, serverError } from "./http.ts";
 
 /** Same-origin path only — form.success_url is otherwise an open redirect. */
 function safeRedirectPath(target: string, req: Request): string {
