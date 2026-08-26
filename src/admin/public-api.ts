@@ -23,10 +23,14 @@ import { timingSafeEqual } from "./timing-safe.ts";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-// json()/serverError() shared with the admin API (Q-5) — the public variant
-// previously pretty-printed with 2-space indent; compact JSON is equivalent
-// for machine consumers and matches the admin API's output.
-import { json, serverError } from "./http.ts";
+// json() shared with the admin API (Q-5) — the public variant previously
+// pretty-printed with 2-space indent; compact JSON is equivalent for machine
+// consumers and matches the admin API's output. publicServerError() (not
+// serverError()) is the error mapper here deliberately: serverError() maps
+// typed errors to specific statuses and includes their message, which is
+// safe for the authenticated admin API but not for this unauthenticated
+// surface — see publicServerError()'s own doc comment in http.ts.
+import { json, publicServerError as serverError } from "./http.ts";
 
 /** Same-origin path only — form.success_url is otherwise an open redirect. */
 function safeRedirectPath(target: string, req: Request): string {

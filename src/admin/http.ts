@@ -55,3 +55,19 @@ export function serverError(err: unknown): Response {
   // Generic — never leak err.message to the client.
   return json({ error: "Internal server error" }, 500);
 }
+
+/**
+ * Error-to-Response mapper for the public, unauthenticated API surface.
+ *
+ * {@link serverError} maps `ValidationError`/`NotFoundError` to 400/404 and
+ * includes the error's own message — safe for the admin API, where every
+ * caller is already authenticated, but not for public-api.ts: an anonymous
+ * caller could trigger a `ValidationError` and read back whatever string an
+ * internal validation path happened to construct. This mapper always
+ * returns a single, fixed error status/message regardless of the thrown
+ * error's type or content, matching the public API's original posture.
+ */
+export function publicServerError(err: unknown): Response {
+  console.error("[dune public-api]", err);
+  return json({ error: "Internal server error" }, 500);
+}
