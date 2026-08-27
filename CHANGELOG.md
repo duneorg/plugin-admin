@@ -5,6 +5,15 @@ follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [2.1.3] — 2026-08-27
+
+### Changed
+
+- **`@dune/core` pin bumped to `0.34`.** The previous `0.33` range didn't
+  cover `@dune/core`'s current version — a site running a newer core would
+  have loaded a second, stale copy just for this package. No behavior
+  change; nothing in this release depends on a 0.34-only export.
+
 ## [2.1.2] — 2026-08-27
 
 ### Fixed
