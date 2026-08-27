@@ -6,6 +6,7 @@ import type { FreshContext } from "fresh";
 import type { AdminPermission, AdminState } from "../../types.ts";
 import { highestValidRole } from "../../auth/role-utils.ts";
 import { csrfTokenMatches, resolveCsrfSecret } from "../../auth/csrf.ts";
+import { clientIp } from "@dune/core/security";
 
 // json()/serverError()/typed error classes live in ../../http.ts so the
 // public API (public-api.ts) and admin routes share one implementation.
@@ -292,16 +293,18 @@ export function validatePagePath(p: string): boolean {
 }
 
 /**
- * Best-effort client IP for audit logging. This is *audit only* —
- * X-Forwarded-For / X-Real-IP can be spoofed by clients unless the
- * deployment is behind a trusted proxy. Callers that need an IP for
- * security decisions (rate limiting, lockout) should use the equivalent
- * trusted-proxy-aware helper in src/security/rate-limit.ts.
+ * Best-effort client IP for audit logging.
+ *
+ * Uses the trusted-proxy-aware helper from @dune/core/security: forwarded
+ * headers (X-Forwarded-For / X-Real-IP) are only honored when the deployment
+ * opts in via system.trusted_proxies. Recording a client-supplied,
+ * unverified header would let attackers poison the audit trail's IP
+ * attribution. Callers that need the raw claimed IP should read the headers
+ * themselves and record them as untrusted metadata.
  */
 export function getClientIp(req: Request): string | null {
-  return req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    req.headers.get("x-real-ip") ??
-    null;
+  const ip = clientIp(req, { trustForwardedFor: false });
+  return ip === "unknown" ? null : ip;
 }
 
 export function actorFromAuth(

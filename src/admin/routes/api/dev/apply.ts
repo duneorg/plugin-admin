@@ -116,6 +116,37 @@ function isDevMode(ctx: FreshContext<AdminState>): boolean {
   return false;
 }
 
+/**
+ * Config keys that dev/apply's `config` op must never set. Setting
+ * `system.debug` from within the endpoint itself would let a user holding
+ * pages.update + config.update re-enable this very endpoint (and other
+ * debug-only surfaces) in a production-like environment — the gate in
+ * isDevMode() is meant to be an operator decision, not a self-service one.
+ * Incoming-webhook tokens and auth provider settings are similarly
+ * security-sensitive and out of scope for the agent change API.
+ */
+const BLOCKED_CONFIG_KEYS: readonly string[] = [
+  "system.debug",
+  "system.trusted_proxies",
+  "admin.incoming_webhooks",
+];
+
+function isBlockedConfigKey(key: string): boolean {
+  const lower = key.toLowerCase();
+  return BLOCKED_CONFIG_KEYS.some((blocked) => lower === blocked) ||
+    lower.startsWith("admin.incoming_webhooks.");
+}
+
+/**
+ * Sanitize an operation error for the response body. Internal error strings
+ * can contain filesystem paths and config details; the full error is logged
+ * server-side while the client only sees the error class.
+ */
+function safeOpError(err: unknown): string {
+  console.error("[dev/apply] change failed:", err);
+  return err instanceof Error ? `operation failed (${err.name})` : "operation failed";
+}
+
 /** Validate a change and return any errors. */
 function validateChange(change: Change): string[] {
   const errors: string[] = [];
@@ -171,6 +202,10 @@ function validateChange(change: Change): string[] {
       errors.push("key (string) is required for op=config");
     } else if (!/^[a-zA-Z_][a-zA-Z0-9_.]*$/.test(change.key)) {
       errors.push(`key "${change.key}" must be a dot-notation identifier (e.g. "admin.path")`);
+    } else if (isBlockedConfigKey(change.key)) {
+      errors.push(
+        `key "${change.key}" cannot be changed via dev/apply (security-sensitive setting)`,
+      );
     }
     if (change.value === undefined) {
       errors.push("value is required for op=config");
@@ -397,7 +432,7 @@ export const handler = {
           await applyConfig(siteRoot, change.key!, change.value);
           results.push({ op: change.op, key: change.key, status: "updated", errors: [] });
         } catch (err) {
-          results.push({ op: change.op, key: change.key, status: "error", errors: [err instanceof Error ? err.message : String(err)] });
+          results.push({ op: change.op, key: change.key, status: "error", errors: [safeOpError(err)] });
         }
         continue;
       }
@@ -412,7 +447,7 @@ export const handler = {
           const added = await applyPluginInstall(siteRoot, change.spec!);
           results.push({ op: change.op, spec: change.spec, status: added ? "created" : "skipped", errors: [] });
         } catch (err) {
-          results.push({ op: change.op, spec: change.spec, status: "error", errors: [err instanceof Error ? err.message : String(err)] });
+          results.push({ op: change.op, spec: change.spec, status: "error", errors: [safeOpError(err)] });
         }
         continue;
       }
@@ -455,7 +490,7 @@ export const handler = {
           op: change.op,
           path: change.path,
           status: "error",
-          errors: [err instanceof Error ? err.message : String(err)],
+          errors: [safeOpError(err)],
         });
       }
     }

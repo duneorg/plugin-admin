@@ -287,6 +287,42 @@ Deno.test("dev/apply: config op rejects invalid key format", async () => {
   assertEquals(results[0].errors.some((e: string) => e.includes("key")), true);
 });
 
+Deno.test("dev/apply: config op rejects security-sensitive keys (system.debug)", async () => {
+  const res = await callApply({
+    dry_run: true,
+    changes: [
+      { op: "config", key: "system.debug", value: true },
+      { op: "config", key: "system.trusted_proxies", value: true },
+      { op: "config", key: "admin.incoming_webhooks.token", value: "$SECRET" },
+    ],
+  });
+  const results = res.results as { key?: string; status: string; errors: string[] }[];
+  for (const result of results) {
+    assertEquals(result.status, "error");
+    assertEquals(
+      result.errors.some((e: string) => e.includes("security-sensitive")),
+      true,
+      `expected ${result.key} to be rejected`,
+    );
+  }
+});
+
+Deno.test("dev/apply: operation errors are sanitized (no internal messages leaked)", async () => {
+  // dry_run:false with a delete of a nonexistent file exercises the catch
+  // path without mutating the filesystem — Deno.remove throws NotFound.
+  const res = await callApply({
+    dry_run: false,
+    changes: [{ op: "delete", path: "x/definitely-missing-file.md" }],
+  });
+  const results = res.results as { status: string; errors: string[] }[];
+  assertEquals(results[0].status, "error");
+  assertEquals(results[0].errors.length, 1);
+  // Message must be the sanitized class, not Deno's internal message
+  // (which can contain resolved filesystem paths).
+  assertEquals(results[0].errors[0].startsWith("operation failed"), true);
+  assertEquals(results[0].errors[0].includes("/"), false);
+});
+
 // ---------------------------------------------------------------------------
 // plugin.install op tests
 // ---------------------------------------------------------------------------

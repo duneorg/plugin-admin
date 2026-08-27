@@ -68,7 +68,9 @@ function loadOrCreateCsrfSecret(runtimeDir: string): string {
   const secret = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
   try {
     Deno.mkdirSync(runtimeDir, { recursive: true });
-    Deno.writeTextFileSync(path, secret);
+    // 0o600 — the secret authenticates admin CSRF tokens; it should not be
+    // readable by other accounts on a shared host.
+    Deno.writeTextFileSync(path, secret, { mode: 0o600 });
   } catch {
     // In-memory only for this process if the runtime dir is not writable.
   }
