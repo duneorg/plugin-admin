@@ -337,6 +337,11 @@ export async function handleIncomingWebhook(ctx: AdminContext, req: Request): Pr
   }
 
   const executed: string[] = [];
+  // Trusted-proxy-aware IP for audit records — forwarded headers are only
+  // honored when system.trusted_proxies is set (same policy as _utils.getClientIp).
+  const auditIp = clientIp(req, {
+    trustForwardedFor: config.system?.trusted_proxies === true,
+  });
 
   for (const action of requestedActions) {
     if (action === "rebuild") {
@@ -347,7 +352,7 @@ export async function handleIncomingWebhook(ctx: AdminContext, req: Request): Pr
       void auditLogger?.log({
         event: "system.rebuild",
         actor: null,
-        ip: req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? req.headers.get("x-real-ip") ?? null,
+        ip: auditIp === "unknown" ? null : auditIp,
         userAgent: req.headers.get("user-agent"),
         target: { type: "system" },
         detail: {},
@@ -361,7 +366,7 @@ export async function handleIncomingWebhook(ctx: AdminContext, req: Request): Pr
       void auditLogger?.log({
         event: "system.cache_purge",
         actor: null,
-        ip: req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? req.headers.get("x-real-ip") ?? null,
+        ip: auditIp === "unknown" ? null : auditIp,
         userAgent: req.headers.get("user-agent"),
         target: { type: "system" },
         detail: {},
