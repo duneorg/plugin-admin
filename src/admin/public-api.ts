@@ -60,6 +60,161 @@ const MAX_WEBHOOK_BYTES = 1024 * 1024;
 // Rate limiter: 5 submissions per IP per minute (shared across contact + form routes)
 const contactRateLimiter = new RateLimiter(5, 60 * 1000);
 
+// ── Shared submission pipeline (Q-1, Aug 2026 quality audit) ──────────────────
+//
+// handleFormSubmission and handleContactSubmission previously duplicated the
+// rate-limit → body-size → parse → field-collapse → upload-storage pipeline
+// (~150 lines each). Bugs fixed in one copy could silently miss the other —
+// exactly how MED-19 (JSON bypassing the body-size cap) needed two fixes.
+// The handlers below keep only their unique validation and response logic.
+
+interface ParsedSubmission {
+  /** Multi-value fields collapsed to comma-joined strings. */
+  fields: Record<string, string>;
+  uploadedFiles: Array<{ key: string; file: File }>;
+}
+
+/**
+ * Rate-limit by IP, cap body size, and parse JSON/form-data bodies into
+ * collapsed fields + uploaded files. Returns a ready-made Response
+ * (429 / 413 / parse error) that the caller must return as-is.
+ */
+async function guardAndParseSubmission(
+  req: Request,
+  config: AdminContext["config"],
+): Promise<ParsedSubmission | Response> {
+  // Rate limit by IP: 5 submissions per minute. Honor X-Forwarded-For
+  // only when system.trusted_proxies is set (otherwise clients can spoof).
+  const trustForwardedFor = config.system?.trusted_proxies === true;
+  const ip = clientIp(req, { trustForwardedFor });
+  if (!contactRateLimiter.check(ip)) {
+    const retryAfter = contactRateLimiter.retryAfter(ip);
+    return new Response(JSON.stringify({ error: "Too many requests" }), {
+      status: 429,
+      headers: {
+        "Content-Type": "application/json",
+        "Retry-After": String(retryAfter),
+      },
+    });
+  }
+
+  // Body-size cap applies regardless of content-type — JSON used to bypass
+  // this guard and accept arbitrarily large payloads (MED-19, CWE-400).
+  const tooLarge = checkBodySize(req, MAX_SUBMISSION_BYTES);
+  if (tooLarge) return tooLarge;
+
+  const contentType = req.headers.get("content-type") ?? "";
+  const multiFields: Record<string, string[]> = {};
+  const uploadedFiles: Array<{ key: string; file: File }> = [];
+
+  if (contentType.includes("application/json")) {
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return json({ error: "Invalid JSON body" }, 400);
+    }
+    for (const [k, v] of Object.entries(body as Record<string, unknown>)) {
+      if (typeof v === "string") multiFields[k] = [v];
+      else if (Array.isArray(v)) multiFields[k] = v.filter((x) => typeof x === "string");
+    }
+  } else {
+    // application/x-www-form-urlencoded or multipart/form-data
+    const formData = await req.formData();
+    for (const [k, v] of formData.entries()) {
+      if (typeof v === "string") {
+        (multiFields[k] ??= []).push(v);
+      } else if (v instanceof File && v.size > 0) {
+        uploadedFiles.push({ key: k, file: v });
+      }
+    }
+  }
+
+  // Collapse multi-value fields to comma-joined strings
+  const fields: Record<string, string> = {};
+  for (const [k, vs] of Object.entries(multiFields)) {
+    fields[k] = vs.join(", ");
+  }
+
+  return { fields, uploadedFiles };
+}
+
+const MAX_STORED_FILE_SIZE = 10 * 1024 * 1024; // 10 MB per file
+const MAX_FILES_PER_SUBMISSION = 5;
+
+/** Sanitise a filename: strip path separators, collapse whitespace. */
+function sanitizeFilename(name: string): string {
+  return name
+    .replace(/[/\\:*?"<>|]/g, "_")
+    .replace(/\s+/g, "_")
+    .replace(/_{2,}/g, "_")
+    .slice(0, 200);
+}
+
+/**
+ * Persist accepted uploads under data/uploads/<form>/<submissionId>/.
+ * Oversized files and disallowed extensions are silently skipped (bots get
+ * no signal; legitimate submitters see their submission still recorded).
+ */
+async function storeUploads(
+  storage: AdminContext["storage"],
+  dataDir: string,
+  formName: string,
+  submissionId: string,
+  uploadedFiles: ParsedSubmission["uploadedFiles"],
+): Promise<SubmissionFile[]> {
+  const storedFiles: SubmissionFile[] = [];
+  for (const { file } of uploadedFiles.slice(0, MAX_FILES_PER_SUBMISSION)) {
+    if (file.size > MAX_STORED_FILE_SIZE) continue;
+
+    const safeName = sanitizeFilename(file.name);
+    if (!safeName) continue;
+    const check = checkUpload(safeName);
+    if (!check.ok) continue; // silently skip disallowed extensions
+
+    const storagePath = `${dataDir}/uploads/${formName}/${submissionId}/${safeName}`;
+    await storage.write(storagePath, new Uint8Array(await file.arrayBuffer()));
+
+    storedFiles.push({
+      name: safeName,
+      contentType: check.contentType,
+      size: file.size,
+      storagePath,
+    });
+  }
+  return storedFiles;
+}
+
+interface NotificationOverrides {
+  /** Per-form email override — replaces the `to` address. */
+  emailTo?: string;
+  /** Per-form webhook override — replaces the URL, keeps global secret/headers. */
+  webhookUrl?: string;
+}
+
+/** Fire-and-forget email/webhook notifications for a stored submission. */
+function dispatchNotifications(
+  notifCfg: NonNullable<AdminContext["config"]["admin"]>["notifications"],
+  submission: Parameters<typeof sendSubmissionEmail>[1],
+  overrides: NotificationOverrides = {},
+): void {
+  if (!notifCfg) return;
+  if (notifCfg.email) {
+    const emailCfg = overrides.emailTo
+      ? { ...notifCfg.email, to: overrides.emailTo }
+      : notifCfg.email;
+    sendSubmissionEmail(emailCfg, submission)
+      .catch((err: Error) => console.error(`[dune/forms] Email notification failed: ${err.message}`));
+  }
+  if (notifCfg.webhook || overrides.webhookUrl) {
+    const webhookCfg = overrides.webhookUrl
+      ? { ...(notifCfg.webhook ?? {}), url: overrides.webhookUrl } as WebhookNotificationConfig
+      : notifCfg.webhook!;
+    sendWebhookNotification(webhookCfg, submission)
+      .catch((err: Error) => console.error(`[dune/forms] Webhook notification failed: ${err.message}`));
+  }
+}
+
 // ── Handlers ──────────────────────────────────────────────────────────────────
 
 /** GET /api/forms/:name — return the form schema as JSON. */
@@ -102,48 +257,9 @@ export async function handleFormSubmission(ctx: AdminContext, req: Request, form
   }
 
   try {
-    const trustForwardedFor = config.system?.trusted_proxies === true;
-    const ip = clientIp(req, { trustForwardedFor });
-    if (!contactRateLimiter.check(ip)) {
-      const retryAfter = contactRateLimiter.retryAfter(ip);
-      return new Response(JSON.stringify({ error: "Too many requests" }), {
-        status: 429,
-        headers: { "Content-Type": "application/json", "Retry-After": String(retryAfter) },
-      });
-    }
-
-    // Body-size cap applies regardless of content-type — JSON used to bypass
-    // this guard and accept arbitrarily large payloads (MED-19, CWE-400).
-    const tooLarge = checkBodySize(req, MAX_SUBMISSION_BYTES);
-    if (tooLarge) return tooLarge;
-
-    // Parse body
-    const contentType = req.headers.get("content-type") ?? "";
-    const multiFields: Record<string, string[]> = {};
-    const uploadedFiles: Array<{ key: string; file: File }> = [];
-
-    if (contentType.includes("application/json")) {
-      const body = await req.json();
-      for (const [k, v] of Object.entries(body)) {
-        if (typeof v === "string") multiFields[k] = [v];
-        else if (Array.isArray(v)) multiFields[k] = v.filter((x) => typeof x === "string");
-      }
-    } else {
-      const formData = await req.formData();
-      for (const [k, v] of formData.entries()) {
-        if (typeof v === "string") {
-          (multiFields[k] ??= []).push(v);
-        } else if (v instanceof File && v.size > 0) {
-          uploadedFiles.push({ key: k, file: v });
-        }
-      }
-    }
-
-    // Collapse multi-value fields to comma-joined strings
-    const fields: Record<string, string> = {};
-    for (const [k, vs] of Object.entries(multiFields)) {
-      fields[k] = vs.join(", ");
-    }
+    const parsed = await guardAndParseSubmission(req, config);
+    if (parsed instanceof Response) return parsed;
+    const { fields, uploadedFiles } = parsed;
 
     // Honeypot anti-spam
     const honeypotField = form.honeypot ?? config.admin?.honeypot ?? "_hp";
@@ -179,57 +295,26 @@ export async function handleFormSubmission(ctx: AdminContext, req: Request, form
 
     // File uploads
     const submissionId = encodeHex(crypto.getRandomValues(new Uint8Array(6)));
-    const storedFiles: SubmissionFile[] = [];
-    if (uploadedFiles.length > 0) {
-      const dataDir = config.admin?.dataDir ?? "data";
-      const MAX_FILE_SIZE = 10 * 1024 * 1024;
-      const MAX_FILES = 5;
-      for (const { file } of uploadedFiles.slice(0, MAX_FILES)) {
-        if (file.size > MAX_FILE_SIZE) continue;
-        const safeName = file.name
-          .replace(/[/\\:*?"<>|]/g, "_")
-          .replace(/\s+/g, "_")
-          .replace(/_{2,}/g, "_")
-          .slice(0, 200);
-        if (!safeName) continue;
-        const check = checkUpload(safeName);
-        if (!check.ok) continue;
-        const storagePath = `${dataDir}/uploads/${formName}/${submissionId}/${safeName}`;
-        await storage.write(storagePath, new Uint8Array(await file.arrayBuffer()));
-        storedFiles.push({
-          name: safeName,
-          contentType: check.contentType,
-          size: file.size,
-          storagePath,
-        });
-      }
-    }
+    const storedFiles = await storeUploads(
+      storage,
+      config.admin?.dataDir ?? "data",
+      formName,
+      submissionId,
+      uploadedFiles,
+    );
 
+    const submitterIp = clientIp(req, { trustForwardedFor: config.system?.trusted_proxies === true });
     const submission = await submissions.create(formName, fields, {
-      ip: ip === "unknown" ? undefined : ip,
+      ip: submitterIp === "unknown" ? undefined : submitterIp,
       language: req.headers.get("accept-language") ?? undefined,
       userAgent: req.headers.get("user-agent") ?? undefined,
     }, { id: submissionId, files: storedFiles });
 
-    // Notifications — use global SMTP/webhook config as the base; per-form
-    // overrides only replace the destination (to address / webhook URL).
-    const globalNotif = config.admin?.notifications;
-    if (globalNotif?.email) {
-      // Per-form email override replaces the `to` address; SMTP credentials stay global.
-      const emailCfg = form.notifications?.email
-        ? { ...globalNotif.email, to: form.notifications.email }
-        : globalNotif.email;
-      sendSubmissionEmail(emailCfg, submission)
-        .catch((err: Error) => console.error(`[dune] Email notification failed: ${err.message}`));
-    }
-    if (globalNotif?.webhook || form.notifications?.webhook) {
-      // Per-form webhook override replaces the URL; keep global secret/headers if any.
-      const webhookCfg = form.notifications?.webhook
-        ? { ...(globalNotif?.webhook ?? {}), url: form.notifications.webhook } as WebhookNotificationConfig
-        : globalNotif!.webhook!;
-      sendWebhookNotification(webhookCfg, submission)
-        .catch((err: Error) => console.error(`[dune] Webhook notification failed: ${err.message}`));
-    }
+    // Notifications — per-form overrides replace only the destination.
+    dispatchNotifications(config.admin?.notifications, submission, {
+      emailTo: form.notifications?.email,
+      webhookUrl: form.notifications?.webhook,
+    });
 
     const acceptsJson = req.headers.get("accept")?.includes("application/json");
     if (acceptsJson) return json({ ok: true });
@@ -380,53 +465,9 @@ export async function handleContactSubmission(ctx: AdminContext, req: Request): 
     return json({ error: "Submissions not enabled" }, 501);
   }
   try {
-    // Rate limit by IP: 5 submissions per minute. Honor X-Forwarded-For
-    // only when system.trusted_proxies is set (otherwise clients can spoof).
-    const trustForwardedFor = config.system?.trusted_proxies === true;
-    const ip = clientIp(req, { trustForwardedFor });
-    if (!contactRateLimiter.check(ip)) {
-      const retryAfter = contactRateLimiter.retryAfter(ip);
-      return new Response(JSON.stringify({ error: "Too many requests" }), {
-        status: 429,
-        headers: {
-          "Content-Type": "application/json",
-          "Retry-After": String(retryAfter),
-        },
-      });
-    }
-
-    // Body-size cap applies regardless of content-type — JSON used to bypass
-    // this guard and accept arbitrarily large payloads (MED-19, CWE-400).
-    const tooLarge = checkBodySize(req, MAX_SUBMISSION_BYTES);
-    if (tooLarge) return tooLarge;
-
-    const contentType = req.headers.get("content-type") ?? "";
-    const multiFields: Record<string, string[]> = {};
-    const uploadedFiles: Array<{ key: string; file: File }> = [];
-
-    if (contentType.includes("application/json")) {
-      const body = await req.json();
-      for (const [k, v] of Object.entries(body)) {
-        if (typeof v === "string") multiFields[k] = [v];
-        else if (Array.isArray(v)) multiFields[k] = v.filter((x) => typeof x === "string");
-      }
-    } else {
-      // application/x-www-form-urlencoded or multipart/form-data
-      const formData = await req.formData();
-      for (const [k, v] of formData.entries()) {
-        if (typeof v === "string") {
-          (multiFields[k] ??= []).push(v);
-        } else if (v instanceof File && v.size > 0) {
-          uploadedFiles.push({ key: k, file: v });
-        }
-      }
-    }
-
-    // Collapse multi-value fields to comma-joined strings
-    const fields: Record<string, string> = {};
-    for (const [k, vs] of Object.entries(multiFields)) {
-      fields[k] = vs.join(", ");
-    }
+    const parsed = await guardAndParseSubmission(req, config);
+    if (parsed instanceof Response) return parsed;
+    const { fields, uploadedFiles } = parsed;
 
     // ── Honeypot anti-spam ────────────────────────────────────────────────
     // If the configured honeypot field is present and non-empty, a bot filled
@@ -455,61 +496,25 @@ export async function handleContactSubmission(ctx: AdminContext, req: Request): 
     delete fields.form_name;
     const formName = /^[a-zA-Z0-9_-]{1,64}$/.test(rawFormName) ? rawFormName : "contact";
 
-    // ── File uploads ──────────────────────────────────────────────────────
     // Pre-generate submission ID so we can store files before creating the record.
     const submissionId = encodeHex(crypto.getRandomValues(new Uint8Array(6)));
-    const storedFiles: SubmissionFile[] = [];
+    const storedFiles = await storeUploads(
+      storage,
+      config.admin?.dataDir ?? "data",
+      formName,
+      submissionId,
+      uploadedFiles,
+    );
 
-    if (uploadedFiles.length > 0) {
-      const dataDir = config.admin?.dataDir ?? "data";
-      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB per file
-      const MAX_FILES = 5;
-
-      for (const { key: _key, file } of uploadedFiles.slice(0, MAX_FILES)) {
-        if (file.size > MAX_FILE_SIZE) continue; // silently skip oversized files
-
-        // Sanitise filename: strip path separators, collapse whitespace
-        const safeName = file.name
-          .replace(/[/\\:*?"<>|]/g, "_")
-          .replace(/\s+/g, "_")
-          .replace(/_{2,}/g, "_")
-          .slice(0, 200);
-        if (!safeName) continue;
-
-        const check = checkUpload(safeName);
-        if (!check.ok) continue; // silently skip disallowed extensions
-
-        const storagePath = `${dataDir}/uploads/${formName}/${submissionId}/${safeName}`;
-        const bytes = new Uint8Array(await file.arrayBuffer());
-        await storage.write(storagePath, bytes);
-
-        storedFiles.push({
-          name: safeName,
-          contentType: check.contentType,
-          size: file.size,
-          storagePath,
-        });
-      }
-    }
-
+    const submitterIp = clientIp(req, { trustForwardedFor: config.system?.trusted_proxies === true });
     const submission = await submissions.create(formName, fields, {
-      ip: ip === "unknown" ? undefined : ip,
+      ip: submitterIp === "unknown" ? undefined : submitterIp,
       language,
       userAgent,
     }, { id: submissionId, files: storedFiles });
 
-    // ── Notifications (fire-and-forget) ───────────────────────────────────
-    const notifCfg = config.admin?.notifications;
-    if (notifCfg) {
-      if (notifCfg.email) {
-        sendSubmissionEmail(notifCfg.email, submission)
-          .catch((err: Error) => console.error(`[dune] Email notification failed: ${err.message}`));
-      }
-      if (notifCfg.webhook) {
-        sendWebhookNotification(notifCfg.webhook, submission)
-          .catch((err: Error) => console.error(`[dune] Webhook notification failed: ${err.message}`));
-      }
-    }
+    // Notifications (fire-and-forget) — global config only for the contact form.
+    dispatchNotifications(config.admin?.notifications, submission);
 
     // Support both JSON and form POST responses
     const acceptsJson = req.headers.get("accept")?.includes("application/json");
