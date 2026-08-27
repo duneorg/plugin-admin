@@ -163,7 +163,7 @@ export const handler = {
           return json({ installed: false, reason: "already installed", slug, jsr: entry.jsr });
         }
 
-        console.log(`  📦 Registered theme package "${slug}" (${entry.jsr}) in site.yaml`);
+        console.log(`[dune/themes] 📦 Registered theme package "${slug}" (${entry.jsr}) in site.yaml`);
         return json({
           success: true,
           slug,
@@ -180,7 +180,7 @@ export const handler = {
           }, 502);
         }
         const { filesWritten } = await installZipTheme(storage, slug, entry);
-        console.log(`  📦 Installed theme "${slug}" (${filesWritten} files)`);
+        console.log(`[dune/themes] 📦 Installed theme "${slug}" (${filesWritten} files)`);
         return json({ success: true, slug, filesWritten, method: "zip" });
       }
 

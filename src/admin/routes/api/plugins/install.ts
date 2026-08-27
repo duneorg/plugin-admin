@@ -86,7 +86,7 @@ export const handler = {
         stringifyYaml(updatedSite).trimEnd() + "\n",
       );
 
-      console.log(`  🔌 Plugin "${name}" (${jsr}) added to site.yaml`);
+      console.log(`[dune/plugins] 🔌 Plugin "${name}" (${jsr}) added to site.yaml`);
       return json({ installed: true, name, jsr });
     } catch (err) {
       return serverError(err);

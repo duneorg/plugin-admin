@@ -11,18 +11,10 @@
 
 import { createHmac } from "node:crypto";
 import type { AdminState } from "../types.ts";
+import { timingSafeEqual } from "../timing-safe.ts";
 
 const SECRET_FILE = "csrf-secret";
 const secretCache = new Map<string, string>();
-
-function timingSafeEqualBytes(a: Uint8Array, b: Uint8Array): boolean {
-  const maxLen = Math.max(a.length, b.length);
-  let result = a.length ^ b.length;
-  for (let i = 0; i < maxLen; i++) {
-    result |= (a[i] ?? 0) ^ (b[i] ?? 0);
-  }
-  return result === 0;
-}
 
 /** HMAC-SHA256 hex digest bound to one session id. */
 export function mintCsrfToken(sessionId: string, secret: string): string {
@@ -36,7 +28,7 @@ export function csrfTokenMatches(
 ): boolean {
   if (!sessionId || !secret || !presented) return false;
   const expected = mintCsrfToken(sessionId, secret);
-  return timingSafeEqualBytes(
+  return timingSafeEqual(
     new TextEncoder().encode(expected),
     new TextEncoder().encode(presented),
   );

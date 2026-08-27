@@ -108,13 +108,13 @@ export function createUserManager(config: UserManagerConfig): UserManager {
 
     if (admins.length > 0) {
       if (admins.length > 1) {
-        console.warn(`  ⚠️  Found ${admins.length} enabled admin users (${admins.map((u) => u.username).join(", ")})`);
+        console.warn(`[dune/users] ⚠️  Found ${admins.length} enabled admin users (${admins.map((u) => u.username).join(", ")})`);
       }
       return { created: false };
     }
 
     if (allUsers.length > 0) {
-      console.warn(`  ⚠️  Found ${allUsers.length} user(s) but none are enabled admins — creating default admin`);
+      console.warn(`[dune/users] ⚠️  Found ${allUsers.length} user(s) but none are enabled admins — creating default admin`);
     }
 
     // Generate a random password and write it to a file — never log it.
