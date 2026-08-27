@@ -5,6 +5,34 @@ follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [2.1.2] — 2026-08-27
+
+### Fixed
+
+- **`dev/apply`'s config operation could be used to re-enable security-sensitive
+  settings from inside the endpoint itself.** A set of config keys (debug mode,
+  trusted-proxy configuration, incoming-webhook tokens) is now off-limits to
+  that operation. Per-change error messages returned by `dev/apply` are also
+  sanitized to the error class only; full detail is still logged server-side.
+- **Audit-log IP attribution trusted forwarded-IP headers unconditionally**,
+  letting a client poison the audit trail's recorded origin. Now goes through
+  `@dune/core`'s trusted-proxy-aware `clientIp()` helper, consistent across
+  every call site (admin and public webhook audit logging alike).
+- **The CSRF HMAC secret file was created with the umask-dependent default
+  permissions** (often world-readable on shared hosts). Now created `0600`.
+- **The public API surface could leak internal error messages** (filesystem
+  paths, validation detail) via `ValidationError`/`NotFoundError` responses —
+  an admin/public error-handling consolidation had silently dropped the
+  "never leak on the public surface" behavior the original code carried.
+  Restored via a dedicated `publicServerError()`, with tests locking in the
+  distinction between the two surfaces.
+
+### Changed
+
+- Consolidated timing-safe comparison, JSON/error response helpers, and
+  `_layout.tsx`'s inline CSS into shared modules. Internal refactor, no
+  behavior change for consumers.
+
 ## [2.1.1] — 2026-08-24
 
 ### Fixed
