@@ -51,8 +51,10 @@ function makeCtx(opts: {
         engine,
         storage: opts.storage,
         config: { admin: { dataDir: "data" } },
-        auth: { hasPermission: () => true },
-        authz: undefined,
+        // authz.check() always allows — this test exercises theme-config
+        // behavior, not permission logic (ROLE_PERMISSIONS/hasPermission()
+        // were removed in 3.0.0; authz.check() is the sole authority now).
+        authz: { check: () => Promise.resolve(true) },
         hooks: undefined,
       },
     },

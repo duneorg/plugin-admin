@@ -63,8 +63,10 @@ function makeCtx(opts: {
         engine,
         storage: opts.storage,
         config: { system: { content: { dir: "content" } }, admin: {} },
-        auth: { hasPermission: () => true },
-        authz: undefined,
+        // authz.check() always allows — this test exercises page-edit
+        // behavior, not permission logic (ROLE_PERMISSIONS/hasPermission()
+        // were removed in 3.0.0; authz.check() is the sole authority now).
+        authz: { check: () => Promise.resolve(true) },
         hooks: undefined,
         auditLogger: undefined,
       },

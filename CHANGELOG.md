@@ -5,6 +5,42 @@ follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [3.0.0] — 2026-08-29
+
+### Breaking
+
+- **Removed `ROLE_PERMISSIONS` and `AuthMiddleware.hasPermission()` entirely.**
+  dec-identity-unification Phase 5c's second half, finally closed — this was
+  supposed to be fully replaced by the polizy `authz` system back when it
+  was first introduced, and instead survived as a parallel, hand-maintained
+  table that had to be kept in sync with `@dune/core`'s canonical
+  `actionToRelations` schema by convention, not by anything enforcing it.
+  `authz.check()` is now the sole authority everywhere, with no exceptions:
+  `checkPermission()`/`requirePermission()` (`routes/api/_utils.ts`) fail
+  closed (deny) when `authz` is somehow undefined — an in-process object
+  construction failing at startup, essentially never hit in practice —
+  instead of silently degrading to the removed table. Sidebar nav filtering
+  (`routes/_layout.tsx`), the one place that used `ROLE_PERMISSIONS`
+  unconditionally rather than as a fallback, now reads a real permission
+  set computed via `authz.check()` once per request
+  (`routes/_middleware.ts`'s new `computeNavPermissions()`) instead of a
+  table that could silently drift from what a route's own check would
+  actually decide.
+
+  **Migration**: anything importing `ROLE_PERMISSIONS` or calling
+  `AdminContext.auth.hasPermission()` directly has no replacement to switch
+  to within this package — use `checkPermission()`/`requirePermission()`/
+  `withGuards()` (`@dune/plugin-admin/admin/guards`), which already do the
+  right thing. No first-party or third-party plugin was found calling the
+  removed surface directly (confirmed by search across
+  `@dune/plugin-inline-edit`, `@dune/plugin-meilisearch`,
+  `@dune/plugin-orama`, `@dune/plugin-pdf`) — `@dune/plugin-inline-edit`'s
+  own `auth.hasPermission(permission)` call goes through `@dune/core`'s
+  published, synchronous `HookContext.auth.hasPermission()` hook API, whose
+  contract is unchanged (companion `@dune/core` change: it now sources its
+  answer from `roleHasPermission()`, a synchronous read of `@dune/core`'s
+  own canonical schema, instead of this package's table).
+
 ## [2.1.3] — 2026-08-27
 
 ### Changed

@@ -50,9 +50,14 @@ function makeCtx(
       adminContext: {
         auditLogger: null,
         config: { admin: { runtimeDir: opts.runtimeDir ?? ".dune/admin" } },
-        auth: {
-          hasPermission: (_auth: unknown, permission: string) =>
-            (opts.permissions ?? []).includes(permission),
+        // Distinguishes which specific permission the mock holds — same
+        // role this fixture's ROLE_PERMISSIONS-backed hasPermission() used
+        // to play, sourced from authz.check() instead (removed in 3.0.0;
+        // authz.check() is the sole authority now).
+        // deno-lint-ignore no-explicit-any
+        authz: {
+          check: (args: any) =>
+            Promise.resolve((opts.permissions ?? []).includes(args.canThey)),
         },
       },
       auth: { authenticated: true, user: { id: "u1" } },

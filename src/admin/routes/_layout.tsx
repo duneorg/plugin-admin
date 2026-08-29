@@ -8,7 +8,6 @@ import type { h } from "preact";
 import type { AdminState } from "../types.ts";
 import { getNavItems } from "../nav.ts";
 import { isRtl } from "@dune/core/i18n";
-import { ROLE_PERMISSIONS } from "../types.ts";
 import { highestValidRole } from "../auth/role-utils.ts";
 import {
   normalizePrefix,
@@ -88,7 +87,12 @@ export default function AdminLayout(
   const user = state.auth?.user;
   const userName = user?.name ?? user?.username ?? "Admin";
   const role = highestValidRole(user?.roles) ?? "author";
-  const userPermissions = ROLE_PERMISSIONS[role] ?? [];
+  // Real authz-backed permissions, computed per request by _middleware.ts's
+  // computeNavPermissions() — replaces the flat ROLE_PERMISSIONS[role]
+  // lookup removed in 3.0.0, so the sidebar can no longer show/hide items
+  // based on a table that could silently drift from what authz.check()
+  // would actually decide for a route.
+  const userPermissions = state.permissions ?? [];
 
   const allNavItems = getNavItems();
   const navItems = allNavItems.filter((item) => {

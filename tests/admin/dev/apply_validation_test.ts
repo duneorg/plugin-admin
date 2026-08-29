@@ -54,9 +54,13 @@ async function callApply(
     state: {
       auth: { authenticated: true, user: { id: "1", roles: ["admin"] } },
       adminContext: {
-        auth: {
-          hasPermission: (_auth: unknown, perm: string) =>
-            permissions ? permissions.includes(perm) : true,
+        // authz.check() is the sole authority now (ROLE_PERMISSIONS/
+        // hasPermission() removed in 3.0.0). Defaults to allow-everything;
+        // pass `permissions` to restrict to specific ones.
+        // deno-lint-ignore no-explicit-any
+        authz: {
+          check: (args: any) =>
+            Promise.resolve(permissions ? permissions.includes(args.canThey) : true),
         },
         auditLogger: null,
         config: {

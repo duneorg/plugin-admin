@@ -28,31 +28,6 @@ export type { Role };
 import type { User } from "@dune/core/auth/types";
 export type { User };
 
-/** Permission definitions per role */
-export const ROLE_PERMISSIONS: Record<Role, AdminPermission[]> = {
-  admin: [
-    "pages.create", "pages.read", "pages.update", "pages.delete",
-    "media.upload", "media.read", "media.delete",
-    "users.create", "users.read", "users.update", "users.delete",
-    "config.read", "config.update",
-    "submissions.read", "submissions.delete",
-    "admin.access",
-  ],
-  editor: [
-    "pages.create", "pages.read", "pages.update",
-    "media.upload", "media.read", "media.delete",
-    "config.read",
-    "submissions.read",
-    "admin.access",
-  ],
-  author: [
-    "pages.create", "pages.read", "pages.update",
-    "media.upload", "media.read",
-    "submissions.read",
-    "admin.access",
-  ],
-};
-
 /** All possible admin permissions */
 export type AdminPermission =
   | "pages.create" | "pages.read" | "pages.update" | "pages.delete"
@@ -112,6 +87,14 @@ export interface AdminState {
    * has its own middleware that closes over its own AdminContext.
    */
   adminContext: import("./context.ts").AdminContext;
+  /**
+   * The authenticated user's real, authz-backed permission set — computed
+   * once per request by `routes/_middleware.ts` (`computeNavPermissions()`)
+   * and read synchronously by `routes/_layout.tsx` for sidebar nav
+   * filtering. Undefined for an unauthenticated request. Replaces the flat
+   * `ROLE_PERMISSIONS[role]` lookup removed in 3.0.0.
+   */
+  permissions?: AdminPermission[];
 }
 
 /** Convert User to safe API response */

@@ -6,9 +6,7 @@
 
 import type { SessionManager } from "./sessions.ts";
 import type { UserManager } from "./users.ts";
-import type { AdminPermission, AuthResult } from "../types.ts";
-import { ROLE_PERMISSIONS } from "../types.ts";
-import { highestValidRole } from "./role-utils.ts";
+import type { AuthResult } from "../types.ts";
 import { clientIp } from "@dune/core/security";
 
 /** Options for {@link createAuthMiddleware}. */
@@ -33,20 +31,10 @@ export interface AuthMiddlewareConfig {
   trustForwardedFor?: boolean;
 }
 
-/** Validates session cookies and checks admin permissions. Obtain via {@link createAuthMiddleware}. */
+/** Validates session cookies. Obtain via {@link createAuthMiddleware}. */
 export interface AuthMiddleware {
   /** Extract and validate session from request. Returns auth result. */
   authenticate(req: Request): Promise<AuthResult>;
-  /**
-   * Check permission against the flat `ROLE_PERMISSIONS` table only — does
-   * NOT consult the polizy `authz` system. Route handlers should use
-   * `checkPermission()`/`requirePermission()` (`routes/api/_utils.ts`)
-   * instead, which check `authz.check()` first when configured and only
-   * fall back to this method in the narrow, exceptional case where authz
-   * creation itself failed at startup. Calling this directly bypasses
-   * authz even when one is configured (dec-identity-unification Phase 5c).
-   */
-  hasPermission(authResult: AuthResult, permission: AdminPermission): boolean;
   /** Create a session cookie value for Set-Cookie header */
   createSessionCookie(sessionId: string, maxAge: number): string;
   /** Create an expired cookie to clear the session */
@@ -108,21 +96,6 @@ export function createAuthMiddleware(
     return { authenticated: true, user, session };
   }
 
-  /** ROLE_PERMISSIONS-only check — see the doc comment on {@link AuthMiddleware.hasPermission}. */
-  function hasPermission(
-    authResult: AuthResult,
-    permission: AdminPermission,
-  ): boolean {
-    if (!authResult.authenticated || !authResult.user) return false;
-    // A user with no admin-tier string in roles[] (e.g. a public site member
-    // with only content-gating tags) has no admin-panel permissions at all —
-    // there is no "no role" entry in ROLE_PERMISSIONS to fall back to.
-    const role = highestValidRole(authResult.user.roles);
-    if (!role) return false;
-    const permissions = ROLE_PERMISSIONS[role];
-    return permissions.includes(permission);
-  }
-
   function createSessionCookie(sessionId: string, maxAge: number): string {
     const secureFlag = secure ? "; Secure" : "";
     return `${cookieName}=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secureFlag}`;
@@ -135,7 +108,6 @@ export function createAuthMiddleware(
 
   return {
     authenticate,
-    hasPermission,
     createSessionCookie,
     clearSessionCookie,
   };

@@ -38,7 +38,7 @@ export type {
   AuthResult,
   UserInfo,
 } from "./types.ts";
-export { ROLE_PERMISSIONS, toUserInfo } from "./types.ts";
+export { toUserInfo } from "./types.ts";
 
 // Submissions
 export { createSubmissionManager } from "./submissions.ts";
