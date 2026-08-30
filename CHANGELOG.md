@@ -64,6 +64,11 @@ follows [Semantic Versioning](https://semver.org).
   fallback.** `bootstrapAdminTuples()` throwing leaves `authz` defined but
   tuples unseeded; the access gate then 403s. The warn now says that, so
   operators do not debug a fallback that cannot fire.
+- **Requires the companion `@dune/core` release that exports
+  `./auth/authz-schema`** (`ADMIN_ROLE_RANK` / `highestAdminRole()`). The
+  existing `@dune/core@0.34` pin picks that up once published; 0.34.1 does
+  not have the export. Publish that core first or in the same train as
+  this 3.0.0.
 
 ## [2.1.3] — 2026-08-27
 
