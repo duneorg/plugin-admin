@@ -43,6 +43,20 @@ follows [Semantic Versioning](https://semver.org).
   answer from `roleHasPermission()`, a synchronous read of `@dune/core`'s
   own canonical schema, instead of this package's table).
 
+### Changed
+
+- **`role-utils.ts`'s `ROLE_RANK`/`highestValidRole()` now derive from
+  `@dune/core`'s canonical `ADMIN_ROLE_RANK`/`highestAdminRole()`
+  (`@dune/core/auth/authz-schema`), not a second, separately-maintained
+  copy of the same three numbers.** Spotted during review of this
+  release's own commits: `@dune/core`'s new `highestAdminRole()`
+  (added to fix `roles[0]` under-privileging `ResponseTransformContext`)
+  reimplemented the identical rank table this package already had —
+  exactly the "two tables kept in sync by convention" pattern this
+  release's `ROLE_PERMISSIONS` removal was about eliminating, just
+  running in the other direction. No behavior change; `VALID_ROLES`,
+  `sanitizeRole()`, and `withRole()` are unaffected.
+
 ## [2.1.3] — 2026-08-27
 
 ### Changed
