@@ -56,6 +56,10 @@ follows [Semantic Versioning](https://semver.org).
   release's `ROLE_PERMISSIONS` removal was about eliminating, just
   running in the other direction. No behavior change; `VALID_ROLES`,
   `sanitizeRole()`, and `withRole()` are unaffected.
+- **Tuple-bootstrap failure log no longer claims a `ROLE_PERMISSIONS`
+  fallback.** `bootstrapAdminTuples()` throwing leaves `authz` defined but
+  tuples unseeded; the access gate then 403s. The warn now says that, so
+  operators do not debug a fallback that cannot fire.
 
 ## [2.1.3] — 2026-08-27
 
