@@ -14,9 +14,9 @@
  * actually defined) — a third-party plugin author is exactly as likely to
  * get the same details wrong (the CSRF check's Origin/Sec-Fetch-Site/Referer
  * fallback chain in particular is not trivial to reimplement correctly, and
- * `requirePermission` must check the polizy-backed `authz` system first,
- * when configured, before falling back to the role table — a detail easy to
- * miss if you only reach for `AdminContext.auth.hasPermission()` directly).
+ * `requirePermission` consults `authz.check()` only — missing `authz`
+ * denies. `AdminContext.auth.hasPermission()` was removed in 3.0.0; do not
+ * reimplement a role table).
  *
  * `withGuards()` is the recommended entry point for a new mutation route —
  * it composes all three in the right order and can't have a step forgotten.
