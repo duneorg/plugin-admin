@@ -34,8 +34,7 @@ export type AdminPermission =
   | "media.upload" | "media.read" | "media.delete"
   | "users.create" | "users.read" | "users.update" | "users.delete"
   | "config.read" | "config.update"
-  | "submissions.read" | "submissions.delete"
-  | "admin.access";
+  | "submissions.read" | "submissions.delete";
 
 /** Admin configuration (added to DuneConfig) */
 export interface AdminConfig {

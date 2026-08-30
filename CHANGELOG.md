@@ -33,7 +33,11 @@ follows [Semantic Versioning](https://semver.org).
   `AdminContext.auth.hasPermission()` directly has no replacement to switch
   to within this package — use `checkPermission()`/`requirePermission()`/
   `withGuards()` (`@dune/plugin-admin/admin/guards`), which already do the
-  right thing. No first-party or third-party plugin was found calling the
+  right thing. `"admin.access"` is no longer a member of `AdminPermission`
+  — it never had an `actionToRelations` entry (panel access is
+  `canThey: "access"` on `{ type: "app", id: "admin" }`) and
+  `checkPermission("admin.access")` would always deny. Declare a real
+  schema action, or rely on the middleware access gate. No first-party or third-party plugin was found calling the
   removed surface directly (confirmed by search across
   `@dune/plugin-inline-edit`, `@dune/plugin-meilisearch`,
   `@dune/plugin-orama`, `@dune/plugin-pdf`) — `@dune/plugin-inline-edit`'s

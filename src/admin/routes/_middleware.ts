@@ -132,12 +132,11 @@ export function toAdminRelative(pathname: string, normalizedPrefix: string): str
 }
 
 /**
- * Every `AdminPermission` a nav item might gate on. Excludes `"admin.access"`
- * deliberately — a legacy value the removed `ROLE_PERMISSIONS` table (3.0.0)
- * carried on every role but which no nav item ever used and which has no
- * corresponding action in `@dune/core`'s authz schema
- * (`src/auth/authz-schema.ts`'s `actionToRelations` never defined it) —
- * `authz.check()` has nothing to resolve it against.
+ * Every `AdminPermission` a nav item might gate on. `"admin.access"` is not
+ * in the union — it only ever existed on the removed `ROLE_PERMISSIONS`
+ * table and has no corresponding action in `@dune/core`'s authz schema
+ * (`actionToRelations` never defined it). Panel access is `canThey: "access"`
+ * on `{ type: "app", id: "admin" }`, enforced by this middleware's gate.
  */
 const NAV_PERMISSIONS: readonly AdminPermission[] = [
   "pages.create",
