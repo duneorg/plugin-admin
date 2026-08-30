@@ -19,7 +19,9 @@ follows [Semantic Versioning](https://semver.org).
   `checkPermission()`/`requirePermission()` (`routes/api/_utils.ts`) fail
   closed (deny) when `authz` is somehow undefined — an in-process object
   construction failing at startup, essentially never hit in practice —
-  instead of silently degrading to the removed table. Sidebar nav filtering
+  instead of silently degrading to the removed table, and the top-level
+  admin access gate in `routes/_middleware.ts` now fails closed (403) in
+  that same state instead of skipping the check. Sidebar nav filtering
   (`routes/_layout.tsx`), the one place that used `ROLE_PERMISSIONS`
   unconditionally rather than as a fallback, now reads a real permission
   set computed via `authz.check()` once per request

@@ -6,7 +6,7 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { computeNavPermissions } from "../../src/admin/routes/_middleware.ts";
+import { computeNavPermissions, handler } from "../../src/admin/routes/_middleware.ts";
 import type { DuneAuthSystem } from "@dune/core/auth/authz";
 
 function makeAuthz(allowedPermissions: string[]) {
@@ -71,4 +71,35 @@ Deno.test("computeNavPermissions: checks every real AdminPermission exactly once
     "submissions.delete",
   ];
   assertEquals(authz.calls.sort(), [...expected].sort());
+});
+
+// ── handler: top-level admin gate fails closed when authz is undefined ──
+
+Deno.test("_middleware handler: authenticated request with no authz gets 403 (fails closed)", async () => {
+  // authz creation failing at startup is the only way authz is undefined.
+  // The top-level gate used to be skipped in that state; it now denies,
+  // same policy as every route-level checkPermission()/requirePermission().
+  let nextRan = false;
+  const ctx = {
+    url: new URL("http://localhost/admin/pages"),
+    state: {
+      adminContext: {
+        prefix: "/admin",
+        auth: {
+          authenticate: () =>
+            Promise.resolve({ authenticated: true, user: { id: "u1" } }),
+        },
+        // authz deliberately undefined
+      },
+    },
+    next: () => {
+      nextRan = true;
+      return Promise.resolve(new Response("unreachable"));
+    },
+    // deno-lint-ignore no-explicit-any
+  } as any;
+
+  const res = await handler(ctx);
+  assertEquals(res.status, 403);
+  assertEquals(nextRan, false);
 });

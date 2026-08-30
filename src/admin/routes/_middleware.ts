@@ -214,14 +214,19 @@ export async function handler(
         new Response(null, { status: 302, headers: { Location: loginUrl } }),
       );
     }
-  } else if (authResult.user && adminCtx.authz && !PUBLIC_PATHS.has(adminRelative)) {
-    // When polizy is wired, it is the authority for admin panel access.
-    // If authz is undefined (creation failed at startup — exceptional, see
-    // checkPermission()'s doc comment), this top-level gate is skipped, but
-    // every route's own checkPermission()/requirePermission() call fails
-    // closed regardless — there is no ROLE_PERMISSIONS fallback anywhere
+  } else if (authResult.user && !PUBLIC_PATHS.has(adminRelative)) {
+    // polizy authz is the authority for admin panel access — and the *only*
+    // mechanism. If authz is undefined (creation failed at startup —
+    // exceptional, see checkPermission()'s doc comment), this top-level gate
+    // fails closed (403) exactly like every route-level
+    // checkPermission()/requirePermission() call does — skipping the gate
+    // here would let an authenticated user reach whatever a route relies on
+    // this gate alone to protect. No ROLE_PERMISSIONS fallback anywhere
     // anymore (3.0.0).
     // An authenticated user whose tuple has been revoked is denied before reaching routes.
+    if (!adminCtx.authz) {
+      return withSecurityHeaders(new Response("Forbidden", { status: 403 }), frameable);
+    }
     const canAccess = await adminCtx.authz.check({
       who: { type: "user", id: authResult.user.id },
       canThey: "access",

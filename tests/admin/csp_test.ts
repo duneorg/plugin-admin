@@ -68,7 +68,14 @@ async function buildAdminContext() {
   const session = await sessions.create(user.id);
 
   return {
-    adminContext: { prefix: "/admin", auth } as unknown as
+    adminContext: {
+      prefix: "/admin",
+      auth,
+      // authz.check() always allows — this test exercises CSP/nonce
+      // behavior, not permission logic. Without an authz the top-level
+      // admin access gate fails closed (403) and the render never happens.
+      authz: { check: () => Promise.resolve(true) },
+    } as unknown as
       import("../../src/admin/context.ts").AdminContext,
     sessionCookie: `dune_session=${session.id}`,
   };
