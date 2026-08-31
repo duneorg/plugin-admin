@@ -65,10 +65,15 @@ follows [Semantic Versioning](https://semver.org).
   tuples unseeded; the access gate then 403s. The warn now says that, so
   operators do not debug a fallback that cannot fire.
 - **Requires the companion `@dune/core` release that exports
-  `./auth/authz-schema`** (`ADMIN_ROLE_RANK` / `highestAdminRole()`). The
-  existing `@dune/core@0.34` pin picks that up once published; 0.34.1 does
-  not have the export. Publish that core first or in the same train as
-  this 3.0.0.
+  `./auth/authz-schema`** (`ADMIN_ROLE_RANK` / `highestAdminRole()`) —
+  shipped in `@dune/core@0.34.2`. Pin floored there specifically
+  (`^0.34.2`, not the bare `0.34` this package normally uses): JSR
+  validates a published `jsr:` subpath against the *oldest* version
+  satisfying the declared range, and `./auth/authz-schema` didn't exist at
+  0.34.0 — a bare `0.34` floor failed the real publish with "invalid
+  'jsr:' dependency subpath ... has no export './auth/authz-schema'"
+  before this was caught and fixed. Safe to widen back to a bare minor
+  form at the next core minor this package tracks.
 
 ## [2.1.3] — 2026-08-27
 

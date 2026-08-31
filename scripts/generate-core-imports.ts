@@ -41,8 +41,17 @@
 
 /** Bump at every core minor this package needs. Bare-minor form (e.g. "0.31")
  * auto-tracks patch releases within that minor — confirmed via `deno cache`:
- * "0.28" resolved to the latest 0.28.x, not just 0.28.0. */
-const CORE_RANGE = "0.34";
+ * "0.28" resolved to the latest 0.28.x, not just 0.28.0.
+ *
+ * Currently floored at the patch, not the minor (^0.34.2, not "0.34"):
+ * `./auth/authz-schema` (needed for 3.0.0's ROLE_PERMISSIONS removal) was
+ * added mid-minor at 0.34.2, not at 0.34.0 — a bare "0.34" floors JSR's
+ * publish-time subpath check at 0.34.0, which doesn't have the export yet.
+ * Reproduced live 2026-08-31: "invalid 'jsr:' dependency subpath:
+ * '@dune/core@0.34/auth/authz-schema', resolved to 0.34.0, has no export".
+ * Safe to widen back to a bare "0.35" (or whatever) at the next minor bump,
+ * once every subpath this package needs exists from that minor's .0. */
+const CORE_RANGE = "^0.34.2";
 
 const DENO_JSON = "deno.json";
 const SCAN_ROOTS = ["mod.ts", "src", "tests"];
