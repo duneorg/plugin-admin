@@ -7,9 +7,17 @@
  * collapsed `role: Role` + `roles: string[]` into `roles: string[]` only);
  * these three strings are just conventional values inside that array,
  * interpreted here rather than enforced by the type.
+ *
+ * `ROLE_RANK`/`highestValidRole()` are thin wrappers over `@dune/core`'s
+ * `ADMIN_ROLE_RANK`/`highestAdminRole()` (`@dune/core/auth/authz-schema`),
+ * not a second, separately-maintained copy of the same three numbers —
+ * exactly the "two tables kept in sync by convention" pattern the
+ * `ROLE_PERMISSIONS` removal (3.0.0) eliminated elsewhere. Core owns the
+ * canonical ranking; this package consumes it.
  */
 
 import type { Role } from "../types.ts";
+import { ADMIN_ROLE_RANK, highestAdminRole } from "@dune/core/auth/authz-schema";
 
 export const VALID_ROLES: ReadonlySet<Role> = new Set<Role>([
   "admin",
@@ -17,23 +25,14 @@ export const VALID_ROLES: ReadonlySet<Role> = new Set<Role>([
   "author",
 ]);
 
-export const ROLE_RANK: Record<Role, number> = {
-  admin: 3,
-  editor: 2,
-  author: 1,
-};
+export const ROLE_RANK: Record<Role, number> = ADMIN_ROLE_RANK;
 
 /** Pick the highest-ranked valid admin `Role` out of a generic roles[] array, or undefined if none present. */
 export function highestValidRole(
   roles: string[] | undefined,
 ): Role | undefined {
-  if (!roles?.length) return undefined;
-  let best: Role | undefined;
-  for (const r of roles) {
-    if (!VALID_ROLES.has(r as Role)) continue;
-    if (!best || ROLE_RANK[r as Role] > ROLE_RANK[best]) best = r as Role;
-  }
-  return best;
+  const best = highestAdminRole(roles);
+  return best === "" ? undefined : (best as Role);
 }
 
 /** Validate a single role string, falling back to `fallback` if it's not a known `Role`. */

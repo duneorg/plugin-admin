@@ -8,7 +8,8 @@
 
 import type { FreshContext, Middleware } from "fresh";
 import { csp } from "fresh";
-import type { AdminState } from "../types.ts";
+import type { AdminPermission, AdminState } from "../types.ts";
+import type { DuneAuthSystem } from "@dune/core/auth/authz";
 
 export const PUBLIC_PATHS = new Set(["/login", "/login/logout"]);
 
@@ -130,6 +131,60 @@ export function toAdminRelative(pathname: string, normalizedPrefix: string): str
   return adminRelative;
 }
 
+/**
+ * Every `AdminPermission` a nav item might gate on. `"admin.access"` is not
+ * in the union — it only ever existed on the removed `ROLE_PERMISSIONS`
+ * table and has no corresponding action in `@dune/core`'s authz schema
+ * (`actionToRelations` never defined it). Panel access is `canThey: "access"`
+ * on `{ type: "app", id: "admin" }`, enforced by this middleware's gate.
+ */
+const NAV_PERMISSIONS: readonly AdminPermission[] = [
+  "pages.create",
+  "pages.read",
+  "pages.update",
+  "pages.delete",
+  "media.upload",
+  "media.read",
+  "media.delete",
+  "users.create",
+  "users.read",
+  "users.update",
+  "users.delete",
+  "config.read",
+  "config.update",
+  "submissions.read",
+  "submissions.delete",
+];
+
+/**
+ * Real authz-backed permission set for sidebar nav filtering
+ * (`routes/_layout.tsx`), replacing the flat `ROLE_PERMISSIONS[role]` lookup
+ * removed in 3.0.0 — the nav no longer shows/hides items based on a
+ * hand-maintained table that could silently drift from what a route's own
+ * `authz.check()` would actually decide. Computed once per request here
+ * (where `authz.check()`'s async cost is affordable — this is an
+ * already-authenticated admin-panel request, not a hot public path) and
+ * read synchronously from `state` by the layout.
+ */
+export async function computeNavPermissions(
+  authz: DuneAuthSystem | undefined,
+  userId: string,
+): Promise<AdminPermission[]> {
+  if (!authz) return [];
+  const checks = await Promise.all(
+    NAV_PERMISSIONS.map(async (permission) => {
+      const allowed = await authz.check({
+        who: { type: "user", id: userId },
+        // deno-lint-ignore no-explicit-any
+        canThey: permission as any,
+        onWhat: { type: "app", id: "admin" },
+      });
+      return allowed ? permission : null;
+    }),
+  );
+  return checks.filter((p): p is AdminPermission => p !== null);
+}
+
 export async function handler(
   ctx: FreshContext<AdminState>,
 ): Promise<Response> {
@@ -158,10 +213,19 @@ export async function handler(
         new Response(null, { status: 302, headers: { Location: loginUrl } }),
       );
     }
-  } else if (authResult.user && adminCtx.authz && !PUBLIC_PATHS.has(adminRelative)) {
-    // When polizy is wired, it is the authority for admin panel access.
-    // Falls back gracefully: if authz is not set, ROLE_PERMISSIONS remains the authority.
+  } else if (authResult.user && !PUBLIC_PATHS.has(adminRelative)) {
+    // polizy authz is the authority for admin panel access — and the *only*
+    // mechanism. If authz is undefined (creation failed at startup —
+    // exceptional, see checkPermission()'s doc comment), this top-level gate
+    // fails closed (403) exactly like every route-level
+    // checkPermission()/requirePermission() call does — skipping the gate
+    // here would let an authenticated user reach whatever a route relies on
+    // this gate alone to protect. No ROLE_PERMISSIONS fallback anywhere
+    // anymore (3.0.0).
     // An authenticated user whose tuple has been revoked is denied before reaching routes.
+    if (!adminCtx.authz) {
+      return withSecurityHeaders(new Response("Forbidden", { status: 403 }), frameable);
+    }
     const canAccess = await adminCtx.authz.check({
       who: { type: "user", id: authResult.user.id },
       canThey: "access",
@@ -170,6 +234,13 @@ export async function handler(
     if (!canAccess) {
       return withSecurityHeaders(new Response("Forbidden", { status: 403 }), frameable);
     }
+  }
+
+  if (authResult.authenticated && authResult.user) {
+    ctx.state.permissions = await computeNavPermissions(
+      adminCtx.authz,
+      authResult.user.id,
+    );
   }
 
   const res = await (frameable ? adminCspFrameable : adminCsp)(ctx);

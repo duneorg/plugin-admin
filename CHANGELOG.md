@@ -5,6 +5,71 @@ follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [3.0.0] — 2026-08-29
+
+### Breaking
+
+- **Removed `ROLE_PERMISSIONS` and `AuthMiddleware.hasPermission()` entirely.**
+  dec-identity-unification Phase 5c's second half, finally closed — this was
+  supposed to be fully replaced by the polizy `authz` system back when it
+  was first introduced, and instead survived as a parallel, hand-maintained
+  table that had to be kept in sync with `@dune/core`'s canonical
+  `actionToRelations` schema by convention, not by anything enforcing it.
+  `authz.check()` is now the sole authority everywhere, with no exceptions:
+  `checkPermission()`/`requirePermission()` (`routes/api/_utils.ts`) fail
+  closed (deny) when `authz` is somehow undefined — an in-process object
+  construction failing at startup, essentially never hit in practice —
+  instead of silently degrading to the removed table, and the top-level
+  admin access gate in `routes/_middleware.ts` now fails closed (403) in
+  that same state instead of skipping the check. Sidebar nav filtering
+  (`routes/_layout.tsx`), the one place that used `ROLE_PERMISSIONS`
+  unconditionally rather than as a fallback, now reads a real permission
+  set computed via `authz.check()` once per request
+  (`routes/_middleware.ts`'s new `computeNavPermissions()`) instead of a
+  table that could silently drift from what a route's own check would
+  actually decide.
+
+  **Migration**: anything importing `ROLE_PERMISSIONS` or calling
+  `AdminContext.auth.hasPermission()` directly has no replacement to switch
+  to within this package — use `checkPermission()`/`requirePermission()`/
+  `withGuards()` (`@dune/plugin-admin/admin/guards`), which already do the
+  right thing. `"admin.access"` is no longer a member of `AdminPermission`
+  — it never had an `actionToRelations` entry (panel access is
+  `canThey: "access"` on `{ type: "app", id: "admin" }`) and
+  `checkPermission("admin.access")` would always deny. Declare a real
+  schema action, or rely on the middleware access gate. No first-party or third-party plugin was found calling the
+  removed surface directly (confirmed by search across
+  `@dune/plugin-inline-edit`, `@dune/plugin-meilisearch`,
+  `@dune/plugin-orama`, `@dune/plugin-pdf`) — `@dune/plugin-inline-edit`'s
+  own `auth.hasPermission(permission)` call goes through `@dune/core`'s
+  published, synchronous `HookContext.auth.hasPermission()` hook API, whose
+  contract is unchanged (companion `@dune/core` change: it now sources its
+  answer from `roleHasPermission()`, a synchronous read of `@dune/core`'s
+  own canonical schema, instead of this package's table).
+
+### Changed
+
+- **`role-utils.ts`'s `ROLE_RANK`/`highestValidRole()` now derive from
+  `@dune/core`'s canonical `ADMIN_ROLE_RANK`/`highestAdminRole()`
+  (`@dune/core/auth/authz-schema`), not a second, separately-maintained
+  copy of the same three numbers.** Spotted during review of this
+  release's own commits: `@dune/core`'s new `highestAdminRole()`
+  (added to fix `roles[0]` under-privileging `ResponseTransformContext`)
+  reimplemented the identical rank table this package already had —
+  exactly the "two tables kept in sync by convention" pattern this
+  release's `ROLE_PERMISSIONS` removal was about eliminating, just
+  running in the other direction. No behavior change; `VALID_ROLES`,
+  `sanitizeRole()`, and `withRole()` are unaffected.
+- **Tuple-bootstrap failure log no longer claims a `ROLE_PERMISSIONS`
+  fallback.** `bootstrapAdminTuples()` throwing leaves `authz` defined but
+  tuples unseeded; the access gate then 403s. The warn now says that, so
+  operators do not debug a fallback that cannot fire.
+- **Requires the companion `@dune/core` release that exports
+  `./auth/authz-schema`** (`ADMIN_ROLE_RANK` / `highestAdminRole()`). The
+  existing `@dune/core@0.34` pin picks that up once published; 0.34.1 does
+  not have the export. Publish that core first or in the same train as
+  this 3.0.0.
+
 ## [2.1.3] — 2026-08-27
 
 ### Changed

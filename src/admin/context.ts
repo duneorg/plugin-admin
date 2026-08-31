@@ -73,9 +73,12 @@ export interface AdminContext {
   metrics?: MetricsCollector;
   mt?: MachineTranslator | null;
   /**
-   * Polizy authz system, present when auth.mode is "dune" and authzStore is "local".
-   * Used for admin panel access enforcement and role-change tuple sync.
-   * When undefined, ROLE_PERMISSIONS is the sole authority.
+   * Polizy authz system — the sole authority for admin panel access
+   * enforcement and role-change tuple sync. Undefined only when authz
+   * creation itself failed at startup, in which case permission checks
+   * fail closed rather than falling back to a role table (dec-identity-
+   * unification Phase 5c/6 — the ROLE_PERMISSIONS fallback this used to
+   * describe was removed in 3.0.0).
    */
   authz?: DuneAuthSystem;
   /**

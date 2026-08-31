@@ -7,7 +7,7 @@ import { hashPassword, verifyPassword } from "../../src/admin/auth/passwords.ts"
 import { createSessionManager } from "../../src/admin/auth/sessions.ts";
 import { createUserManager } from "../../src/admin/auth/users.ts";
 import { createAuthMiddleware } from "../../src/admin/auth/middleware.ts";
-import { ROLE_PERMISSIONS, toUserInfo } from "../../src/admin/types.ts";
+import { toUserInfo } from "../../src/admin/types.ts";
 
 // === In-memory storage for tests ===
 
@@ -343,27 +343,6 @@ Deno.test("AuthMiddleware: authenticate succeeds with valid session", async () =
   assertEquals(result.user?.username, "admin");
 });
 
-Deno.test("AuthMiddleware: hasPermission checks role", () => {
-  const storage = createMemoryStorage();
-  const sessions = createSessionManager({ storage, sessionsDir: ".sess", lifetime: 3600 });
-  const users = createUserManager({ storage, usersDir: ".users" });
-  const auth = createAuthMiddleware({ sessions, users });
-
-  // Admin can delete pages
-  const adminResult = {
-    authenticated: true,
-    user: { roles: ["admin"] } as any,
-  };
-  assertEquals(auth.hasPermission(adminResult, "pages.delete"), true);
-
-  // Author cannot delete pages
-  const authorResult = {
-    authenticated: true,
-    user: { roles: ["author"] } as any,
-  };
-  assertEquals(auth.hasPermission(authorResult, "pages.delete"), false);
-});
-
 Deno.test("AuthMiddleware: bound session fails when forwarded IP is omitted", async () => {
   const storage = createMemoryStorage();
   const sessions = createSessionManager({ storage, sessionsDir: ".sess", lifetime: 3600 });
@@ -413,24 +392,13 @@ Deno.test("AuthMiddleware: createSessionCookie formats correctly", () => {
   assertEquals(cookie.includes("Max-Age=86400"), true);
 });
 
-// === Types and permissions ===
-
-Deno.test("ROLE_PERMISSIONS: admin has all permissions", () => {
-  assertEquals(ROLE_PERMISSIONS.admin.includes("pages.delete"), true);
-  assertEquals(ROLE_PERMISSIONS.admin.includes("users.delete"), true);
-  assertEquals(ROLE_PERMISSIONS.admin.includes("config.update"), true);
-});
-
-Deno.test("ROLE_PERMISSIONS: editor cannot delete pages or manage users", () => {
-  assertEquals(ROLE_PERMISSIONS.editor.includes("pages.delete"), false);
-  assertEquals(ROLE_PERMISSIONS.editor.includes("users.create"), false);
-});
-
-Deno.test("ROLE_PERMISSIONS: author has limited permissions", () => {
-  assertEquals(ROLE_PERMISSIONS.author.includes("pages.create"), true);
-  assertEquals(ROLE_PERMISSIONS.author.includes("pages.delete"), false);
-  assertEquals(ROLE_PERMISSIONS.author.includes("media.delete"), false);
-});
+// Permission-by-role coverage moved to @dune/core's roleHasPermission()
+// tests (tests/auth/authz_schema_test.ts) — ROLE_PERMISSIONS and
+// AuthMiddleware.hasPermission() were removed in 3.0.0 (dec-identity-
+// unification Phase 5c/6); authz.check() is the sole authority now, and
+// the one place that still needs a synchronous role-only read sources it
+// from @dune/core's canonical actionToRelations schema instead of a
+// hand-maintained mirror.
 
 Deno.test("toUserInfo: strips password hash", () => {
   const user = {

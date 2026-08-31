@@ -62,9 +62,10 @@ function makeCtx(route: string | null, pages: PageIndex[], storageContent?: stri
     state: {
       auth: { authenticated: true, user: { id: "1", roles: ["admin"] } },
       adminContext: {
-        auth: {
-          hasPermission: (_auth: unknown, _perm: string) => true,
-        },
+        // authz.check() always allows — this test exercises page-source
+        // behavior, not permission logic (ROLE_PERMISSIONS/hasPermission()
+        // were removed in 3.0.0; authz.check() is the sole authority now).
+        authz: { check: () => Promise.resolve(true) },
         auditLogger: null,
         engine: {
           pages,

@@ -122,41 +122,35 @@ export function csrfCheck(ctx: FreshContext<AdminState>): Response | null {
 
 /**
  * Permission check — the sole authority every admin route (and any
- * ad-hoc ownership-or-permission check) should go through, rather than
- * calling `AdminContext.auth.hasPermission()` directly. That method only
- * ever consults the flat `ROLE_PERMISSIONS` table — calling it straight
- * bypasses the polizy `authz` system even when one is configured, which is
- * exactly the "parallel, separately-maintained flat table" dec-auth-storage
- * said should be fully replaced, not coexist with (dec-identity-unification
- * Phase 5c, second half).
+ * ad-hoc ownership-or-permission check) should go through. `authz.check()`
+ * is the only mechanism now (3.0.0 removed the flat `ROLE_PERMISSIONS`
+ * table and `AdminContext.auth.hasPermission()` entirely — dec-identity-
+ * unification Phase 5c/6, closing the "parallel, separately-maintained
+ * flat table" dec-auth-storage said should be fully replaced, not coexist
+ * with).
  *
- * When the polizy authz system is wired (created whenever the admin panel
- * is enabled — see `admin.authzStore`'s doc comment in
- * `src/config/admin-config.ts`), uses `authz.check()` as the sole
- * authority. Falls back to `ROLE_PERMISSIONS` only in the narrow,
- * exceptional case where authz creation itself failed at startup (already
- * logged loudly there) — not as a routine, silently-coexisting path.
+ * `admin.authzStore` defaults to `"local"` and `authz` is created whenever
+ * the admin panel is enabled, regardless of `site.auth`'s mode — see its
+ * doc comment in `src/config/admin-config.ts`. `authz` being undefined
+ * here means its creation itself failed at startup (already logged loudly
+ * there), an exceptional condition this fails closed on rather than
+ * degrading to a separate, less-audited mechanism.
  */
 export async function checkPermission(
   ctx: FreshContext<AdminState>,
   permission: AdminPermission,
 ): Promise<boolean> {
-  const { auth, authz } = ctx.state.adminContext;
+  const { authz } = ctx.state.adminContext;
   const authResult = ctx.state.auth;
 
-  if (authz && authResult.authenticated && authResult.user) {
-    // deno-lint-ignore no-explicit-any
-    return await authz.check({
-      who: { type: "user", id: authResult.user.id },
-      canThey: permission as any,
-      onWhat: { type: "app", id: "admin" },
-    });
-  }
+  if (!authz || !authResult.authenticated || !authResult.user) return false;
 
-  // Fallback: ROLE_PERMISSIONS (authz creation failed at startup — see the
-  // console.warn in src/runtime/bootstrap.ts — or, in external-jwt mode,
-  // authz was never configured to begin with)
-  return auth.hasPermission(authResult, permission);
+  // deno-lint-ignore no-explicit-any
+  return await authz.check({
+    who: { type: "user", id: authResult.user.id },
+    canThey: permission as any,
+    onWhat: { type: "app", id: "admin" },
+  });
 }
 
 /** Permission check — returns 403 response if denied, null if allowed. See {@link checkPermission}. */

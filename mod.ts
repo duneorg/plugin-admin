@@ -367,7 +367,7 @@ export function createAdminPlugin(
           await bootstrapAdminTuples(bootstrap.authz, bootstrap.authzAdapter, enabledAdminUsers);
         } catch (err) {
           console.warn(
-            "[dune/authz] Admin authz bootstrap failed, falling back to ROLE_PERMISSIONS:",
+            "[dune/authz] Admin tuple bootstrap failed — authz is up but tuples were not seeded; admin access will deny (403) until bootstrap succeeds:",
             err,
           );
         }
