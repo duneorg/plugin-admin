@@ -54,10 +54,112 @@ import {
 } from "./public-api.ts";
 
 /**
+ * `ctx` objects (`BootstrapResult`) for which the `ctx.state.adminContext`
+ * middleware has already been registered on `app` — makes a second
+ * registration for the same bootstrap a no-op instead of stacking a
+ * duplicate middleware. Both `mountDuneAdminEarly()` (called from the admin
+ * plugin's `mountEarly()` in the normal `createDuneApp()` path) and
+ * `mountDuneAdmin()` itself (headless-mode direct callers, who never call
+ * `mountEarly()` at all) can reach this — whichever runs first wins, and the
+ * other silently skips.
+ */
+const contextMiddlewareRegisteredFor = new WeakSet<BootstrapResult>();
+
+/**
+ * Register the `ctx.state.adminContext = …` middleware every admin route
+ * handler (and `@dune/plugin-admin`'s `withGuards()`, and any other
+ * plugin's own guarded route) reads. Takes a getter rather than the context
+ * value itself so it can be registered before the `AdminContext` object
+ * exists yet — see `mountDuneAdminEarly()`.
+ *
+ * Exported so a headless-mode caller with an unusual setup can register this
+ * independently of `mountDuneAdmin()`'s other route registration, but the
+ * normal paths (`mountDuneAdmin()`, `mountDuneAdminEarly()`) already call
+ * this — most callers should use one of those instead.
+ */
+export function registerAdminContextMiddleware(
+  // deno-lint-ignore no-explicit-any
+  app: App<any>,
+  ctx: BootstrapResult,
+  getAdminContext: () => import("./context.ts").AdminContext | null,
+): void {
+  if (contextMiddlewareRegisteredFor.has(ctx)) return;
+  contextMiddlewareRegisteredFor.add(ctx);
+  app.use(async (fc) => {
+    fc.state.adminContext = getAdminContext();
+    return fc.next();
+  });
+}
+
+/** `App` instances the admin auth middleware has already been registered on — see {@link registerAdminAuthMiddleware}. */
+const authMiddlewareRegisteredFor = new WeakSet<object>();
+
+/**
+ * Register the admin auth middleware (`routes/_middleware.ts`'s `handler` —
+ * authenticates the session cookie into `ctx.state.auth`, applies admin CSP
+ * headers). No-op if already registered on this `app` — see
+ * {@link mountDuneAdminEarly}, whose whole reason for existing is to
+ * register this (and {@link registerAdminContextMiddleware}) before other
+ * plugins' routes are compiled; `registerAdminRoutes()` calls this too, for
+ * headless-mode callers who never call `mountDuneAdminEarly()`.
+ */
+function registerAdminAuthMiddleware(
+  // deno-lint-ignore no-explicit-any
+  app: App<any>,
+): void {
+  if (authMiddlewareRegisteredFor.has(app)) return;
+  authMiddlewareRegisteredFor.add(app);
+  // deno-lint-ignore no-explicit-any
+  app.use(adminMiddleware.handler as Middleware<any>);
+}
+
+/**
+ * Register the middleware every other plugin's own routes need to already
+ * be in place before it runs:
+ *
+ * - `ctx.state.adminContext` (see {@link registerAdminContextMiddleware})
+ * - `ctx.state.auth` (the admin auth middleware — sets it for any request
+ *   under the admin path prefix; a plugin's own guarded route must be
+ *   registered under that prefix too, e.g. `/admin/my-plugin/…`, to be
+ *   reached by it — see `@dune/plugin-admin/admin/guards`' own doc comment)
+ *
+ * This is the admin plugin's `DunePlugin.mountEarly()` implementation (see
+ * that hook's doc comment in `@dune/core`'s `hooks/types.ts` for why this
+ * needs to be a separate pass from `mountDuneAdmin()`/`mount()`). Called
+ * before the `AdminContext` itself has been built — `getAdminContext` is
+ * read lazily, per-request, so it naturally resolves to the real value once
+ * `mount()` (which runs after every plugin's `mountEarly()`) finishes
+ * building it, well before the app starts serving requests. The auth
+ * middleware itself needs no such laziness — it's a static generated route
+ * module, not something built from `AdminContext`.
+ *
+ * Headless-mode callers using `mountDuneAdmin()` directly (see this
+ * module's own docstring) don't need this — they already have a built
+ * `AdminContext` before they call anything, and their own routes are
+ * registered by them, after `mountDuneAdmin()`, per that docstring's
+ * example — so `mountDuneAdmin()`'s own (immediate, non-lazy) registration
+ * already covers them.
+ *
+ * @since 3.1.0
+ */
+export function mountDuneAdminEarly(
+  // deno-lint-ignore no-explicit-any
+  app: App<any>,
+  ctx: BootstrapResult,
+  getAdminContext: () => import("./context.ts").AdminContext | null,
+): void {
+  if (ctx.config.admin?.enabled === false) return;
+  registerAdminContextMiddleware(app, ctx, getAdminContext);
+  registerAdminAuthMiddleware(app);
+}
+
+/**
  * Mount Dune's admin panel and public API routes onto an existing Fresh app.
  *
  * Registers:
- * - Per-site admin context middleware (required for admin route handlers)
+ * - Per-site admin context middleware (required for admin route handlers) —
+ *   a no-op here if `mountDuneAdminEarly()` already registered it (see
+ *   `contextMiddlewareRegisteredFor`).
  * - Admin file-system routes under `adminPrefix` (default `/admin`)
  * - Plugin admin pages (programmatic routes registered by plugins)
  * - Plugin public routes (registered by plugins)
@@ -81,13 +183,11 @@ export async function mountDuneAdmin(
   // ── Admin panel ─────────────────────────────────────────────────────────────
   if (config.admin?.enabled !== false) {
     // Per-site admin context middleware — captures the correct context in
-    // closure so multisite setups don't suffer from the module-level singleton.
+    // closure so multisite setups don't suffer from the module-level
+    // singleton. No-op if mountDuneAdminEarly() already registered it for
+    // this ctx (the normal createDuneApp() + mountPlugins() path).
     if (adminContext) {
-      const adminCtx = adminContext;
-      app.use(async (fc) => {
-        fc.state.adminContext = adminCtx;
-        return fc.next();
-      });
+      registerAdminContextMiddleware(app, ctx, () => adminContext);
     }
 
     // Admin routes (login, pages, users, settings, …) — registered
@@ -203,7 +303,10 @@ export function getDuneAdminIslands(): string[] {
  * The admin auth middleware and shell layout are registered app-wide; both
  * self-guard and pass through untouched on non-admin paths (they must,
  * because Fresh applies fs middleware/layouts globally too — this preserves
- * the exact fsRoutes() behavior).
+ * the exact fsRoutes() behavior). The auth middleware registration itself
+ * is a no-op here if `mountDuneAdminEarly()` already registered it (see
+ * `registerAdminAuthMiddleware`) — the normal `createDuneApp()` +
+ * `mountPlugins()` path.
  */
 export function registerAdminRoutes(
   // deno-lint-ignore no-explicit-any
@@ -212,8 +315,7 @@ export function registerAdminRoutes(
 ): void {
   const prefix = adminPrefix === "/" ? "" : adminPrefix.replace(/\/+$/, "");
 
-  // deno-lint-ignore no-explicit-any
-  app.use(adminMiddleware.handler as Middleware<any>);
+  registerAdminAuthMiddleware(app);
   // deno-lint-ignore no-explicit-any
   app.layout("*", adminLayout.default as any);
 

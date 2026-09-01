@@ -5,6 +5,37 @@ follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **A third-party plugin's own `mount()`-registered route could never see
+  `ctx.state.adminContext` or `ctx.state.auth`**, no matter how the request
+  was authenticated — `withGuards()` always treated it as unauthenticated.
+  Root cause: Fresh 2 snapshots each route's middleware chain at the moment
+  the route is registered, and `@dune/core`'s `mountPlugins()` calls every
+  plugin's `mount()` in registration order — this plugin always registers
+  last (`bootstrap()` can't construct it until authz/hmac-key/history are
+  ready), so any other plugin's own route was compiled before this plugin's
+  `ctx.state.adminContext = …` and admin-auth middleware existed.
+- **Implements `DunePlugin.mountEarly()`** (new in `@dune/core@0.34.4`) to
+  fix it: `mountDuneAdminEarly()` registers just the `ctx.state.adminContext`
+  and admin-auth middleware, before any plugin's `mount()` runs — the rest
+  of `mountDuneAdmin()` (admin panel routes, plugin admin pages, the
+  `registerPluginPublicRoutes()` call) stays exactly where it was. See
+  `mount.ts`'s doc comments for the full reasoning, and `@dune/core`'s own
+  changelog for why this couldn't be a plain reordering.
+- A plugin's own guarded route must be registered **under the admin path
+  prefix** (default `/admin`, e.g. `/admin/my-plugin/…`) — the admin auth
+  middleware that populates `ctx.state.auth` only runs for requests under
+  that prefix, same as every built-in admin route. Documented in
+  `admin/guards.ts`'s own example and in the plugin-authoring guide
+  (duneorg/dune-docs#4).
+
+### Requires
+
+- `@dune/core@^0.34.4` or later (for `DunePlugin.mountEarly()`).
+
 ## [3.0.0] — 2026-08-29
 
 ### Breaking
