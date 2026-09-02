@@ -1,6 +1,6 @@
 {
   "name": "@dune/plugin-admin",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "license": "MIT",
   "minimumDependencyAge": {
     "age": "P1D",
@@ -18,7 +18,7 @@
     "./admin/auth/provider": "./src/admin/auth/provider.ts"
   },
   "imports": {
-    "@dune/core": "jsr:@dune/core@^0.34.2",
+    "@dune/core": "jsr:@dune/core@^0.34.4",
     "fresh": "jsr:@fresh/core@^2",
     "preact": "npm:preact@^10",
     "preact/hooks": "npm:preact@^10/hooks",

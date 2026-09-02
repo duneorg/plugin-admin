@@ -44,7 +44,7 @@ import type { AuthzDbAdapter } from "@dune/core/auth/authz-adapter-db";
 import { initAdminContext } from "./src/admin/context.ts";
 import type { AdminContext } from "./src/admin/context.ts";
 import { createBlockEditorPlugin } from "./src/admin/block-editor-plugin.tsx";
-import { mountDuneAdmin, getDuneAdminIslands } from "./src/admin/mount.ts";
+import { getDuneAdminIslands, mountDuneAdmin, mountDuneAdminEarly } from "./src/admin/mount.ts";
 import { logger } from "@dune/core/logger";
 import { sectionRegistry } from "@dune/core/sections";
 import type { SectionRegistry } from "@dune/core/sections";
@@ -103,6 +103,12 @@ export function createAdminPlugin(
   opts: AdminPluginOptions,
 ): DunePlugin {
   let setupState: AdminSetupState | null = null;
+  // Set partway through mount(), once AdminContext is actually built.
+  // mountEarly() registers a middleware that reads this lazily (per
+  // request) rather than needing the built value up front — see
+  // mountDuneAdminEarly()'s doc comment for why that's necessary (it runs
+  // before mount() has built anything).
+  let liveAdminContext: AdminContext | null = null;
 
   return {
     name: "dune-admin",
@@ -110,6 +116,12 @@ export function createAdminPlugin(
     description: "Built-in Dune admin panel",
     hooks: {},
     islandSpecifiers: getDuneAdminIslands(),
+
+    mountEarly({ app, bootstrap }: MountApi) {
+      if (!setupState) return; // admin disabled
+      // deno-lint-ignore no-explicit-any
+      mountDuneAdminEarly(app as any, bootstrap, () => liveAdminContext);
+    },
 
     async setup(_api) {
       const adminCfg = config.admin ?? {
@@ -335,6 +347,12 @@ export function createAdminPlugin(
 
       // Keep the singleton for single-site serve paths (serve.ts, dev.ts).
       initAdminContext(adminContext);
+
+      // Unblocks mountEarly()'s ctx.state.adminContext middleware — see its
+      // doc comment. Must happen before any other plugin's route could
+      // conceivably run, which it does: mountPlugins() finishes every
+      // plugin's mount() before the app starts serving requests.
+      liveAdminContext = adminContext;
 
       // Expose adminContext on the bootstrap result so serve.ts can wire the
       // job scheduler into it after mount() returns. BootstrapResult types
