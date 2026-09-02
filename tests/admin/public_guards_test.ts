@@ -189,6 +189,31 @@ Deno.test("withGuards: all guards passing reaches the handler", async () => {
   assertEquals(await res.text(), "ran with path=my-plugin/settings");
 });
 
+Deno.test("withGuards: a plugin-declared permission (not a built-in AdminPermission) type-checks and forwards to authz.check() with no cast", async () => {
+  // AdminPermission widened to accept any string (`@dune/core`'s
+  // DunePlugin.authzActions lets a plugin declare its own action) — unlike
+  // the tests above, this one needs no `as never`/`as any` escape hatch to
+  // pass a permission string this package's own closed built-in union
+  // never listed. checkPermission()/requirePermission()/withGuards() don't
+  // themselves validate the string against a schema — that's authz.check()'s
+  // job (see @dune/core's authz_plugin_actions_test.ts for the real
+  // end-to-end resolution through a bootstrapped authz system) — this just
+  // proves the plumbing here accepts and forwards it correctly.
+  const guarded = withGuards(
+    { permission: "billing.manage" },
+    () => new Response("ran"),
+  );
+  const allowed = await guarded(
+    makeCtx("POST", { authzAllows: true }),
+  );
+  assertEquals(allowed.status, 200);
+
+  const denied = await guarded(
+    makeCtx("POST", { authzAllows: false }),
+  );
+  assertEquals(denied.status, 403);
+});
+
 Deno.test("withGuards: csrf: false opts out of the CSRF check", async () => {
   const guarded = withGuards(
     { csrf: false },
