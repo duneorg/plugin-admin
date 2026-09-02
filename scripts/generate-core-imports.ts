@@ -43,15 +43,22 @@
  * auto-tracks patch releases within that minor — confirmed via `deno cache`:
  * "0.28" resolved to the latest 0.28.x, not just 0.28.0.
  *
- * Currently floored at the patch, not the minor (^0.34.2, not "0.34"):
- * `./auth/authz-schema` (needed for 3.0.0's ROLE_PERMISSIONS removal) was
- * added mid-minor at 0.34.2, not at 0.34.0 — a bare "0.34" floors JSR's
- * publish-time subpath check at 0.34.0, which doesn't have the export yet.
- * Reproduced live 2026-08-31: "invalid 'jsr:' dependency subpath:
- * '@dune/core@0.34/auth/authz-schema', resolved to 0.34.0, has no export".
- * Safe to widen back to a bare "0.35" (or whatever) at the next minor bump,
- * once every subpath this package needs exists from that minor's .0. */
-const CORE_RANGE = "^0.34.2";
+ * Currently floored at the patch, not the minor (^0.34.4, not "0.34"):
+ * `DunePlugin.mountEarly()` (needed for the mountEarly()-based adminContext
+ * fix) was added mid-minor at 0.34.4. `./auth/authz-schema` (needed
+ * earlier for 3.0.0's ROLE_PERMISSIONS removal) was itself already a
+ * mid-minor addition at 0.34.2 — a bare "0.34" floors JSR's publish-time
+ * check at 0.34.0, which has neither. Reproduced live 2026-08-31: "invalid
+ * 'jsr:' dependency subpath: '@dune/core@0.34/auth/authz-schema', resolved
+ * to 0.34.0, has no export". Whenever this package starts depending on
+ * something added at a *later* patch within the same minor, re-floor to
+ * that patch — this file's own CORE_RANGE update has been missed twice now
+ * (deno.json hand-edited without updating this constant to match) because
+ * nothing forces the two together outside of `check:core-imports`
+ * actually being run before merge. Safe to widen back to a bare "0.35" (or
+ * whatever) once every subpath/field this package needs exists from that
+ * minor's .0. */
+const CORE_RANGE = "^0.34.4";
 
 const DENO_JSON = "deno.json";
 const SCAN_ROOTS = ["mod.ts", "src", "tests"];
