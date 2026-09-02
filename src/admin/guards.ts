@@ -23,17 +23,38 @@
  * Use `csrfCheck`/`requirePermission`/`validatePagePath` directly only when
  * `withGuards`' shape doesn't fit.
  *
+ * `permission` isn't limited to the built-in admin actions — a plugin can
+ * declare its own via `DunePlugin.authzActions` (`@dune/core`) and gate a
+ * route behind it the identical way, instead of reusing an existing,
+ * semantically-mismatched permission or hand-rolling a check outside the
+ * authz system entirely. `AdminPermission` accepts any string for exactly
+ * this reason (it isn't a fully closed union) — see that type's own doc
+ * comment.
+ *
  * @example
  * ```ts
+ * import type { DunePlugin } from "@dune/core/hooks";
  * import { withGuards } from "@dune/plugin-admin/admin/guards";
  *
- * app.post("/admin/my-plugin/rotate-key", withGuards(
- *   { permission: "settings.update" },
- *   async (ctx) => {
- *     // csrfCheck() and requirePermission() have already run and passed.
- *     return Response.json({ ok: true });
+ * export default {
+ *   name: "my-billing-plugin",
+ *   version: "1.0.0",
+ *   // Registers a new admin permission this plugin's own routes gate on —
+ *   // merged into the site's authz schema at bootstrap.
+ *   authzActions: {
+ *     "billing.manage": ["admin"],
  *   },
- * ));
+ *   async mount({ app }) {
+ *     app.post("/admin/my-plugin/rotate-key", withGuards(
+ *       { permission: "billing.manage" },
+ *       async (ctx) => {
+ *         // csrfCheck() and requirePermission() have already run and passed.
+ *         return Response.json({ ok: true });
+ *       },
+ *     ));
+ *   },
+ *   hooks: {},
+ * } satisfies DunePlugin;
  * ```
  *
  * @module

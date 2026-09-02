@@ -28,13 +28,25 @@ export type { Role };
 import type { User } from "@dune/core/auth/types";
 export type { User };
 
-/** All possible admin permissions */
+/**
+ * Every built-in admin permission, plus any action a plugin registered via
+ * `DunePlugin.authzActions` (`@dune/core`) — the `(string & {})` half
+ * keeps this from being a fully closed union (which could never include a
+ * plugin's own action, unknown to this package at its own compile time)
+ * while still giving IDE autocomplete for the built-ins here. Not
+ * type-checked against what's actually registered — `authz.check()` (or,
+ * for the one synchronous path, `roleHasPermission()`) is the real
+ * authority on whether a given string names a real action; passing one
+ * that doesn't exist on the site's schema just always denies.
+ */
 export type AdminPermission =
   | "pages.create" | "pages.read" | "pages.update" | "pages.delete"
   | "media.upload" | "media.read" | "media.delete"
   | "users.create" | "users.read" | "users.update" | "users.delete"
   | "config.read" | "config.update"
-  | "submissions.read" | "submissions.delete";
+  | "submissions.read" | "submissions.delete"
+  // deno-lint-ignore ban-types
+  | (string & {});
 
 /** Admin configuration (added to DuneConfig) */
 export interface AdminConfig {

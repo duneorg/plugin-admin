@@ -5,7 +5,7 @@ follows [Semantic Versioning](https://semver.org).
 
 ---
 
-## [Unreleased]
+## [3.1.0] — 2026-09-02
 
 ### Fixed
 
@@ -32,9 +32,25 @@ follows [Semantic Versioning](https://semver.org).
   `admin/guards.ts`'s own example and in the plugin-authoring guide
   (duneorg/dune-docs#4).
 
+### Added
+
+- **`AdminPermission` widened to accept any string, not just the built-in
+  admin actions.** `@dune/core@^0.34.4`'s `DunePlugin.authzActions` lets a
+  plugin declare its own admin-permission action (e.g. `"billing.manage"`)
+  and gate a route behind it via `withGuards()`/`requirePermission()` the
+  identical way as a built-in one — `authz.check()` is the real authority
+  either way, so this package's own closed union was the only thing
+  actually stopping a plugin author from passing a custom action through
+  without a `permission: "..." as never` type-level workaround.
+  `guards.ts`'s own doc example now shows a plugin declaring and using
+  its own action. No runtime change — `checkPermission()`/
+  `requirePermission()`/`withGuards()` were already just forwarding
+  whatever string they were given to `authz.check()`.
+
 ### Requires
 
-- `@dune/core@^0.34.4` or later (for `DunePlugin.mountEarly()`).
+- `@dune/core@^0.34.4` or later (for `DunePlugin.mountEarly()` and
+  `DunePlugin.authzActions`) — already published.
 
 ## [3.0.0] — 2026-08-29
 
