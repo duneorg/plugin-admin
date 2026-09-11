@@ -31,10 +31,10 @@ export default function SubmissionsFormRoute(
           <table class="admin-table">
             <thead><tr><th>ID</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
             <tbody>
-              {(data.items as Array<{ id: string; createdAt: number; status: string }>).map((s) => (
+              {(data.items as Array<{ id: string; receivedAt: number; status: string }>).map((s) => (
                 <tr key={s.id}>
                   <td><code class="s-6b9c179a">{s.id}</code></td>
-                  <td class="s-3044b600">{new Date(s.createdAt).toLocaleString()}</td>
+                  <td class="s-3044b600">{new Date(s.receivedAt).toLocaleString()}</td>
                   <td><span class="badge">{s.status}</span></td>
                   <td><a href={`${data.prefix}/submissions/${data.form}/${s.id}`} class="btn btn-sm">View</a></td>
                 </tr>
