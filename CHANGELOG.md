@@ -5,6 +5,15 @@ follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [3.1.1] — 2026-09-11
+
+### Fixed
+
+- **The per-form submissions list showed "Invalid Date" for every row.** It
+  rendered the timestamp from `s.createdAt`, a field that doesn't exist on
+  the `Submission` interface — the real field is `receivedAt` (Unix ms).
+  The detail route was unaffected; it already read `receivedAt`.
+
 ## [3.1.0] — 2026-09-02
 
 ### Fixed
