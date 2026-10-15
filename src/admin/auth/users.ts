@@ -149,8 +149,22 @@ export function createUserManager(config: UserManagerConfig): UserManager {
   };
 }
 
-function generatePassword(): string {
+/**
+ * Generate a random password from an unambiguous alphabet. Uses rejection
+ * sampling so every character is equally likely — `byte % chars.length` would
+ * favor the first (256 % chars.length) characters.
+ */
+export function generatePassword(length = 16): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  return Array.from(bytes).map((b) => chars[b % chars.length]).join("");
+  const limit = 256 - (256 % chars.length);
+  let out = "";
+  while (out.length < length) {
+    const bytes = crypto.getRandomValues(new Uint8Array(length * 2));
+    for (const b of bytes) {
+      if (b >= limit) continue;
+      out += chars[b % chars.length];
+      if (out.length === length) break;
+    }
+  }
+  return out;
 }

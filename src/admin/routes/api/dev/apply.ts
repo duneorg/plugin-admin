@@ -40,6 +40,7 @@
 import type { FreshContext } from "fresh";
 import type { AdminState } from "../../../types.ts";
 import { json, requirePermission, requireTsxWrite, requireOwnedPage, csrfCheck, validatePagePath } from "../_utils.ts";
+import { ValidationError } from "../../../http.ts";
 import { join } from "@std/path";
 import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
 
@@ -96,8 +97,12 @@ const PLUGIN_SPEC_RE =
   /^jsr:@?[a-z0-9_.-]+\/[a-zA-Z0-9_.-]+@\d+\.\d+\.\d+(?:[-+][a-zA-Z0-9_.-]+)?(?:\/.*)?$/;
 
 /** Set a nested value on obj using dot-notation key. Mutates in place. */
-function setDeepKey(obj: Record<string, unknown>, key: string, value: unknown): void {
+export function setDeepKey(obj: Record<string, unknown>, key: string, value: unknown): void {
   const parts = key.split(".");
+  // Reject prototype-pollution path segments outright.
+  if (parts.some((p) => p === "__proto__" || p === "constructor" || p === "prototype")) {
+    throw new ValidationError(`Invalid config key: ${key}`);
+  }
   let cur = obj;
   for (let i = 0; i < parts.length - 1; i++) {
     if (typeof cur[parts[i]] !== "object" || cur[parts[i]] === null) {
