@@ -5,6 +5,18 @@ follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [3.1.2] — 2026-10-15
+
+### Security
+
+- **Hardened password generation for admin-created users.** Generated
+  passwords are now drawn uniformly from the full alphabet using rejection
+  sampling, instead of a modulo reduction that very slightly favored some
+  characters.
+- **Hardened config-key handling in the `dev/apply` endpoint.** Dotted config
+  keys that address the object prototype chain are now rejected outright, with
+  a validation error, before anything is modified.
+
 ## [3.1.1] — 2026-09-11
 
 ### Fixed
