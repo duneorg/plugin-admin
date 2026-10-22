@@ -5,6 +5,19 @@ follows [Semantic Versioning](https://semver.org).
 
 ---
 
+## [3.1.3] — 2026-10-22
+
+### Fixed
+
+- **A `dune serve` process never exited after a graceful shutdown.** The
+  collab manager's session-eviction `setInterval` (every 5 minutes) was never
+  `unref()`'d, so after `dune serve` received SIGTERM, closed its listener and
+  printed `shutdown complete`, this one timer kept the process alive forever
+  at 0% CPU — an idle dune process holding nothing but a PID. (A second
+  SIGTERM ended it.) The timer is now unref'd, so it can never keep the
+  process alive. Found by listing the live timers after shutdown: it was the
+  only one.
+
 ## [3.1.2] — 2026-10-15
 
 ### Security

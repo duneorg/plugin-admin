@@ -118,7 +118,7 @@ export function createCollabManager(options: CollabManagerOptions): CollabManage
   const connectionsPerUser = new Map<string, number>();
 
   // ── Session eviction timer (every 5 minutes) ───────────────────────────────
-  const _evictionTimer = setInterval(() => {
+  const evictionTimer = setInterval(() => {
     const now = Date.now();
     for (const [docId, session] of sessions) {
       if (session.clients.size === 0 && now - session.lastActivity > 5 * 60_000) {
@@ -126,6 +126,10 @@ export function createCollabManager(options: CollabManagerOptions): CollabManage
       }
     }
   }, 5 * 60_000);
+  // Housekeeping must never keep the process alive. As a ref'd interval this
+  // outlived `dune serve`'s graceful shutdown (listener closed, "shutdown
+  // complete" printed) and the process then never exited.
+  Deno.unrefTimer(evictionTimer);
 
   // ── Load / get session ─────────────────────────────────────────────────────
 
