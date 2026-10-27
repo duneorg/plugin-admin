@@ -5,7 +5,14 @@ follows [Semantic Versioning](https://semver.org).
 
 ---
 
-## [3.1.3] — 2026-10-22
+## [3.1.3] — 2026-10-27
+
+### Changed
+
+- **Targets `@dune/core` 0.35.** The `@dune/core` dependency range moves from
+  `^0.34.4` to `0.35` (a caret range on 0.x doesn't reach the next minor). On a
+  site running core 0.35, the previous plugin-admin range would have loaded a
+  second copy of core next to the site's own.
 
 ### Fixed
 
