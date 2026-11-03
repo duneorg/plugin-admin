@@ -3,7 +3,7 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { hashPassword, verifyPassword } from "../../src/admin/auth/passwords.ts";
+import { hashPassword, verifyPassword } from "@dune/core/auth/passwords";
 import { createSessionManager } from "../../src/admin/auth/sessions.ts";
 import { createUserManager } from "../../src/admin/auth/users.ts";
 import { createAuthMiddleware } from "../../src/admin/auth/middleware.ts";
@@ -272,36 +272,13 @@ Deno.test("UserManager: delete removes user", async () => {
   assertEquals(await mgr.getById(user.id), null);
 });
 
-Deno.test("UserManager: ensureDefaultAdmin creates admin on first run", async () => {
+Deno.test("UserManager: has no default-admin bootstrap (no admin is created implicitly)", async () => {
   const storage = createMemoryStorage();
   const mgr = createUserManager({ storage, usersDir: ".users" });
 
-  const result = await mgr.ensureDefaultAdmin();
-  assertEquals(result.created, true);
-  // ensureDefaultAdmin now returns a passwordFile path (not the raw password)
-  assertEquals(typeof result.passwordFile, "string");
-
-  // Admin user should exist
-  const admin = await mgr.getByUsername("admin");
-  assertEquals(admin !== null, true);
-  assertEquals(admin!.roles, ["admin"]);
-});
-
-Deno.test("UserManager: ensureDefaultAdmin skips if admin exists", async () => {
-  const storage = createMemoryStorage();
-  const mgr = createUserManager({ storage, usersDir: ".users" });
-
-  await mgr.create({
-    username: "boss",
-    email: "",
-    password: "pass",
-    role: "admin",
-    name: "Boss",
-  });
-
-  const result = await mgr.ensureDefaultAdmin();
-  assertEquals(result.created, false);
-  assertEquals(result.passwordFile, undefined);
+  assertEquals("ensureDefaultAdmin" in mgr, false);
+  assertEquals(await mgr.list(), []);
+  assertEquals(await storage.exists(".users/../initial-password.txt"), false);
 });
 
 // === Auth middleware ===

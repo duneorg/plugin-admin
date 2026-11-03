@@ -197,7 +197,7 @@ export function createAdminPlugin(
             logger.warn("admin.users.legacy-location", {
               legacyDir: legacyUsersDir,
               newDir: `${dataDir}/users`,
-              message: "Move user files or a new default admin will be created",
+              message: "Move the user files to the new directory, or those accounts will not be found",
             });
           }
         } catch { /* ignore */ }
@@ -382,16 +382,22 @@ export function createAdminPlugin(
       // AdminContext type — plugin-admin owns the actual shape.
       bootstrap.adminContext = adminContext as unknown as Record<string, unknown>;
 
-      // Ensure a default admin user exists on first run.
-      const result = await users.ensureDefaultAdmin();
-      if (result.created) {
-        console.log(`\n  🔑 Default admin created — username: admin`);
-        console.log(`     Password written to: ${result.passwordFile}`);
-        console.log(`     Read it, then delete the file and change your password.\n`);
+      // No default admin is ever created. The first admin is an explicit act:
+      // `dune users:create <email> --role admin --password-prompt`, or
+      // DUNE_ADMIN_EMAIL / DUNE_ADMIN_PASSWORD at boot (handled by core before
+      // this runs). Say so when there is none, instead of leaving a login page
+      // nobody can pass.
+      const existingUsers = await users.list();
+      if (!existingUsers.some((u) => u.enabled !== false && u.roles.includes("admin"))) {
+        console.warn(
+          `\n  ⚠️  No admin account yet — the admin panel has nobody who can sign in.\n` +
+            `     Create one: dune users:create <email> --role admin --password-prompt\n` +
+            `     (or set DUNE_ADMIN_EMAIL and DUNE_ADMIN_PASSWORD for the first boot)\n`,
+        );
       }
 
       // ── authz tuple bootstrap ─────────────────────────────────────────────────
-      // Runs after ensureDefaultAdmin() so a freshly-created default admin's
+      // Runs after core's env bootstrap so a freshly-created first admin's
       // tuple gets registered too, instead of being locked out on first run.
       if (bootstrap.authz && bootstrap.authzAdapter) {
         try {

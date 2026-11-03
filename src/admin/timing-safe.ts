@@ -1,7 +1,7 @@
 /**
  * Constant-time byte-array comparison.
  *
- * Single implementation shared by password verification (auth/passwords.ts),
+ * Single implementation shared by password verification (@dune/core/auth/passwords),
  * CSRF token matching (auth/csrf.ts), and incoming-webhook token checks
  * (public-api.ts) — three copies of security-critical code were a drift risk
  * (Q-2, Aug 2026 quality audit).
