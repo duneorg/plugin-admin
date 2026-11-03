@@ -20,6 +20,9 @@ follows [Semantic Versioning](https://semver.org).
 - **Incoming-webhook actions are still audited.** Core fires `onSystemAction`
   and this plugin writes the `system.rebuild` / `system.cache_purge` audit
   entries from it.
+- **`mountDuneAdmin()` still gives a headless app the public form routes**,
+  by calling core's `registerFormRoutes()` (a no-op when `createDuneApp()` has
+  registered them).
 - **The data directory follows `system.data_dir`**, falling back to the
   deprecated `admin.dataDir`, the same as core.
 

@@ -37,6 +37,7 @@
 import type { App, FreshContext, Middleware } from "fresh";
 import type { BootstrapResult } from "@dune/core/bootstrap";
 import { registerPluginPublicRoutes } from "@dune/core/fresh-app";
+import { registerFormRoutes } from "@dune/core/forms";
 import { checkPermission } from "./routes/api/_utils.ts";
 import type { AdminState } from "./types.ts";
 import {
@@ -235,6 +236,12 @@ export async function mountDuneAdmin(
   // re-implementing the validation/shadowing logic here) keeps exactly one
   // place that decides what a plugin route is allowed to do.
   registerPluginPublicRoutes(app, ctx, { adminPrefix });
+
+  // ── Public form / webhook API ───────────────────────────────────────────────
+  // Served by core, with or without the admin panel. createDuneApp() already
+  // registers them, so this only matters for the headless path above, and it
+  // is a no-op when they are already there.
+  registerFormRoutes(app, ctx);
 }
 
 /**
