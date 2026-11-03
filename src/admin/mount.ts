@@ -3,8 +3,7 @@
  * their own routes and want Dune only for content management.
  *
  * Instead of calling `createDuneApp()` (which owns all routes including `/*`),
- * headless developers use `mountDuneAdmin()` to bolt on Dune's admin panel and
- * public API, then wire their own `routes/` directory via `app.fsRoutes()`.
+ * headless developers use `mountDuneAdmin()` to bolt on Dune's admin panel, then wire their own `routes/` directory via `app.fsRoutes()`.
  *
  * @example
  * ```ts
@@ -38,6 +37,7 @@
 import type { App, FreshContext, Middleware } from "fresh";
 import type { BootstrapResult } from "@dune/core/bootstrap";
 import { registerPluginPublicRoutes } from "@dune/core/fresh-app";
+import { registerFormRoutes } from "@dune/core/forms";
 import { checkPermission } from "./routes/api/_utils.ts";
 import type { AdminState } from "./types.ts";
 import {
@@ -46,12 +46,6 @@ import {
   adminMiddleware,
   adminRoutes,
 } from "./manifest.gen.ts";
-import {
-  handleContactSubmission,
-  handleFormSchema,
-  handleFormSubmission,
-  handleIncomingWebhook,
-} from "./public-api.ts";
 
 /**
  * `ctx` objects (`BootstrapResult`) for which the `ctx.state.adminContext`
@@ -244,24 +238,10 @@ export async function mountDuneAdmin(
   registerPluginPublicRoutes(app, ctx, { adminPrefix });
 
   // ── Public form / webhook API ───────────────────────────────────────────────
-  // Bind handlers to the per-site adminContext via closure so multisite
-  // deployments can't leak across tenants via a process-wide singleton.
-  if (adminContext) {
-    const adminCtx = adminContext;
-    app.post("/api/contact", (fc) => handleContactSubmission(adminCtx, fc.req));
-    app.get(
-      "/api/forms/:name",
-      (fc) => handleFormSchema(adminCtx, fc.params.name),
-    );
-    app.post(
-      "/api/forms/:name",
-      (fc) => handleFormSubmission(adminCtx, fc.req, fc.params.name),
-    );
-    app.post(
-      "/api/webhook/incoming",
-      (fc) => handleIncomingWebhook(adminCtx, fc.req),
-    );
-  }
+  // Served by core, with or without the admin panel. createDuneApp() already
+  // registers them, so this only matters for the headless path above, and it
+  // is a no-op when they are already there.
+  registerFormRoutes(app, ctx);
 }
 
 /**

@@ -298,6 +298,8 @@ Deno.test("dev/apply: config op rejects security-sensitive keys (system.debug)",
       { op: "config", key: "system.debug", value: true },
       { op: "config", key: "system.trusted_proxies", value: true },
       { op: "config", key: "admin.incoming_webhooks.token", value: "$SECRET" },
+      { op: "config", key: "system.webhooks.incoming", value: [] },
+      { op: "config", key: "system.webhooks", value: {} },
     ],
   });
   const results = res.results as { key?: string; status: string; errors: string[] }[];
