@@ -5,6 +5,8 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [3.3.0] — 2026-11-03
+
 ### Changed
 
 - **BREAKING: no default admin is created any more.** `ensureDefaultAdmin()`
