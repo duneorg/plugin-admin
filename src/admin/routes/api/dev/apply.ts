@@ -134,12 +134,15 @@ const BLOCKED_CONFIG_KEYS: readonly string[] = [
   "system.debug",
   "system.trusted_proxies",
   "admin.incoming_webhooks",
+  // Where incoming-webhook tokens live now (and where core reads them from).
+  "system.webhooks",
 ];
 
 function isBlockedConfigKey(key: string): boolean {
   const lower = key.toLowerCase();
   return BLOCKED_CONFIG_KEYS.some((blocked) => lower === blocked) ||
-    lower.startsWith("admin.incoming_webhooks.");
+    lower.startsWith("admin.incoming_webhooks.") ||
+    lower.startsWith("system.webhooks.");
 }
 
 /**

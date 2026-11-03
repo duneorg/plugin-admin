@@ -30,7 +30,7 @@ import { createWorkflowEngine } from "@dune/core/workflow";
 import { createScheduler } from "@dune/core/workflow";
 import type { ScheduledAction } from "@dune/core/workflow";
 import { applyWorkflowTransition, SCHEDULED_ACTION_STATUS } from "./src/admin/workflow-actions.ts";
-import { createSubmissionManager } from "./src/admin/submissions.ts";
+import { resolveFormsConfig } from "@dune/core/forms";
 import { createStagingEngine } from "@dune/core/staging";
 import { createCommentManager } from "./src/admin/comments.ts";
 import { createCollabManager } from "./src/collab/mod.ts";
@@ -177,7 +177,9 @@ export function createAdminPlugin(
         enabled: true,
       };
       const runtimeDir = adminCfg.runtimeDir ?? ".dune/admin";
-      const dataDir = adminCfg.dataDir ?? "data";
+      // `system.data_dir`, falling back to the deprecated `admin.dataDir` —
+      // the same resolution core uses for the submissions it stores.
+      const dataDir = resolveFormsConfig(config).dataDir;
 
       // ── Admin services ────────────────────────────────────────────────────────
 
@@ -293,9 +295,29 @@ export function createAdminPlugin(
         contentDir: config.system.content.dir,
       });
 
-      const submissionManager = createSubmissionManager({
-        storage,
-        submissionsDir: `${dataDir}/submissions`,
+      // Core accepts and stores public form submissions; the admin only
+      // manages them. An older core has no store to read.
+      const submissionManager = bootstrap.submissions;
+      if (!submissionManager) {
+        throw new Error(
+          "@dune/plugin-admin 3.2+ needs a @dune/core that stores form submissions itself " +
+            "(BootstrapResult.submissions). Upgrade @dune/core, or stay on @dune/plugin-admin 3.1.",
+        );
+      }
+
+      // The incoming webhook runs in core; keep the admin's audit trail.
+      bootstrap.hooks.on<
+        { action: "rebuild" | "purge-cache"; ip: string | null; userAgent: string | null }
+      >("onSystemAction", ({ data }) => {
+        void setupState?.auditLogger?.log({
+          event: data.action === "rebuild" ? "system.rebuild" : "system.cache_purge",
+          actor: null,
+          ip: data.ip,
+          userAgent: data.userAgent,
+          target: { type: "system" },
+          detail: {},
+          outcome: "success",
+        }).catch(() => {});
       });
 
       // ── Default content editor ────────────────────────────────────────────────

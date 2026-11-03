@@ -3,6 +3,32 @@
 All notable changes to @dune/plugin-admin are documented here. This project
 follows [Semantic Versioning](https://semver.org).
 
+## [Unreleased]
+
+### Changed
+
+- **Public forms and the incoming webhook moved to `@dune/core` (duneorg/dune#78).**
+  `POST /api/forms/:name`, `GET /api/forms/:name`, `POST /api/contact` and
+  `POST /api/webhook/incoming` are now served by core, so they work with this
+  plugin off. This plugin no longer registers them and no longer sends the
+  submission email or webhook (`public-api.ts`, `email.ts` and `webhook.ts` are
+  removed). The submissions UI is unchanged; it reads the same files through
+  `BootstrapResult.submissions`, and `createSubmissionManager` and the
+  submission types are re-exported from `@dune/core/forms`. **Requires a
+  `@dune/core` that provides `BootstrapResult.submissions`**; with an older
+  core the plugin stops at startup with a message saying so.
+- **Incoming-webhook actions are still audited.** Core fires `onSystemAction`
+  and this plugin writes the `system.rebuild` / `system.cache_purge` audit
+  entries from it.
+- **The data directory follows `system.data_dir`**, falling back to the
+  deprecated `admin.dataDir`, the same as core.
+
+### Security
+
+- **`dev/apply` refuses to set `system.webhooks`.** Incoming-webhook tokens
+  moved there from `admin.incoming_webhooks`, which the endpoint already
+  blocked; the new location is blocked too.
+
 ---
 
 ## [3.1.3] — 2026-10-27
