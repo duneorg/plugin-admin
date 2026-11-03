@@ -17,8 +17,9 @@ follows [Semantic Versioning](https://semver.org).
 - **Password hashing comes from `@dune/core/auth/passwords`.** The plugin's own
   copy (`src/admin/auth/passwords.ts`) is removed; `hashPassword`,
   `verifyPassword` and `DUMMY_HASH` are still re-exported from the admin entry
-  point. The hash format is unchanged. **Requires a `@dune/core` that includes
-  `@dune/core/auth/passwords` and the env bootstrap (duneorg/dune#84, #86).**
+  point. The hash format is unchanged. **Requires `@dune/core` 0.35.3 or newer**
+  (it adds `@dune/core/auth/passwords` and the env bootstrap, duneorg/dune#84
+  and #86).
 
 ## [3.2.0] — 2026-11-03
 
