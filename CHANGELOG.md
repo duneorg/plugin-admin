@@ -5,6 +5,8 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [3.2.0] — 2026-11-03
+
 ### Changed
 
 - **Public forms and the incoming webhook moved to `@dune/core` (duneorg/dune#78).**
