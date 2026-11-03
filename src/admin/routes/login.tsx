@@ -7,7 +7,7 @@
 
 import type { FreshContext } from "fresh";
 import type { AdminState } from "../types.ts";
-import { verifyPassword, DUMMY_HASH, needsRehash } from "../auth/passwords.ts";
+import { verifyPassword, DUMMY_HASH, needsRehash } from "@dune/core/auth/passwords";
 import { findOrProvisionUser } from "../auth/provisioner.ts";
 import { RateLimiter, clientIp } from "@dune/core/security";
 import { actorFromAuth, csrfCheck } from "./api/_utils.ts";

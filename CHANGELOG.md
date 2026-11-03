@@ -5,6 +5,22 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING: no default admin is created any more.** `ensureDefaultAdmin()`
+  and the plaintext `initial-password.txt` are gone (that file was committed to a
+  repo once). The first admin is an explicit act: `dune users:create <email>
+  --role admin --password-prompt`, or `DUNE_ADMIN_EMAIL` + `DUNE_ADMIN_PASSWORD`
+  at boot (handled by `@dune/core`). A site with no enabled admin logs a warning
+  saying how to create one. Existing sites that already have an admin are
+  unaffected. `UserManager.ensureDefaultAdmin` and `generatePassword` are removed.
+- **Password hashing comes from `@dune/core/auth/passwords`.** The plugin's own
+  copy (`src/admin/auth/passwords.ts`) is removed; `hashPassword`,
+  `verifyPassword` and `DUMMY_HASH` are still re-exported from the admin entry
+  point. The hash format is unchanged. **Requires `@dune/core` 0.35.3 or newer**
+  (it adds `@dune/core/auth/passwords` and the env bootstrap, duneorg/dune#84
+  and #86).
+
 ## [3.2.0] — 2026-11-03
 
 ### Changed

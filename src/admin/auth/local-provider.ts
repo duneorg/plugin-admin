@@ -7,7 +7,7 @@
 
 import type { AuthProvider, AuthCredentials, AuthProviderUser } from "./provider.ts";
 import type { UserManager } from "./users.ts";
-import { verifyPassword, DUMMY_HASH } from "./passwords.ts";
+import { verifyPassword, DUMMY_HASH } from "@dune/core/auth/passwords";
 
 export class LocalAuthProvider implements AuthProvider {
   readonly type = "local" as const;
