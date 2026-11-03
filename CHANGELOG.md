@@ -23,6 +23,8 @@ follows [Semantic Versioning](https://semver.org).
 - **`mountDuneAdmin()` still gives a headless app the public form routes**,
   by calling core's `registerFormRoutes()` (a no-op when `createDuneApp()` has
   registered them).
+- **Requires `@dune/core` 0.35.2 or newer.** The `@dune/core` range moves from
+  `0.35` to `^0.35.2`, the first core that serves the public form routes.
 - **The data directory follows `system.data_dir`**, falling back to the
   deprecated `admin.dataDir`, the same as core.
 

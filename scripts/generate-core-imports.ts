@@ -43,16 +43,18 @@
  * auto-tracks patch releases within that minor — confirmed via `deno cache`:
  * "0.28" resolved to the latest 0.28.x, not just 0.28.0.
  *
- * Bare minor again as of core 0.35: everything this package imports from core
- * (`DunePlugin.mountEarly()` from 0.34.4, `./auth/authz-schema` from 0.34.2)
- * exists from 0.35.0 on. If the package ever starts depending on something added
- * at a *later* patch within a minor, re-floor to that patch (`^0.35.N`) — a bare
- * "0.35" floors JSR's publish-time check at 0.35.0 (reproduced 2026-08-31 with
- * "0.34": "invalid 'jsr:' dependency subpath: '@dune/core@0.34/auth/authz-schema',
- * resolved to 0.34.0, has no export"). This constant and deno.json are only kept
- * in step by `check:core-imports`, so run it before merging any pin change.
+ * Floored at 0.35.2: the public form routes and the submission store moved into
+ * core there (`BootstrapResult.submissions`, `registerFormRoutes()` and the
+ * `onSystemAction` hook from `@dune/core/forms`), and this package no longer
+ * registers them itself. A bare "0.35" would floor JSR's publish-time check at
+ * 0.35.0 (reproduced 2026-08-31 with "0.34":
+ * "invalid 'jsr:' dependency subpath: '@dune/core@0.34/auth/authz-schema',
+ * resolved to 0.34.0, has no export") and let a site pair this package with a
+ * core that cannot serve those routes. Back to a bare minor at the next core
+ * minor. This constant and deno.json are only kept in step by
+ * `check:core-imports`, so run it before merging any pin change.
  */
-const CORE_RANGE = "0.35";
+const CORE_RANGE = "^0.35.2";
 
 const DENO_JSON = "deno.json";
 const SCAN_ROOTS = ["mod.ts", "src", "tests"];
