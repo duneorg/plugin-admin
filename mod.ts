@@ -24,18 +24,13 @@ import { createSessionManager } from "./src/admin/auth/sessions.ts";
 import { createAuthMiddleware } from "./src/admin/auth/middleware.ts";
 import { LocalAuthProvider } from "./src/admin/auth/local-provider.ts";
 import type { AuthProvider } from "./src/admin/auth/provider.ts";
-import { createWorkflowEngine } from "@dune/core/workflow";
-import { createScheduler } from "@dune/core/workflow";
 import type { ScheduledAction } from "@dune/core/workflow";
 import { applyWorkflowTransition, SCHEDULED_ACTION_STATUS } from "./src/admin/workflow-actions.ts";
 import { resolveDataDir } from "@dune/core/forms";
-import { createStagingEngine } from "@dune/core/staging";
 import { createCommentManager } from "./src/admin/comments.ts";
 import { createCollabManager } from "./src/collab/mod.ts";
-import { createMachineTranslator } from "@dune/core/mt";
 import type { MachineTranslator } from "@dune/core/mt";
-import { AuditLogger } from "@dune/core/audit";
-import { bootstrapAdminTuples } from "@dune/core/auth/authz";
+import type { AuditLogger } from "@dune/core/audit";
 import type { DuneAuthSystem } from "@dune/core/auth/authz";
 import type { AuthzLocalAdapter } from "@dune/core/auth/authz-adapter-local";
 import type { AuthzDbAdapter } from "@dune/core/auth/authz-adapter-db";
@@ -120,7 +115,7 @@ export function createAdminPlugin(
       mountDuneAdminEarly(app as any, bootstrap, () => liveAdminContext);
     },
 
-    async setup(_api) {
+    async setup(api) {
       const adminCfg = config.admin ?? {
         path: "/admin",
         session_lifetime: 86400,
@@ -132,31 +127,8 @@ export function createAdminPlugin(
         return;
       }
 
-      // Audit logger — created in setup() so it can init() its file handle early.
-      let auditLogger: AuditLogger | null = null;
-      if (adminCfg.audit?.enabled !== false) {
-        const configuredPath = adminCfg.audit?.log_file;
-        const runtimeDir = adminCfg.runtime_dir ?? ".dune/admin";
-        const auditLogFile = configuredPath
-          ? join(opts.root, configuredPath)
-          : join(opts.root, runtimeDir, "audit.log");
-        const containmentRoot = opts.root.endsWith("/") || opts.root.endsWith("\\")
-          ? opts.root
-          : opts.root + "/";
-        if (!auditLogFile.startsWith(containmentRoot)) {
-          throw new Error(
-            `[dune] admin.audit.log_file must resolve under the site root. ` +
-              `Got: ${configuredPath} -> ${auditLogFile}`,
-          );
-        }
-        auditLogger = new AuditLogger({ logFile: auditLogFile });
-        await auditLogger.init();
-      }
-
-      // Machine translation provider.
-      const mt: MachineTranslator | null = config.site.machine_translation
-        ? createMachineTranslator(config.site.machine_translation)
-        : null;
+      // Audit trail and machine translator are built by core.
+      const { audit: auditLogger, mt } = api.services.engines;
 
       setupState = { config, storage, opts, auditLogger, mt };
     },
@@ -236,12 +208,7 @@ export function createAdminPlugin(
         security: services.security,
       });
 
-      const workflow = createWorkflowEngine(
-        { storage, dataDir: runtimeDir },
-        config.site.workflow ?? undefined,
-      );
-
-      const scheduler = createScheduler({ storage, dataDir: runtimeDir });
+      const { workflow, scheduler, staging: stagingEngine } = services.engines;
 
       // scheduler on its own only supports CRUD (schedule/cancel/list) — it
       // never executes anything by itself. Whichever long-running process
@@ -268,8 +235,6 @@ export function createAdminPlugin(
           });
         }
       };
-
-      const stagingEngine = createStagingEngine({ storage, runtimeDir });
 
       const commentManager = createCommentManager({ dataDir, runtimeDir });
 
@@ -397,7 +362,7 @@ export function createAdminPlugin(
             .filter((u) => u.enabled !== false)
             .map((u) => ({ id: u.id, role: highestValidRole(u.roles) }))
             .filter((u) => u.role !== undefined) as { id: string; role: string }[];
-          await bootstrapAdminTuples(bootstrap.authz, bootstrap.authzAdapter, enabledAdminUsers);
+          await services.authz.seedAdminTuples(enabledAdminUsers);
         } catch (err) {
           console.warn(
             "[dune/authz] Admin tuple bootstrap failed — authz is up but tuples were not seeded; admin access will deny (403) until bootstrap succeeds:",
