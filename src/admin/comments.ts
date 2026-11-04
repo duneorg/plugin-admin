@@ -5,11 +5,11 @@
  * notifications, and a resolve/unresolve workflow suitable for editorial
  * sign-off processes.
  *
- * Storage layout (inside admin.dataDir — git-tracked):
+ * Storage layout (inside admin.data_dir — git-tracked):
  *   data/comments/{encodedPath}.json   → { comments: PageComment[] }
  *   encodedPath: sourcePath with "/" → "__" and "." → "-dot-"
  *
- * Mention read-state (inside admin.runtimeDir — gitignored, machine-local):
+ * Mention read-state (inside admin.runtime_dir — gitignored, machine-local):
  *   .dune/admin/mention-reads/{username}.json → { readIds: string[] }
  *
  * All public methods are async to allow future storage adapter swapping.
@@ -63,9 +63,9 @@ interface MentionReadState {
 
 /** Options for createCommentManager */
 export interface CommentManagerOptions {
-  /** admin.dataDir — git-tracked persistent storage */
+  /** admin.data_dir — git-tracked persistent storage */
   dataDir: string;
-  /** admin.runtimeDir — ephemeral machine-local storage */
+  /** admin.runtime_dir — ephemeral machine-local storage */
   runtimeDir: string;
 }
 

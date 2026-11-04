@@ -15,15 +15,15 @@
  * // Build SP + IdP instances (ideally cached at construction time)
  * private buildSp() {
  *   return saml.ServiceProvider({
- *     entityID: this.config.entityId,
+ *     entityID: this.config.entity_id,
  *     assertionConsumerService: [
- *       { Binding: saml.Constants.namespace.binding.post, Location: this.config.acsUrl },
+ *       { Binding: saml.Constants.namespace.binding.post, Location: this.config.acs_url },
  *     ],
  *   });
  * }
  *
  * private buildIdp() {
- *   return saml.IdentityProvider({ metadata: this.config.idpMetadata });
+ *   return saml.IdentityProvider({ metadata: this.config.idp_metadata });
  * }
  *
  * async initiateLogin(_req: Request): Promise<string | null> {
@@ -53,12 +53,12 @@
  *
  *     const nameId: string = extract.nameID;
  *     const attrs = extract.attributes ?? {};
- *     const usernameAttr = this.config.usernameAttr ?? "NameID";
- *     const emailAttr = this.config.emailAttr ?? "email";
- *     const nameAttr = this.config.nameAttr ?? "displayName";
- *     const roleAttr = this.config.roleAttr ?? "role";
- *     const role = mapRole(attrs[roleAttr], this.config.roleMap)
- *       ?? this.config.defaultRole
+ *     const usernameAttr = this.config.username_attr ?? "NameID";
+ *     const emailAttr = this.config.email_attr ?? "email";
+ *     const nameAttr = this.config.name_attr ?? "displayName";
+ *     const roleAttr = this.config.role_attr ?? "role";
+ *     const role = mapRole(attrs[roleAttr], this.config.role_map)
+ *       ?? this.config.default_role
  *       ?? "author";
  *     return {
  *       externalId: nameId,

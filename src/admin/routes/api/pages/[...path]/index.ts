@@ -134,7 +134,7 @@ export const handler = {
       await maybeGitCommit(filePath, pagePath, undefined, config);
 
       const webhookEndpoints = config.admin?.webhooks ?? [];
-      const runtimeDir = config.admin?.runtimeDir ?? ".dune/admin";
+      const runtimeDir = config.admin?.runtime_dir ?? ".dune/admin";
       if (hooks) hooks.fire("onPageUpdate", { sourcePath: page.sourcePath }).catch(() => {});
       fireContentWebhooks(webhookEndpoints, "onPageUpdate", { sourcePath: page.sourcePath }, runtimeDir);
 
@@ -176,7 +176,7 @@ export const handler = {
       await engine.rebuild();
 
       const webhookEndpoints = config.admin?.webhooks ?? [];
-      const runtimeDir = config.admin?.runtimeDir ?? ".dune/admin";
+      const runtimeDir = config.admin?.runtime_dir ?? ".dune/admin";
       if (hooks) hooks.fire("onPageDelete", { sourcePath: page.sourcePath }).catch(() => {});
       fireContentWebhooks(webhookEndpoints, "onPageDelete", { sourcePath: page.sourcePath }, runtimeDir);
 

@@ -43,7 +43,7 @@ export function resolveCsrfSecret(state: AdminState | undefined): string | null 
   const injected = state.adminContext.csrfSecret;
   if (typeof injected === "string" && injected.length > 0) return injected;
 
-  const runtimeDir = state.adminContext.config?.admin?.runtimeDir;
+  const runtimeDir = state.adminContext.config?.admin?.runtime_dir;
   if (typeof runtimeDir !== "string" || runtimeDir.length === 0) return null;
   return loadOrCreateCsrfSecret(runtimeDir);
 }

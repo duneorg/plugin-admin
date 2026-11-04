@@ -13,7 +13,7 @@ function ctx(roles: string[], allowTsxFormat?: string[]): any {
       adminContext: {
         config: {
           system: {
-            content: allowTsxFormat ? { allowTsxFormat } : {},
+            content: allowTsxFormat ? { allow_tsx_format: allowTsxFormat } : {},
           },
         },
       },

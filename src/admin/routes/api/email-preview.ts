@@ -14,7 +14,7 @@ export const handler = {
       return json({ error: "Email preview is only available in development mode" }, 404);
     }
 
-    const runtimeDir = ctx.state.adminContext.config.admin?.runtimeDir ?? ".dune/admin";
+    const runtimeDir = ctx.state.adminContext.config.admin?.runtime_dir ?? ".dune/admin";
     const devEmailDir = join(runtimeDir, "dev-email");
 
     const entries: Record<string, unknown>[] = [];

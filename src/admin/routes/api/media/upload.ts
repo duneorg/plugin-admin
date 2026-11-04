@@ -17,7 +17,7 @@ export const handler = {
 
     const { storage, config, auditLogger } = ctx.state.adminContext;
     const MAX_FILE_SIZE = 50 * 1024 * 1024;
-    const maxBodyBytes = (config.admin?.maxUploadMb ?? 100) * 1024 * 1024;
+    const maxBodyBytes = (config.admin?.max_upload_mb ?? 100) * 1024 * 1024;
 
     try {
       const tooLarge = checkBodySize(ctx.req, maxBodyBytes);

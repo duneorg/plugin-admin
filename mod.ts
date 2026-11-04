@@ -30,7 +30,7 @@ import { createWorkflowEngine } from "@dune/core/workflow";
 import { createScheduler } from "@dune/core/workflow";
 import type { ScheduledAction } from "@dune/core/workflow";
 import { applyWorkflowTransition, SCHEDULED_ACTION_STATUS } from "./src/admin/workflow-actions.ts";
-import { resolveFormsConfig } from "@dune/core/forms";
+import { resolveDataDir } from "@dune/core/forms";
 import { createStagingEngine } from "@dune/core/staging";
 import { createCommentManager } from "./src/admin/comments.ts";
 import { createCollabManager } from "./src/collab/mod.ts";
@@ -126,9 +126,8 @@ export function createAdminPlugin(
     async setup(_api) {
       const adminCfg = config.admin ?? {
         path: "/admin",
-        sessionLifetime: 86400,
-        dataDir: "data",
-        runtimeDir: ".dune/admin",
+        session_lifetime: 86400,
+        runtime_dir: ".dune/admin",
         enabled: true,
       };
       if (adminCfg.enabled === false) {
@@ -139,8 +138,8 @@ export function createAdminPlugin(
       // Audit logger — created in setup() so it can init() its file handle early.
       let auditLogger: AuditLogger | null = null;
       if (adminCfg.audit?.enabled !== false) {
-        const configuredPath = adminCfg.audit?.logFile;
-        const runtimeDir = adminCfg.runtimeDir ?? ".dune/admin";
+        const configuredPath = adminCfg.audit?.log_file;
+        const runtimeDir = adminCfg.runtime_dir ?? ".dune/admin";
         const auditLogFile = configuredPath
           ? join(opts.root, configuredPath)
           : join(opts.root, runtimeDir, "audit.log");
@@ -149,7 +148,7 @@ export function createAdminPlugin(
           : opts.root + "/";
         if (!auditLogFile.startsWith(containmentRoot)) {
           throw new Error(
-            `[dune] admin.audit.logFile must resolve under the site root. ` +
+            `[dune] admin.audit.log_file must resolve under the site root. ` +
               `Got: ${configuredPath} -> ${auditLogFile}`,
           );
         }
@@ -171,15 +170,13 @@ export function createAdminPlugin(
       const { opts: o } = setupState;
       const adminCfg = config.admin ?? {
         path: "/admin",
-        sessionLifetime: 86400,
-        dataDir: "data",
-        runtimeDir: ".dune/admin",
+        session_lifetime: 86400,
+        runtime_dir: ".dune/admin",
         enabled: true,
       };
-      const runtimeDir = adminCfg.runtimeDir ?? ".dune/admin";
-      // `system.data_dir`, falling back to the deprecated `admin.dataDir` —
-      // the same resolution core uses for the submissions it stores.
-      const dataDir = resolveFormsConfig(config).dataDir;
+      const runtimeDir = adminCfg.runtime_dir ?? ".dune/admin";
+      // `system.data_dir` — the same resolution core uses for the submissions it stores.
+      const dataDir = resolveDataDir(config);
 
       // ── Admin services ────────────────────────────────────────────────────────
 
@@ -213,12 +210,12 @@ export function createAdminPlugin(
           : undefined,
         storage,
         sessionsDir: `${runtimeDir}/sessions`,
-        lifetimeMs: adminCfg.sessionLifetime * 1000,
+        lifetimeMs: adminCfg.session_lifetime * 1000,
       });
 
       const sessions = createSessionManager({
         store: resolvedSessionStore,
-        lifetime: adminCfg.sessionLifetime,
+        lifetime: adminCfg.session_lifetime,
       });
 
       const rateLimitStore = new LocalRateLimitStore();

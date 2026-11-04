@@ -13,16 +13,16 @@
  * import { Client } from "npm:ldapts";
  *
  * async authenticate(creds: AuthCredentials): Promise<AuthProviderUser | null> {
- *   const usernameAttr = this.config.usernameAttr ?? "uid";
- *   const emailAttr = this.config.emailAttr ?? "mail";
- *   const nameAttr = this.config.nameAttr ?? "cn";
+ *   const usernameAttr = this.config.username_attr ?? "uid";
+ *   const emailAttr = this.config.email_attr ?? "mail";
+ *   const nameAttr = this.config.name_attr ?? "cn";
  *   const client = new Client({ url: this.config.url });
  *   try {
- *     if (this.config.bindDn) {
+ *     if (this.config.bind_dn) {
  *       // Service account bind, then search for the user entry
- *       const bindPw = expandEnv(this.config.bindPassword ?? "");
- *       await client.bind(this.config.bindDn, bindPw);
- *       const { searchEntries } = await client.search(this.config.baseDn, {
+ *       const bindPw = expandEnv(this.config.bind_password ?? "");
+ *       await client.bind(this.config.bind_dn, bindPw);
+ *       const { searchEntries } = await client.search(this.config.base_dn, {
  *         // IMPORTANT: escape username to prevent LDAP injection (CWE-90)
  *         // import { escape as ldapEscape } from "npm:ldapts";
  *         filter: `(${usernameAttr}=${ldapEscape(creds.username)})`,
@@ -32,8 +32,8 @@
  *       const entry = searchEntries[0];
  *       // Rebind as the located user to verify their password
  *       await client.bind(entry.dn as string, creds.password);
- *       const role = mapRole(entry["memberOf"] as string | string[] | undefined, this.config.roleMap)
- *         ?? this.config.defaultRole
+ *       const role = mapRole(entry["memberOf"] as string | string[] | undefined, this.config.role_map)
+ *         ?? this.config.default_role
  *         ?? "author";
  *       return {
  *         externalId: entry.dn as string,
@@ -44,12 +44,12 @@
  *       };
  *     } else {
  *       // Direct bind: construct user DN from template
- *       const userDn = `${usernameAttr}=${creds.username},${this.config.baseDn}`;
+ *       const userDn = `${usernameAttr}=${creds.username},${this.config.base_dn}`;
  *       await client.bind(userDn, creds.password);
  *       return {
  *         externalId: userDn,
  *         username: creds.username,
- *         roles: [this.config.defaultRole ?? "author"],
+ *         roles: [this.config.default_role ?? "author"],
  *       };
  *     }
  *   } catch {

@@ -12,7 +12,7 @@ export const handler = {
     if (denied) return denied;
     const { config } = ctx.state.adminContext;
     try {
-      const runtimeDir = config.admin?.runtimeDir ?? ".dune/admin";
+      const runtimeDir = config.admin?.runtime_dir ?? ".dune/admin";
       const analyticsPath = join(runtimeDir, "search-analytics.jsonl");
       const summary = await createSearchAnalytics(analyticsPath).summarize();
       return json(summary);

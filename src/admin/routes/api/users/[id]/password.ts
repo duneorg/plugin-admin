@@ -30,7 +30,7 @@ export const handler = {
         const session = await sessions.create(userId);
         res.headers.set(
           "Set-Cookie",
-          auth.createSessionCookie(session.id, config.admin?.sessionLifetime ?? 86400),
+          auth.createSessionCookie(session.id, config.admin?.session_lifetime ?? 86400),
         );
       }
 
