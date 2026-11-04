@@ -16,6 +16,9 @@ follows [Semantic Versioning](https://semver.org).
   Run `dune migrate:config` (core) to rewrite `config/system.yaml`. A config that
   still carries an old key is refused by core at load time, so this cannot be
   silently ignored. Requires `@dune/core` 0.36 or newer.
+- **The data directory is `system.data_dir` only.** `admin.data_dir` no longer
+  exists (core removed the deprecated form aliases); the plugin resolves the
+  directory with `resolveDataDir()` from `@dune/core/forms`.
 
 ## [3.3.0] — 2026-11-03
 

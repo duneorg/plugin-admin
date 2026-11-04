@@ -1,5 +1,6 @@
 /** GET + PUT /admin/api/config/theme-config */
 
+import { resolveDataDir } from "@dune/core/forms";
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
 import type { BlueprintField } from "@dune/core/blueprints";
@@ -58,7 +59,7 @@ export const handler = {
         }
       }
 
-      const dataDir = config.admin?.data_dir ?? "data";
+      const dataDir = resolveDataDir(config);
       const themeConfigPath = `${dataDir}/theme-config.json`;
       const themeName = engine.config.theme.name;
 

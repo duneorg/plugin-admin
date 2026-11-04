@@ -30,7 +30,7 @@ import { createWorkflowEngine } from "@dune/core/workflow";
 import { createScheduler } from "@dune/core/workflow";
 import type { ScheduledAction } from "@dune/core/workflow";
 import { applyWorkflowTransition, SCHEDULED_ACTION_STATUS } from "./src/admin/workflow-actions.ts";
-import { resolveFormsConfig } from "@dune/core/forms";
+import { resolveDataDir } from "@dune/core/forms";
 import { createStagingEngine } from "@dune/core/staging";
 import { createCommentManager } from "./src/admin/comments.ts";
 import { createCollabManager } from "./src/collab/mod.ts";
@@ -127,7 +127,6 @@ export function createAdminPlugin(
       const adminCfg = config.admin ?? {
         path: "/admin",
         session_lifetime: 86400,
-        data_dir: "data",
         runtime_dir: ".dune/admin",
         enabled: true,
       };
@@ -172,14 +171,12 @@ export function createAdminPlugin(
       const adminCfg = config.admin ?? {
         path: "/admin",
         session_lifetime: 86400,
-        data_dir: "data",
         runtime_dir: ".dune/admin",
         enabled: true,
       };
       const runtimeDir = adminCfg.runtime_dir ?? ".dune/admin";
-      // `system.data_dir`, falling back to the deprecated `admin.data_dir` —
-      // the same resolution core uses for the submissions it stores.
-      const dataDir = resolveFormsConfig(config).dataDir;
+      // `system.data_dir` — the same resolution core uses for the submissions it stores.
+      const dataDir = resolveDataDir(config);
 
       // ── Admin services ────────────────────────────────────────────────────────
 

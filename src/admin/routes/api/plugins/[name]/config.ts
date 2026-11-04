@@ -1,5 +1,6 @@
 /** PUT /admin/api/plugins/:name/config */
 
+import { resolveDataDir } from "@dune/core/forms";
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../../_utils.ts";
 import type { BlueprintField } from "@dune/core/blueprints";
@@ -74,7 +75,7 @@ export const handler = {
         if (errors.length > 0) return json({ error: `Missing required fields: ${errors.join(", ")}` }, 422);
       }
 
-      const dataDir = config.admin?.data_dir ?? "data";
+      const dataDir = resolveDataDir(config);
       const filePath = `${dataDir}/plugins/${pluginName}.json`;
       await storage.write(filePath, new TextEncoder().encode(JSON.stringify(body, null, 2)));
 
