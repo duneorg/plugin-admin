@@ -12,6 +12,7 @@
  *    leaving the old value in place.
  */
 
+import { makeServices } from "../helpers/services.ts";
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { handler } from "../../src/admin/routes/api/pages/[...path]/index.ts";
 
@@ -60,6 +61,7 @@ function makeCtx(opts: {
     state: {
       auth: { authenticated: true, user: { id: "1", username: "admin", roles: ["admin"] } },
       adminContext: {
+        services: makeServices(null),
         engine,
         storage: opts.storage,
         config: { system: { content: { dir: "content" } }, admin: {} },

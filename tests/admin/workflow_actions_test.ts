@@ -11,6 +11,7 @@
  * executeScheduledAction-shaped callback actually applies the transition.
  */
 
+import { makeServices } from "../helpers/services.ts";
 import { assertEquals, assertRejects } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import type { PageIndex } from "@dune/core/content/types";
 import type { DuneConfig } from "@dune/core/config";
@@ -79,7 +80,7 @@ Deno.test("applyWorkflowTransition: patches status and published, rebuilds the i
 
   const result = await applyWorkflowTransition(
     // deno-lint-ignore no-explicit-any
-    { engine: engine as any, storage, config: CONFIG, workflow },
+    { engine: engine as any, storage, config: CONFIG, workflow, services: makeServices(storage) },
     "01.blog/01.hello/default.md",
     "published",
   );
@@ -104,7 +105,7 @@ Deno.test("applyWorkflowTransition: throws for an unknown sourcePath", async () 
     () =>
       applyWorkflowTransition(
         // deno-lint-ignore no-explicit-any
-        { engine: engine as any, storage, config: CONFIG, workflow },
+        { engine: engine as any, storage, config: CONFIG, workflow, services: makeServices(storage) },
         "does/not/exist.md",
         "published",
       ),
@@ -124,7 +125,7 @@ Deno.test("applyWorkflowTransition: rejects a status value with invalid characte
     () =>
       applyWorkflowTransition(
         // deno-lint-ignore no-explicit-any
-        { engine: engine as any, storage, config: CONFIG, workflow },
+        { engine: engine as any, storage, config: CONFIG, workflow, services: makeServices(storage) },
         "01.blog/01.hello/default.md",
         "not\nvalid",
       ),
@@ -171,7 +172,7 @@ Deno.test("Scheduler + executeScheduledAction-shaped callback: a due action actu
     const newStatus = SCHEDULED_ACTION_STATUS[action.action];
     await applyWorkflowTransition(
       // deno-lint-ignore no-explicit-any
-      { engine: engine as any, storage, config: CONFIG, workflow },
+      { engine: engine as any, storage, config: CONFIG, workflow, services: makeServices(storage) },
       action.sourcePath,
       newStatus,
     );

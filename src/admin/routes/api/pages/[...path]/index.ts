@@ -12,7 +12,6 @@
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, requireTsxWrite, requirePageOwner, requireOwnedPage, pageOwnerId, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
-import { parseUserYaml as parseYaml } from "@dune/core/security";
 import { resolveBlueprint, validateFrontmatter } from "@dune/core/blueprints";
 import { fireContentWebhooks } from "../../../../../admin/webhooks.ts";
 import type { PageFrontmatter } from "@dune/core/content/types";
@@ -73,7 +72,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "pages.update");
     if (denied) return denied;
 
-    const { engine, storage, config, hooks, auditLogger } = ctx.state.adminContext;
+    const { engine, storage, config, hooks, auditLogger, services } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
     const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
@@ -93,7 +92,7 @@ export const handler = {
       let raw = new TextDecoder().decode(existing);
       const existingFmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
       const existingFm = existingFmMatch
-        ? (parseYaml(existingFmMatch[1]) as Record<string, unknown> ?? {})
+        ? (services.security.parseUserYaml(existingFmMatch[1]) as Record<string, unknown> ?? {})
         : {};
       const ownerDenied = requirePageOwner(ctx, pageOwnerId(existingFm));
       if (ownerDenied) return ownerDenied;
@@ -136,12 +135,12 @@ export const handler = {
       const webhookEndpoints = config.admin?.webhooks ?? [];
       const runtimeDir = config.admin?.runtime_dir ?? ".dune/admin";
       if (hooks) hooks.fire("onPageUpdate", { sourcePath: page.sourcePath }).catch(() => {});
-      fireContentWebhooks(webhookEndpoints, "onPageUpdate", { sourcePath: page.sourcePath }, runtimeDir);
+      fireContentWebhooks(webhookEndpoints, "onPageUpdate", { sourcePath: page.sourcePath }, runtimeDir, ctx.state.adminContext.services.security);
 
       void auditLogger?.log({
         event: "page.update",
         actor: actorFromAuth(authResult),
-        ip: getClientIp(ctx.req),
+        ip: getClientIp(ctx),
         userAgent: ctx.req.headers.get("user-agent") ?? null,
         target: { type: "page", id: pagePath },
         detail: {},
@@ -178,12 +177,12 @@ export const handler = {
       const webhookEndpoints = config.admin?.webhooks ?? [];
       const runtimeDir = config.admin?.runtime_dir ?? ".dune/admin";
       if (hooks) hooks.fire("onPageDelete", { sourcePath: page.sourcePath }).catch(() => {});
-      fireContentWebhooks(webhookEndpoints, "onPageDelete", { sourcePath: page.sourcePath }, runtimeDir);
+      fireContentWebhooks(webhookEndpoints, "onPageDelete", { sourcePath: page.sourcePath }, runtimeDir, ctx.state.adminContext.services.security);
 
       void auditLogger?.log({
         event: "page.delete",
         actor: actorFromAuth(authResult),
-        ip: getClientIp(ctx.req),
+        ip: getClientIp(ctx),
         userAgent: ctx.req.headers.get("user-agent") ?? null,
         target: { type: "page", id: pagePath },
         detail: {},

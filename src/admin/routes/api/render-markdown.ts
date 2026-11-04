@@ -25,7 +25,6 @@ import { requirePermission, serverError, csrfCheck } from "./_utils.ts";
 import type { FreshContext } from "fresh";
 import { parse as parseYaml } from "@std/yaml";
 import { Marked } from "marked";
-import { sanitizeHtml } from "@dune/core/security";
 
 /** Maximum content size: 500 KB */
 const MAX_BYTES = 500 * 1024;
@@ -101,7 +100,7 @@ export const handler = {
 
       // Sanitize unless trusted
       if (!trusted) {
-        html = sanitizeHtml(html);
+        html = ctx.state.adminContext.services.security.sanitizeHtml(html);
       }
 
       // Add lazy loading to images

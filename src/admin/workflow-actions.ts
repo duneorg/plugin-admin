@@ -12,6 +12,7 @@
  * @module
  */
 
+import type { PluginServices } from "@dune/core/plugin-api";
 import type { DuneEngine } from "@dune/core/engine";
 import type { StorageAdapter } from "@dune/core/storage";
 import type { DuneConfig } from "@dune/core/config";
@@ -25,6 +26,8 @@ export interface WorkflowActionContext {
   config: DuneConfig;
   hooks?: HookRegistry;
   workflow: WorkflowEngine;
+  /** Core's services (webhook delivery uses the SSRF-guarded fetch). */
+  services: PluginServices;
 }
 
 /**
@@ -37,7 +40,7 @@ export async function applyWorkflowTransition(
   sourcePath: string,
   newStatus: string,
 ): Promise<{ from: string; to: string }> {
-  const { workflow, engine, storage, config, hooks } = ctx;
+  const { workflow, engine, storage, config, hooks, services } = ctx;
 
   const pageIndex = engine.pages.find((p) => p.sourcePath === sourcePath);
   if (!pageIndex) throw new Error(`Page not found: ${sourcePath}`);
@@ -75,7 +78,7 @@ export async function applyWorkflowTransition(
   const webhookEndpoints = config.admin?.webhooks ?? [];
   const runtimeDir = config.admin?.runtime_dir ?? ".dune/admin";
   if (hooks) hooks.fire("onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }).catch(() => {});
-  fireContentWebhooks(webhookEndpoints, "onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }, runtimeDir);
+  fireContentWebhooks(webhookEndpoints, "onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }, runtimeDir, services.security);
 
   return { from: currentStatus, to: newStatus };
 }

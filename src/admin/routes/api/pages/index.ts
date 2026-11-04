@@ -70,12 +70,12 @@ export const handler = {
       const webhookEndpoints = config.admin?.webhooks ?? [];
       const runtimeDir = config.admin?.runtime_dir ?? ".dune/admin";
       if (hooks) hooks.fire("onPageCreate", { sourcePath: `${pagePath}/default${ext}`, title }).catch(() => {});
-      fireContentWebhooks(webhookEndpoints, "onPageCreate", { sourcePath: `${pagePath}/default${ext}`, title }, runtimeDir);
+      fireContentWebhooks(webhookEndpoints, "onPageCreate", { sourcePath: `${pagePath}/default${ext}`, title }, runtimeDir, ctx.state.adminContext.services.security);
 
       void auditLogger?.log({
         event: "page.create",
         actor: actorFromAuth(authResult),
-        ip: getClientIp(ctx.req),
+        ip: getClientIp(ctx),
         userAgent: ctx.req.headers.get("user-agent") ?? null,
         target: { type: "page", id: filePath },
         detail: {},

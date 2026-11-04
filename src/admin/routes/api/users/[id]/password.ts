@@ -2,7 +2,6 @@
 
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../../_utils.ts";
-import { checkPasswordStrength } from "@dune/core/security";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -12,13 +11,13 @@ export const handler = {
     const denied = await requirePermission(ctx, "users.update");
     if (denied) return denied;
 
-    const { users, sessions, auth, config, auditLogger } = ctx.state.adminContext;
+    const { users, sessions, auth, config, auditLogger, services } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
     const userId = ctx.params.id;
 
     try {
       const { password } = await ctx.req.json();
-      const strength = checkPasswordStrength(password);
+      const strength = services.security.checkPasswordStrength(password);
       if (!strength.ok) return json({ error: strength.reason }, 400);
 
       const changed = await users.changePassword(userId, password);
@@ -37,7 +36,7 @@ export const handler = {
       void auditLogger?.log({
         event: "user.password",
         actor: actorFromAuth(authResult),
-        ip: getClientIp(ctx.req),
+        ip: getClientIp(ctx),
         userAgent: ctx.req.headers.get("user-agent") ?? null,
         target: { type: "user", id: userId },
         detail: {},

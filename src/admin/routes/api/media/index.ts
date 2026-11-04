@@ -86,7 +86,7 @@ export const handler = {
       void auditLogger?.log({
         event: "media.delete",
         actor: actorFromAuth(ctx.state.auth),
-        ip: getClientIp(ctx.req),
+        ip: getClientIp(ctx),
         userAgent: ctx.req.headers.get("user-agent") ?? null,
         target: { type: "media", id: name },
         detail: {},

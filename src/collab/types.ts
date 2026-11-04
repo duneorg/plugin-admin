@@ -108,6 +108,8 @@ export interface CollabManagerOptions {
   history?: HistoryEngine;
   /** Value of config.system.content.dir — used to build storage paths. */
   contentDir: string;
+  /** Core's security service (safe YAML parsing of frontmatter). */
+  security: Pick<import("@dune/core/plugin-api").SecurityService, "parseUserYaml">;
 }
 
 /** The CollabManager public interface exposed to the admin server. */

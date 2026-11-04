@@ -35,7 +35,7 @@ export const handler = {
       }
 
       const result = await applyWorkflowTransition(
-        { engine, storage, config, hooks, workflow },
+        { engine, storage, config, hooks, workflow, services: ctx.state.adminContext.services },
         sourcePath,
         newStatus,
       );

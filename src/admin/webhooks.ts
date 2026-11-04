@@ -17,7 +17,11 @@
 
 import { join } from "@std/path";
 import { encodeHex } from "@std/encoding/hex";
-import { safeFetch, SsrfBlockedError } from "@dune/core/security";
+import { isDuneError } from "@dune/core/plugin-api";
+import type { SecurityService } from "@dune/core/plugin-api";
+
+/** The slice of the security service webhook delivery needs. */
+export type WebhookSecurity = Pick<SecurityService, "safeFetch">;
 import type { WebhookContentEvent, WebhookEndpointConfig } from "@dune/core/config";
 
 // === Types ===
@@ -149,6 +153,7 @@ async function attemptDelivery(
   endpoint: WebhookEndpointConfig,
   body: string,
   attemptNumber: number,
+  security: WebhookSecurity,
 ): Promise<WebhookDeliveryAttempt> {
   const timestamp = Date.now();
   try {
@@ -170,13 +175,13 @@ async function attemptDelivery(
     // bots — must be explicit). Treat any redirect as a failed attempt.
     let resp: Response;
     try {
-      resp = await safeFetch(
+      resp = await security.safeFetch(
         endpoint.url,
         { method: "POST", headers, body },
         { allowPrivateDestinations: endpoint.allow_private === true },
       );
     } catch (err) {
-      const msg = err instanceof SsrfBlockedError ? err.message : String(err);
+      const msg = isDuneError(err, "ssrf_blocked") ? (err as Error).message : String(err);
       return { attemptNumber, timestamp, errorMessage: `SSRF guard: ${msg}`, success: false };
     }
     if (resp.ok) {
@@ -211,6 +216,7 @@ async function deliverWithRetry(
   event: WebhookContentEvent,
   payload: unknown,
   logDir: string,
+  security: WebhookSecurity,
 ): Promise<void> {
   const id = encodeHex(crypto.getRandomValues(new Uint8Array(8)));
   const body = JSON.stringify({ event, payload, sentAt: new Date().toISOString() });
@@ -228,7 +234,7 @@ async function deliverWithRetry(
   };
 
   for (let i = 0; i < 3; i++) {
-    const attempt = await attemptDelivery(endpoint, body, i + 1);
+    const attempt = await attemptDelivery(endpoint, body, i + 1, security);
     record.attempts.push(attempt);
 
     if (attempt.success) {
@@ -263,12 +269,14 @@ async function deliverWithRetry(
  * @param event     - The content event that occurred
  * @param payload   - Event-specific data included in the POST body
  * @param logDir    - Base directory for delivery logs (admin.runtime_dir)
+ * @param security  - Core's security service (SSRF-guarded fetch)
  */
 export function fireContentWebhooks(
   endpoints: WebhookEndpointConfig[],
   event: WebhookContentEvent,
   payload: unknown,
   logDir: string,
+  security: WebhookSecurity,
 ): void {
   const active = endpoints.filter(
     (e) => (e.enabled ?? true) && e.events.includes(event),
@@ -278,7 +286,7 @@ export function fireContentWebhooks(
   // Fire all matching endpoints in parallel — do not await
   Promise.all(
     active.map((endpoint) =>
-      deliverWithRetry(endpoint, event, payload, logDir).catch((err) => {
+      deliverWithRetry(endpoint, event, payload, logDir, security).catch((err) => {
         console.error(`[dune] webhook: unexpected error for ${endpoint.url}: ${err}`);
       })
     ),

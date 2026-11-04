@@ -11,7 +11,6 @@
  */
 
 import { join } from "@std/path";
-import { parseUserYaml as parseYaml } from "@dune/core/security";
 import type {
   CollabManager,
   CollabManagerOptions,
@@ -58,7 +57,10 @@ function spliceBody(raw: string, newBody: string): string {
  * Parse frontmatter YAML from a raw file string.
  * Returns an empty object on failure.
  */
-function parseFrontmatter(raw: string): Record<string, unknown> {
+function parseFrontmatter(
+  raw: string,
+  parseYaml: (text: string) => unknown,
+): Record<string, unknown> {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) return {};
   try {
@@ -109,7 +111,7 @@ function takeToken(rate: ConnectionRate): boolean {
 }
 
 export function createCollabManager(options: CollabManagerOptions): CollabManager {
-  const { storage, engine, history, contentDir } = options;
+  const { storage, engine, history, contentDir, security } = options;
 
   // docId → CollabSessionState
   const sessions = new Map<string, CollabSessionState>();
@@ -193,7 +195,7 @@ export function createCollabManager(options: CollabManagerOptions): CollabManage
     }
 
     if (history && session.lastEditor) {
-      const fm = parseFrontmatter(raw);
+      const fm = parseFrontmatter(raw, security.parseUserYaml);
       history.record({
         sourcePath: session.docId,
         content: session.content,

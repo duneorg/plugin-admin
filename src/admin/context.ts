@@ -28,6 +28,7 @@ import type { AuditLogger } from "@dune/core/audit";
 import type { MetricsCollector } from "@dune/core/metrics";
 import type { MachineTranslator } from "@dune/core/mt";
 import type { RateLimitStore } from "@dune/core/security";
+import type { PluginServices } from "@dune/core/plugin-api";
 import type { DuneAuthSystem } from "@dune/core/auth/authz";
 import type { SearchManager } from "@dune/core/search";
 import type { SectionRegistry } from "@dune/core/sections";
@@ -36,6 +37,8 @@ export type { AdminPageRegistration };
 
 /** All services available to admin route handlers via `FreshContext.state.adminContext`. */
 export interface AdminContext {
+  /** Services core hands plugins (security policy, sessions, passwords, ...). */
+  services: PluginServices;
   engine: DuneEngine;
   search: SearchManager;
   storage: StorageAdapter;

@@ -7,7 +7,7 @@
 import type { SessionManager } from "./sessions.ts";
 import type { UserManager } from "./users.ts";
 import type { AuthResult } from "../types.ts";
-import { clientIp } from "@dune/core/security";
+import type { SecurityService } from "@dune/core/plugin-api";
 
 /** Options for {@link createAuthMiddleware}. */
 export interface AuthMiddlewareConfig {
@@ -29,6 +29,8 @@ export interface AuthMiddlewareConfig {
    * a cookie thief can spoof the original IP via a forged header.
    */
   trustForwardedFor?: boolean;
+  /** Core's security service (client IP resolution). */
+  security: Pick<SecurityService, "clientIp">;
 }
 
 /** Validates session cookies. Obtain via {@link createAuthMiddleware}. */
@@ -74,7 +76,7 @@ export function createAuthMiddleware(
     // also send a forged forwarded header that matches the original session
     // IP, and the binding check is meaningless.
     if (session.ip) {
-      const requestIp = clientIp(req, { trustForwardedFor });
+      const requestIp = config.security.clientIp(req, { trustForwardedFor });
       // "unknown" is a missing peer (no socket stamp, no trusted XFF).
       // A stolen cookie that omits forwarded headers used to skip this
       // check; treat a missing IP as a mismatch when the session is bound.
