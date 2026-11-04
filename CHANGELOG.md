@@ -16,6 +16,11 @@ follows [Semantic Versioning](https://semver.org).
   Run `dune migrate:config` (core) to rewrite `config/system.yaml`. A config that
   still carries an old key is refused by core at load time, so this cannot be
   silently ignored. Requires `@dune/core` 0.36 or newer.
+- **The workflow, scheduler, staging, machine-translation and audit engines come
+  from core's `services.engines`**, and admin tuples are seeded through
+  `services.authz.seedAdminTuples()` instead of importing `bootstrapAdminTuples`.
+  Core builds them once per site under `admin.runtime_dir`; the admin no longer
+  calls their factories. Requires `@dune/core` 0.36 or newer.
 - **Security policy, sessions, users and passwords come from core's `services`**
   (`MountApi.services`, `@dune/core/plugin-api`) instead of imports from
   `@dune/core`: HTML sanitising, SSRF-guarded fetch, body limits, client IP, the
