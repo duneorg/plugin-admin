@@ -61,7 +61,7 @@ function makeCtx(opts: {
     state: {
       auth: { authenticated: true, user: { id: "1", username: "admin", roles: ["admin"] } },
       adminContext: {
-        services: makeServices(null),
+        services: makeServices(null, { getBlueprints: () => engine.blueprints as never }),
         engine,
         storage: opts.storage,
         config: { system: { content: { dir: "content" } }, admin: {} },

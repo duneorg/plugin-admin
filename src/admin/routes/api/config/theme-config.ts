@@ -1,6 +1,5 @@
 /** GET + PUT /admin/api/config/theme-config */
 
-import { resolveDataDir } from "@dune/core/forms";
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
 import type { BlueprintField } from "@dune/core/blueprints";
@@ -25,7 +24,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "config.update");
     if (denied) return denied;
 
-    const { engine, storage, config, hooks } = ctx.state.adminContext;
+    const { engine, storage, hooks } = ctx.state.adminContext;
     try {
       const body = await ctx.req.json() as Record<string, unknown>;
       const manifest = engine.themes.theme.manifest;
@@ -59,7 +58,7 @@ export const handler = {
         }
       }
 
-      const dataDir = resolveDataDir(config);
+      const dataDir = ctx.state.adminContext.services.paths.dataDir;
       const themeConfigPath = `${dataDir}/theme-config.json`;
       const themeName = engine.config.theme.name;
 
