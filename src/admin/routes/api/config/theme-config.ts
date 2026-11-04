@@ -58,7 +58,7 @@ export const handler = {
         }
       }
 
-      const dataDir = config.admin?.dataDir ?? "data";
+      const dataDir = config.admin?.data_dir ?? "data";
       const themeConfigPath = `${dataDir}/theme-config.json`;
       const themeName = engine.config.theme.name;
 

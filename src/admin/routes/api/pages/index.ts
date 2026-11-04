@@ -68,7 +68,7 @@ export const handler = {
       await engine.rebuild();
 
       const webhookEndpoints = config.admin?.webhooks ?? [];
-      const runtimeDir = config.admin?.runtimeDir ?? ".dune/admin";
+      const runtimeDir = config.admin?.runtime_dir ?? ".dune/admin";
       if (hooks) hooks.fire("onPageCreate", { sourcePath: `${pagePath}/default${ext}`, title }).catch(() => {});
       fireContentWebhooks(webhookEndpoints, "onPageCreate", { sourcePath: `${pagePath}/default${ext}`, title }, runtimeDir);
 

@@ -74,7 +74,7 @@ export const handler = {
         if (errors.length > 0) return json({ error: `Missing required fields: ${errors.join(", ")}` }, 422);
       }
 
-      const dataDir = config.admin?.dataDir ?? "data";
+      const dataDir = config.admin?.data_dir ?? "data";
       const filePath = `${dataDir}/plugins/${pluginName}.json`;
       await storage.write(filePath, new TextEncoder().encode(JSON.stringify(body, null, 2)));
 

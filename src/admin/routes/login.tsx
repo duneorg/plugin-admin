@@ -246,7 +246,7 @@ export const handler = {
       status: 302,
       headers: {
         Location: safeNext,
-        "Set-Cookie": auth.createSessionCookie(session.id, adminConfig.sessionLifetime),
+        "Set-Cookie": auth.createSessionCookie(session.id, adminConfig.session_lifetime),
       },
     });
   },

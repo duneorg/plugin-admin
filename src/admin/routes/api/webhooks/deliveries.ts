@@ -34,7 +34,7 @@ export const handler = {
 
     const { config } = ctx.state.adminContext;
     try {
-      const runtimeDir = config.admin?.runtimeDir ?? ".dune/admin";
+      const runtimeDir = config.admin?.runtime_dir ?? ".dune/admin";
       const logs = await listDeliveryLogs(runtimeDir, { sourcePath: path });
       const items = view === "workflow" ? logs.map(toWorkflowDelivery) : logs;
       return json({ items, total: items.length, view });

@@ -129,7 +129,7 @@ export function csrfCheck(ctx: FreshContext<AdminState>): Response | null {
  * flat table" dec-auth-storage said should be fully replaced, not coexist
  * with).
  *
- * `admin.authzStore` defaults to `"local"` and `authz` is created whenever
+ * `admin.authz_store` defaults to `"local"` and `authz` is created whenever
  * the admin panel is enabled, regardless of `site.auth`'s mode — see its
  * doc comment in `src/config/admin-config.ts`. `authz` being undefined
  * here means its creation itself failed at startup (already logged loudly
@@ -183,7 +183,7 @@ export function requireTsxWrite(
 ): Response | null {
   if (!isTsxSource(formatOrPath)) return null;
   const allowedRoles: string[] =
-    ctx.state.adminContext.config.system.content.allowTsxFormat ?? ["admin"];
+    ctx.state.adminContext.config.system.content.allow_tsx_format ?? ["admin"];
   const userRoles = ctx.state.auth?.user?.roles ?? [];
   if (allowedRoles.length === 0 || !userRoles.some((r) => allowedRoles.includes(r))) {
     return json({

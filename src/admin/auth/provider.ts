@@ -88,26 +88,26 @@ export interface LdapProviderConfig {
    * Base DN for user search.
    * @example "ou=users,dc=example,dc=com"
    */
-  baseDn: string;
+  base_dn: string;
   /**
    * LDAP attribute containing the login name.
    * Default: "sAMAccountName" (Active Directory) or "uid" (OpenLDAP).
    */
-  usernameAttr?: string;
+  username_attr?: string;
   /**
    * Optional bind DN for a service account used to search the directory.
    * If omitted, Dune attempts a direct bind using the user's constructed DN.
    */
-  bindDn?: string;
+  bind_dn?: string;
   /**
    * Service account password. Supports "$ENV_VAR" expansion.
    * @example "$LDAP_BIND_PASSWORD"
    */
-  bindPassword?: string;
+  bind_password?: string;
   /** LDAP attribute to use as email. Default: "mail" */
-  emailAttr?: string;
+  email_attr?: string;
   /** LDAP attribute to use as display name. Default: "cn" */
-  nameAttr?: string;
+  name_attr?: string;
   /**
    * Map LDAP group membership to Dune roles. First match wins.
    * @example
@@ -119,35 +119,35 @@ export interface LdapProviderConfig {
    *     role: "editor"
    * ```
    */
-  roleMap?: Array<{ group: string; role: Role }>;
+  role_map?: Array<{ group: string; role: Role }>;
   /** Default role for authenticated users not in any mapped group. Default: "author" */
-  defaultRole?: Role;
+  default_role?: Role;
 }
 
 /** SAML 2.0 authentication provider configuration. */
 export interface SamlProviderConfig {
   type: "saml";
   /** Your application's Entity ID (SP entity ID). */
-  entityId: string;
+  entity_id: string;
   /**
    * Assertion Consumer Service URL — where the IdP POSTs the assertion after authentication.
    * @example "https://example.com/admin/saml/acs"
    */
-  acsUrl: string;
+  acs_url: string;
   /** Identity provider metadata as a URL (fetched at startup) or inline XML. */
-  idpMetadata: string;
+  idp_metadata: string;
   /** SAML attribute containing the username. Default: "NameID" */
-  usernameAttr?: string;
+  username_attr?: string;
   /** SAML attribute containing the email. Default: "email" or "mail" */
-  emailAttr?: string;
+  email_attr?: string;
   /** SAML attribute containing the display name. Default: "displayName" */
-  nameAttr?: string;
+  name_attr?: string;
   /**
    * Map IdP group/role attribute values to Dune roles. First match wins.
    */
-  roleMap?: Array<{ value: string; role: Role }>;
+  role_map?: Array<{ value: string; role: Role }>;
   /** SAML attribute carrying the role or group value. Default: "role" or "groups" */
-  roleAttr?: string;
+  role_attr?: string;
   /** Default role for users with no matching roleMap entry. Default: "author" */
-  defaultRole?: Role;
+  default_role?: Role;
 }

@@ -52,16 +52,16 @@ All admin configuration lives under the `admin:` key in `site.yaml`.
 admin:
   path: /admin              # URL prefix for the admin panel (default: /admin)
   enabled: true             # Set to false to disable entirely
-  sessionLifetime: 86400    # Session duration in seconds (default: 24h)
-  dataDir: data             # Directory for users, submissions, etc.
-  runtimeDir: .dune/admin   # Directory for sessions, audit log, etc.
+  session_lifetime: 86400   # Session duration in seconds (default: 24h)
+  data_dir: data            # Directory for users, submissions, etc.
+  runtime_dir: .dune/admin   # Directory for sessions, audit log, etc.
 
   auth_provider:
     type: local             # Only "local" is supported today
 
   audit:
     enabled: true
-    logFile: .dune/admin/audit.log   # Override the audit log path
+    log_file: .dune/admin/audit.log   # Override the audit log path
 
   session_store:
     type: local             # "local" (default) or "redis"

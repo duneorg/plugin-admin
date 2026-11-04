@@ -5,6 +5,18 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Changed — BREAKING
+
+- **The `admin:` block reads snake_case keys** (duneorg/dune#96, `@dune/core` 0.36):
+  `session_lifetime`, `data_dir`, `runtime_dir`, `max_revisions`, `max_upload_mb`,
+  `authz_store`, `audit.log_file`, and the LDAP/SAML provider fields (`base_dn`,
+  `bind_dn`, `bind_password`, `username_attr`, `email_attr`, `name_attr`,
+  `role_map`, `default_role`, `entity_id`, `acs_url`, `idp_metadata`,
+  `role_attr`). `content.allowTsxFormat` is `allow_tsx_format`.
+  Run `dune migrate:config` (core) to rewrite `config/system.yaml`. A config that
+  still carries an old key is refused by core at load time, so this cannot be
+  silently ignored. Requires `@dune/core` 0.36 or newer.
+
 ## [3.3.0] — 2026-11-03
 
 ### Changed
