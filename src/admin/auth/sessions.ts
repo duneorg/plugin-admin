@@ -6,31 +6,18 @@
  * over whichever SessionStore backend (local/KV/Redis) is configured. This
  * file exists to keep the original SessionManager interface stable for
  * existing call sites (create() has no embeddedUser param — admin sessions
- * never need one) and to preserve the storage/sessionsDir convenience
- * construction path.
+ * never need one).
  */
 
-import type { StorageAdapter } from "@dune/core/storage";
 import type { Session } from "../types.ts";
-import type { SessionStore } from "@dune/core/session";
-import { createLocalSessionStore, createSessionManager as createCoreSessionManager } from "@dune/core/session";
-
-export type { SessionStore };
+import type { PluginServices } from "@dune/core/plugin-api";
 
 /** Options for {@link createSessionManager}. */
 export interface SessionManagerConfig {
+  /** Core's services; the session backend is chosen by core from `system.session_store`. */
+  services: Pick<PluginServices, "sessions">;
   /**
-   * Pre-constructed session store. When provided, `storage` and `sessionsDir`
-   * are ignored.
-   */
-  store?: SessionStore;
-  /**
-   * StorageAdapter for the local (file-backed) store.
-   * Required when `store` is not supplied.
-   */
-  storage?: StorageAdapter;
-  /**
-   * Directory for session files when using the local backend.
+   * Directory for session files when the local backend is configured.
    * E.g. ".dune/admin/sessions"
    */
   sessionsDir?: string;
@@ -53,29 +40,14 @@ export interface SessionManager {
 }
 
 /**
- * Create a session manager backed by the given store.
- *
- * When `config.store` is not supplied, falls back to constructing a
- * LocalSessionStore from `config.storage` + `config.sessionsDir`, preserving
- * the original file-backed behaviour for existing callers.
+ * Create the admin session manager. Core builds the underlying manager over
+ * the configured backend (local files, Deno KV or Redis, scoped per site).
  */
-export function createSessionManager(config: SessionManagerConfig): SessionManager {
-  const { lifetime } = config;
-
-  const store: SessionStore = config.store ?? (() => {
-    if (!config.storage) {
-      throw new Error(
-        "[dune] createSessionManager: either 'store' or 'storage' must be provided.",
-      );
-    }
-    return createLocalSessionStore({
-      storage: config.storage,
-      sessionsDir: config.sessionsDir ?? ".dune/admin/sessions",
-      lifetimeMs: lifetime * 1000,
-    });
-  })();
-
-  const core = createCoreSessionManager(store, lifetime * 1000);
+export async function createSessionManager(config: SessionManagerConfig): Promise<SessionManager> {
+  const core = await config.services.sessions.createManager({
+    sessionsDir: config.sessionsDir ?? ".dune/admin/sessions",
+    lifetimeMs: config.lifetime * 1000,
+  });
 
   return {
     // Admin sessions never carry an embeddedUser — the underlying factory's

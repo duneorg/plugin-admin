@@ -21,9 +21,7 @@ import type { StorageAdapter } from "@dune/core/storage";
 import { createUserManager } from "./src/admin/auth/users.ts";
 import { highestValidRole } from "./src/admin/auth/role-utils.ts";
 import { createSessionManager } from "./src/admin/auth/sessions.ts";
-import { createSessionStore } from "@dune/core/session";
 import { createAuthMiddleware } from "./src/admin/auth/middleware.ts";
-import { LocalRateLimitStore } from "@dune/core/security";
 import { LocalAuthProvider } from "./src/admin/auth/local-provider.ts";
 import type { AuthProvider } from "./src/admin/auth/provider.ts";
 import { createWorkflowEngine } from "@dune/core/workflow";
@@ -45,7 +43,6 @@ import { initAdminContext } from "./src/admin/context.ts";
 import type { AdminContext } from "./src/admin/context.ts";
 import { createBlockEditorPlugin } from "./src/admin/block-editor-plugin.tsx";
 import { getDuneAdminIslands, mountDuneAdmin, mountDuneAdminEarly } from "./src/admin/mount.ts";
-import { logger } from "@dune/core/logger";
 import { sectionRegistry } from "@dune/core/sections";
 import type { SectionRegistry } from "@dune/core/sections";
 import * as corePlugins from "@dune/core/plugins";
@@ -164,7 +161,8 @@ export function createAdminPlugin(
       setupState = { config, storage, opts, auditLogger, mt };
     },
 
-    async mount({ app, bootstrap, adminServices }: MountApi) {
+    async mount({ app, bootstrap, adminServices, services }: MountApi) {
+      const { logger } = services;
       if (!setupState) return; // admin disabled
 
       const { opts: o } = setupState;
@@ -183,6 +181,7 @@ export function createAdminPlugin(
       const users = createUserManager({
         storage,
         usersDir: `${dataDir}/users`,
+        services,
       });
 
       // Migration warning: detect users left in the old .dune/admin/users location
@@ -200,25 +199,13 @@ export function createAdminPlugin(
         } catch { /* ignore */ }
       }
 
-      const sessionStoreCfg = config.system?.session_store;
-      const resolvedSessionStore = await createSessionStore({
-        type: sessionStoreCfg?.type ?? "local",
-        redisUrl: sessionStoreCfg?.url
-          ? (sessionStoreCfg.url.startsWith("$")
-            ? Deno.env.get(sessionStoreCfg.url.slice(1))
-            : sessionStoreCfg.url)
-          : undefined,
-        storage,
+      const sessions = await createSessionManager({
+        services,
         sessionsDir: `${runtimeDir}/sessions`,
-        lifetimeMs: adminCfg.session_lifetime * 1000,
-      });
-
-      const sessions = createSessionManager({
-        store: resolvedSessionStore,
         lifetime: adminCfg.session_lifetime,
       });
 
-      const rateLimitStore = new LocalRateLimitStore();
+      const rateLimitStore = services.rateLimit.createLocalStore();
 
       // Auth provider: injection from bootstrap options > config > local default.
       let authProvider: AuthProvider;
@@ -227,7 +214,7 @@ export function createAdminPlugin(
       } else {
         const provCfg = config.admin?.auth_provider;
         if (!provCfg || provCfg.type === "local") {
-          authProvider = new LocalAuthProvider(users);
+          authProvider = new LocalAuthProvider(users, services.passwords);
         } else if (provCfg.type === "ldap" || provCfg.type === "saml") {
           throw new Error(
             `[dune] auth_provider.type "${provCfg.type}" is not implemented. ` +
@@ -246,6 +233,7 @@ export function createAdminPlugin(
         users,
         secure: secureCookies,
         trustForwardedFor: config.system?.trusted_proxies === true,
+        security: services.security,
       });
 
       const workflow = createWorkflowEngine(
@@ -270,7 +258,7 @@ export function createAdminPlugin(
           return;
         }
         try {
-          await applyWorkflowTransition({ engine: bootstrap.engine, storage, config, hooks: bootstrap.hooks, workflow }, action.sourcePath, newStatus);
+          await applyWorkflowTransition({ engine: bootstrap.engine, storage, config, hooks: bootstrap.hooks, workflow, services }, action.sourcePath, newStatus);
         } catch (err) {
           logger.error("scheduler.action-failed", {
             actionId: action.id,
@@ -290,6 +278,7 @@ export function createAdminPlugin(
         engine: bootstrap.engine,
         history: bootstrap.history,
         contentDir: config.system.content.dir,
+        security: services.security,
       });
 
       // Core accepts and stores public form submissions; the admin only
@@ -329,6 +318,7 @@ export function createAdminPlugin(
         .flatMap((p) => p.adminPages ?? []);
 
       const adminContext: AdminContext = {
+        services,
         engine: bootstrap.engine,
         search: bootstrap.search,
         storage,

@@ -2,7 +2,6 @@
 
 import type { AdminState } from "../../types.ts";
 import { requirePermission, serverError } from "./_utils.ts";
-import { sanitizeHtml } from "@dune/core/security";
 import { h, type ComponentType } from "preact";
 import { render as renderJsxToString } from "preact-render-to-string";
 import { buildPageTitle } from "@dune/core/content/types";
@@ -27,7 +26,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "config.read");
     if (denied) return denied;
 
-    const { engine } = ctx.state.adminContext;
+    const { engine, services } = ctx.state.adminContext;
     const themeName = ctx.url.searchParams.get("theme") ?? "";
     const route = ctx.url.searchParams.get("route") || "/";
 
@@ -59,7 +58,7 @@ export const handler = {
         engine.createPreviewTheme(themeName),
       ]);
 
-      const html = sanitizeHtml(await page.html());
+      const html = services.security.sanitizeHtml(await page.html());
       const templateName = previewLoader.resolveTemplateName(page) ?? "default";
       const template = await previewLoader.loadTemplate(templateName);
 

@@ -2,7 +2,7 @@
 
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
-import { safeFetch } from "@dune/core/security";
+import type { SecurityService } from "@dune/core/plugin-api";
 import type { StorageAdapter } from "@dune/core/storage";
 import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
 import { fetchThemeRegistrySafe, isThemeSha256, type RegistryTheme } from "../../../theme-registry.ts";
@@ -78,6 +78,7 @@ async function installJsrTheme(
 
 async function installZipTheme(
   storage: StorageAdapter,
+  safeFetch: SecurityService["safeFetch"],
   slug: string,
   entry: RegistryTheme,
 ): Promise<{ filesWritten: number }> {
@@ -137,7 +138,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "config.update");
     if (denied) return denied;
 
-    const { storage } = ctx.state.adminContext;
+    const { storage, services } = ctx.state.adminContext;
     try {
       const { slug } = await ctx.req.json() as { slug?: string };
 
@@ -179,7 +180,7 @@ export const handler = {
             error: `Registry entry for "${slug}" is missing a sha256 integrity hash`,
           }, 502);
         }
-        const { filesWritten } = await installZipTheme(storage, slug, entry);
+        const { filesWritten } = await installZipTheme(storage, services.security.safeFetch, slug, entry);
         console.log(`[dune/themes] 📦 Installed theme "${slug}" (${filesWritten} files)`);
         return json({ success: true, slug, filesWritten, method: "zip" });
       }

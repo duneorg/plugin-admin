@@ -7,6 +7,7 @@
  * is an array.
  */
 
+import { makeServices } from "../helpers/services.ts";
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { findOrProvisionUser } from "../../src/admin/auth/provisioner.ts";
 import { LocalAuthProvider } from "../../src/admin/auth/local-provider.ts";
@@ -67,7 +68,7 @@ function providerUser(overrides: Partial<AuthProviderUser> = {}): AuthProviderUs
 
 Deno.test("findOrProvisionUser: creates a new user at defaultRole when provider reports no roles", async () => {
   const storage = createMemoryStorage();
-  const users = createUserManager({ storage, usersDir: ".users" });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   const created = await findOrProvisionUser(providerUser(), users, { defaultRole: "editor" });
 
@@ -78,7 +79,7 @@ Deno.test("findOrProvisionUser: creates a new user at defaultRole when provider 
 
 Deno.test("findOrProvisionUser: accepts a provider-reported role at or below defaultRole", async () => {
   const storage = createMemoryStorage();
-  const users = createUserManager({ storage, usersDir: ".users" });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   const created = await findOrProvisionUser(
     providerUser({ roles: ["author"] }),
@@ -91,7 +92,7 @@ Deno.test("findOrProvisionUser: accepts a provider-reported role at or below def
 
 Deno.test("findOrProvisionUser: caps a new user's role at defaultRole even if the provider reports higher", async () => {
   const storage = createMemoryStorage();
-  const users = createUserManager({ storage, usersDir: ".users" });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   const created = await findOrProvisionUser(
     providerUser({ roles: ["admin"] }),
@@ -104,7 +105,7 @@ Deno.test("findOrProvisionUser: caps a new user's role at defaultRole even if th
 
 Deno.test("findOrProvisionUser: ignores unknown role strings in the roles array, falls back to defaultRole", async () => {
   const storage = createMemoryStorage();
-  const users = createUserManager({ storage, usersDir: ".users" });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   const created = await findOrProvisionUser(
     providerUser({ roles: ["superadmin", "not-a-role"] }),
@@ -117,7 +118,7 @@ Deno.test("findOrProvisionUser: ignores unknown role strings in the roles array,
 
 Deno.test("findOrProvisionUser: picks the highest-ranked valid role when roles has multiple entries", async () => {
   const storage = createMemoryStorage();
-  const users = createUserManager({ storage, usersDir: ".users" });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   const created = await findOrProvisionUser(
     providerUser({ roles: ["author", "editor"] }),
@@ -132,7 +133,7 @@ Deno.test("findOrProvisionUser: picks the highest-ranked valid role when roles h
 
 Deno.test("findOrProvisionUser: refuses to elevate an existing user's role from provider attributes", async () => {
   const storage = createMemoryStorage();
-  const users = createUserManager({ storage, usersDir: ".users" });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
   await users.create({
     username: "bob",
     email: "bob@example.com",
@@ -152,7 +153,7 @@ Deno.test("findOrProvisionUser: refuses to elevate an existing user's role from 
 
 Deno.test("findOrProvisionUser: permits demoting an existing user's role from provider attributes", async () => {
   const storage = createMemoryStorage();
-  const users = createUserManager({ storage, usersDir: ".users" });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
   await users.create({
     username: "bob",
     email: "bob@example.com",
@@ -172,7 +173,7 @@ Deno.test("findOrProvisionUser: permits demoting an existing user's role from pr
 
 Deno.test("findOrProvisionUser: keeps existing user's role unchanged when provider reports no roles", async () => {
   const storage = createMemoryStorage();
-  const users = createUserManager({ storage, usersDir: ".users" });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
   await users.create({
     username: "bob",
     email: "bob@example.com",
@@ -188,7 +189,7 @@ Deno.test("findOrProvisionUser: keeps existing user's role unchanged when provid
 
 Deno.test("findOrProvisionUser: syncs display name from the provider on each login", async () => {
   const storage = createMemoryStorage();
-  const users = createUserManager({ storage, usersDir: ".users" });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
   await users.create({
     username: "bob",
     email: "bob@example.com",
@@ -210,7 +211,7 @@ Deno.test("findOrProvisionUser: syncs display name from the provider on each log
 
 Deno.test("LocalAuthProvider: authenticate returns the user's role wrapped in a roles array", async () => {
   const storage = createMemoryStorage();
-  const users = createUserManager({ storage, usersDir: ".users" });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
   await users.create({
     username: "alice",
     email: "alice@example.com",
@@ -219,7 +220,7 @@ Deno.test("LocalAuthProvider: authenticate returns the user's role wrapped in a 
     name: "Alice",
   });
 
-  const provider = new LocalAuthProvider(users);
+  const provider = new LocalAuthProvider(users, makeServices(null).passwords);
   const result = await provider.authenticate({ username: "alice", password: "password123" });
 
   assertEquals(result?.roles, ["admin"]);
@@ -227,7 +228,7 @@ Deno.test("LocalAuthProvider: authenticate returns the user's role wrapped in a 
 
 Deno.test("LocalAuthProvider: authenticate returns null for wrong password", async () => {
   const storage = createMemoryStorage();
-  const users = createUserManager({ storage, usersDir: ".users" });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
   await users.create({
     username: "alice",
     email: "alice@example.com",
@@ -236,7 +237,7 @@ Deno.test("LocalAuthProvider: authenticate returns null for wrong password", asy
     name: "Alice",
   });
 
-  const provider = new LocalAuthProvider(users);
+  const provider = new LocalAuthProvider(users, makeServices(null).passwords);
   const result = await provider.authenticate({ username: "alice", password: "wrong" });
 
   assertEquals(result, null);

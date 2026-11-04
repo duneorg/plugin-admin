@@ -16,10 +16,9 @@
  */
 
 import type { StorageAdapter } from "@dune/core/storage";
-import { createLocalUserStore } from "@dune/core/auth/user-store";
 import type { UserStore } from "@dune/core/auth/user-store";
 import type { User, Role } from "../types.ts";
-import { hashPassword } from "@dune/core/auth/passwords";
+import type { PluginServices } from "@dune/core/plugin-api";
 import { withRole } from "./role-utils.ts";
 
 /** Options for {@link createUserManager}. */
@@ -27,6 +26,8 @@ export interface UserManagerConfig {
   storage: StorageAdapter;
   /** Directory for user files (e.g. "data/users") */
   usersDir: string;
+  /** Core's services: the user store and password hashing. */
+  services: Pick<PluginServices, "users" | "passwords">;
 }
 
 /** Input for {@link UserManager.create}. */
@@ -63,8 +64,9 @@ export interface UserManager {
  * Create a user manager backed by @dune/core's UserStore.
  */
 export function createUserManager(config: UserManagerConfig): UserManager {
-  const { storage, usersDir } = config;
-  const store: UserStore = createLocalUserStore({ storage, usersDir });
+  const { usersDir, services } = config;
+  const store: UserStore = services.users.createLocalStore({ usersDir });
+  const hashPassword = services.passwords.hash;
 
   async function create(input: CreateUserInput): Promise<User> {
     return store.create({

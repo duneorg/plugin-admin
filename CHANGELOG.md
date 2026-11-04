@@ -16,6 +16,17 @@ follows [Semantic Versioning](https://semver.org).
   Run `dune migrate:config` (core) to rewrite `config/system.yaml`. A config that
   still carries an old key is refused by core at load time, so this cannot be
   silently ignored. Requires `@dune/core` 0.36 or newer.
+- **Security policy, sessions, users and passwords come from core's `services`**
+  (`MountApi.services`, `@dune/core/plugin-api`) instead of imports from
+  `@dune/core`: HTML sanitising, SSRF-guarded fetch, body limits, client IP, the
+  YAML parser, password hashing/verification, the user store, rate limiting and
+  the logger. A core patch release now fixes them for the admin without an admin
+  release, and session storage (local, KV, Redis) follows `system.session_store`
+  including its per-site `prefix`. Errors are matched by `isDuneError(err, code)`,
+  not `instanceof`. Removed: the `hashPassword` / `verifyPassword` / `DUMMY_HASH`
+  re-exports from `@dune/plugin-admin/admin` (import them from
+  `@dune/core/auth/passwords`), and the old `createSessionManager` signature
+  (now async, takes `services`). Requires `@dune/core` with `plugin-api` (0.36).
 - **The data directory is `system.data_dir` only.** `admin.data_dir` no longer
   exists (core removed the deprecated form aliases); the plugin resolves the
   directory with `resolveDataDir()` from `@dune/core/forms`.

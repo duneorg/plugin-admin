@@ -14,8 +14,6 @@ export type { UserManager, UserManagerConfig, CreateUserInput } from "./auth/use
 export { createAuthMiddleware } from "./auth/middleware.ts";
 export type { AuthMiddleware, AuthMiddlewareConfig } from "./auth/middleware.ts";
 
-export { hashPassword, verifyPassword, DUMMY_HASH } from "@dune/core/auth/passwords";
-
 export type {
   AuthProvider,
   AuthProviderUser,

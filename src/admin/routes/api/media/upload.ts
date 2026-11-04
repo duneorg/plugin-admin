@@ -5,7 +5,7 @@ import { requirePermission, requireOwnedPage, json, serverError, actorFromAuth, 
 import { dirname } from "@std/path";
 import { isMediaFile, dirPathToRoute } from "@dune/core/content/path-utils";
 import { getMimeType } from "@dune/core/content/page-loader";
-import { checkBodySize, limitedBody, BodyTooLargeError } from "@dune/core/security";
+import { isDuneError } from "@dune/core/plugin-api";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -15,17 +15,17 @@ export const handler = {
     const denied = await requirePermission(ctx, "media.upload");
     if (denied) return denied;
 
-    const { storage, config, auditLogger } = ctx.state.adminContext;
+    const { storage, config, auditLogger, services } = ctx.state.adminContext;
     const MAX_FILE_SIZE = 50 * 1024 * 1024;
     const maxBodyBytes = (config.admin?.max_upload_mb ?? 100) * 1024 * 1024;
 
     try {
-      const tooLarge = checkBodySize(ctx.req, maxBodyBytes);
+      const tooLarge = services.security.checkBodySize(ctx.req, maxBodyBytes);
       if (tooLarge) return tooLarge;
 
       // Also enforce via streaming counter — catches chunked uploads that
       // omit Content-Length and would otherwise bypass the pre-check above.
-      const formData = await new Response(limitedBody(ctx.req.body, maxBodyBytes), {
+      const formData = await new Response(services.security.limitedBody(ctx.req.body, maxBodyBytes), {
         headers: { "content-type": ctx.req.headers.get("content-type") ?? "" },
       }).formData();
       const file = formData.get("file");
@@ -60,7 +60,7 @@ export const handler = {
       void auditLogger?.log({
         event: "media.upload",
         actor: actorFromAuth(ctx.state.auth),
-        ip: getClientIp(ctx.req),
+        ip: getClientIp(ctx),
         userAgent: ctx.req.headers.get("user-agent") ?? null,
         target: { type: "media", id: safeName },
         detail: {},
@@ -69,7 +69,7 @@ export const handler = {
 
       return json({ ok: true, item: { name: safeName, url, type: mimeType, size: bytes.length, pagePath } });
     } catch (err) {
-      if (err instanceof BodyTooLargeError) {
+      if (isDuneError(err, "body_too_large")) {
         return json({ error: "Request too large" }, 413);
       }
       return serverError(err);

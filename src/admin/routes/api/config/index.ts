@@ -3,7 +3,6 @@
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
-import { parseUserYaml as parseYaml } from "@dune/core/security";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -21,7 +20,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "config.update");
     if (denied) return denied;
 
-    const { engine, storage } = ctx.state.adminContext;
+    const { engine, storage, services } = ctx.state.adminContext;
     try {
       const body = await ctx.req.json() as {
         title?: string; description?: string; url?: string;
@@ -32,7 +31,7 @@ export const handler = {
 
       // Read-modify-write config/site.yaml (same approach as switchTheme)
       const existingRaw = await storage.readText("config/site.yaml").catch(() => "");
-      const existing = ((parseYaml(existingRaw || "") ?? {}) as Record<string, unknown>);
+      const existing = ((services.security.parseUserYaml(existingRaw || "") ?? {}) as Record<string, unknown>);
 
       if (body.title !== undefined) existing.title = body.title;
       if (body.description !== undefined) existing.description = body.description;

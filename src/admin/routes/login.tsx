@@ -7,14 +7,22 @@
 
 import type { FreshContext } from "fresh";
 import type { AdminState } from "../types.ts";
-import { verifyPassword, DUMMY_HASH, needsRehash } from "@dune/core/auth/passwords";
 import { findOrProvisionUser } from "../auth/provisioner.ts";
-import { RateLimiter, clientIp } from "@dune/core/security";
+import type { PluginServices } from "@dune/core/plugin-api";
+import type { RateLimiter } from "@dune/core/security";
 import { actorFromAuth, csrfCheck } from "./api/_utils.ts";
 
 // Module-level fallback limiter — used when no rateLimitStore is injected via
 // AdminContext (single-process deployments, tests, etc.).
-const loginRateLimiter = new RateLimiter(5, 15 * 60 * 1000);
+const fallbackLimiters = new WeakMap<PluginServices, RateLimiter>();
+function fallbackLoginLimiter(services: PluginServices): RateLimiter {
+  let limiter = fallbackLimiters.get(services);
+  if (!limiter) {
+    limiter = services.rateLimit.createLimiter(5, 15 * 60 * 1000);
+    fallbackLimiters.set(services, limiter);
+  }
+  return limiter;
+}
 
 // Per-account lockout fallback (in-process Map, single-process only).
 // When a RateLimitStore is present on AdminContext, store-backed methods are
@@ -101,7 +109,7 @@ export const handler = {
     const csrfDenied = csrfCheck(ctx);
     if (csrfDenied) return csrfDenied;
 
-    const { auth, users, sessions, prefix, auditLogger, authProvider, config, rateLimitStore } = ctx.state.adminContext;
+    const { auth, users, sessions, prefix, auditLogger, authProvider, config, rateLimitStore, services } = ctx.state.adminContext;
     const adminConfig = config.admin!;
     const url = ctx.url;
 
@@ -134,7 +142,7 @@ export const handler = {
     // Login. Rate-limit / lockout key is IP-based — only honor forwarded
     // headers when the operator explicitly opts in via system.trusted_proxies.
     const trustForwardedFor = config.system?.trusted_proxies === true;
-    const ip = clientIp(ctx.req, { trustForwardedFor });
+    const ip = services.security.clientIp(ctx.req, { trustForwardedFor });
 
     // Use the store-backed rate limiter when available; fall back to the
     // module-level in-process limiter for single-process deployments.
@@ -151,6 +159,7 @@ export const handler = {
         );
       }
     } else {
+      const loginRateLimiter = fallbackLoginLimiter(services);
       if (!loginRateLimiter.check(ip)) {
         const retryAfter = loginRateLimiter.retryAfter(ip);
         return ctx.render(
@@ -204,8 +213,8 @@ export const handler = {
       user = await findOrProvisionUser(providerUser, users);
     } else {
       const found = await users.getByUsername(username);
-      const hashToVerify = found?.passwordHash ?? DUMMY_HASH;
-      const valid = await verifyPassword(password, hashToVerify);
+      const hashToVerify = found?.passwordHash ?? services.passwords.dummyHash;
+      const valid = await services.passwords.verify(password, hashToVerify);
       if (!found || !found.enabled || !valid) {
         if (rateLimitStore) {
           await rateLimitStore.recordFailure(accountKey, LOGIN_LOCKOUT_WINDOW_MS);
@@ -218,9 +227,9 @@ export const handler = {
       user = found;
       // Transparently upgrade legacy (low-iteration) hashes to current cost.
       // found.passwordHash is guaranteed set here: `valid` above can only be
-      // true if verifyPassword() matched a real hash, not the DUMMY_HASH
+      // true if verifyPassword() matched a real hash, not the dummy hash
       // fallback used when passwordHash is absent.
-      if (found.passwordHash && needsRehash(found.passwordHash)) {
+      if (found.passwordHash && services.passwords.needsRehash(found.passwordHash)) {
         try {
           await users.changePassword(found.id, password);
         } catch {

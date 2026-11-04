@@ -6,7 +6,6 @@ import type { FreshContext } from "fresh";
 import type { AdminPermission, AdminState } from "../../types.ts";
 import { highestValidRole } from "../../auth/role-utils.ts";
 import { csrfTokenMatches, resolveCsrfSecret } from "../../auth/csrf.ts";
-import { clientIp } from "@dune/core/security";
 
 // json()/serverError()/typed error classes live in ../../http.ts so the
 // public API (public-api.ts) and admin routes share one implementation.
@@ -29,7 +28,7 @@ function logAuthzDenial(
   void auditLogger.log({
     event,
     actor: actorFromAuth(ctx.state.auth ?? {}),
-    ip: getClientIp(ctx.req),
+    ip: getClientIp(ctx),
     userAgent: ctx.req.headers.get("user-agent") ?? null,
     target: { type: "route", id: ctx.url.pathname },
     detail,
@@ -296,8 +295,8 @@ export function validatePagePath(p: string): boolean {
  * attribution. Callers that need the raw claimed IP should read the headers
  * themselves and record them as untrusted metadata.
  */
-export function getClientIp(req: Request): string | null {
-  const ip = clientIp(req, { trustForwardedFor: false });
+export function getClientIp(ctx: FreshContext<AdminState>): string | null {
+  const ip = ctx.state.adminContext.services.security.clientIp(ctx.req, { trustForwardedFor: false });
   return ip === "unknown" ? null : ip;
 }
 

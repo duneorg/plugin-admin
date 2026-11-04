@@ -4,7 +4,6 @@ import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
 import { dirname } from "@std/path";
 import { stringify as stringifyYaml } from "@std/yaml";
-import { parseUserYaml as parseYaml } from "@dune/core/security";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -14,7 +13,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "media.upload");
     if (denied) return denied;
 
-    const { storage, config } = ctx.state.adminContext;
+    const { storage, config, services } = ctx.state.adminContext;
     try {
       const body = await ctx.req.json();
       const { pagePath, name, focal } = body;
@@ -48,7 +47,7 @@ export const handler = {
         let existing: Record<string, unknown> = {};
         try {
           const raw = await storage.read(sidecarPath);
-          existing = (parseYaml(new TextDecoder().decode(raw)) as Record<string, unknown>) ?? {};
+          existing = (services.security.parseUserYaml(new TextDecoder().decode(raw)) as Record<string, unknown>) ?? {};
         } catch { return json({ ok: true }); }
         delete existing.focal;
         if (Object.keys(existing).length === 0) {
@@ -60,7 +59,7 @@ export const handler = {
         let existing: Record<string, unknown> = {};
         try {
           const raw = await storage.read(sidecarPath);
-          existing = (parseYaml(new TextDecoder().decode(raw)) as Record<string, unknown>) ?? {};
+          existing = (services.security.parseUserYaml(new TextDecoder().decode(raw)) as Record<string, unknown>) ?? {};
         } catch { /* new sidecar */ }
         existing.focal = focal;
         await storage.write(sidecarPath, new TextEncoder().encode(stringifyYaml(existing)));
