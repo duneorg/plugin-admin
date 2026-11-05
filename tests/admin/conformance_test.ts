@@ -95,4 +95,24 @@ runAdminConformance({
     });
     if (res.status !== 200) throw new Error(`plugin-admin edit failed: ${res.status} ${await res.text()}`);
   },
+
+  async createPage(app, cookie, { sourcePath, title }) {
+    // The route takes the page folder and adds default.md itself.
+    const folder = sourcePath.replace(/^content\//, "").replace(/\/default\.md$/, "");
+    const res = await app.request("/admin/api/pages", {
+      method: "POST",
+      headers: { cookie, origin: ORIGIN, "content-type": "application/json" },
+      body: JSON.stringify({ path: folder, title }),
+    });
+    if (!res.ok) throw new Error(`plugin-admin create failed: ${res.status} ${await res.text()}`);
+  },
+
+  async deletePage(app, cookie, { sourcePath }) {
+    const relative = sourcePath.replace(/^content\//, "");
+    const res = await app.request(`/admin/api/pages/${relative}`, {
+      method: "DELETE",
+      headers: { cookie, origin: ORIGIN },
+    });
+    if (res.status !== 200) throw new Error(`plugin-admin delete failed: ${res.status} ${await res.text()}`);
+  },
 });
