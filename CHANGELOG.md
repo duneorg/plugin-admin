@@ -16,6 +16,9 @@ follows [Semantic Versioning](https://semver.org).
   `MountApi.capabilities` instead of `adminServices` and each plugin's `adminPages`,
   and no longer writes `bootstrap.adminContext`. The jobs view reads
   `BootstrapResult.jobScheduler`, which `dune serve` sets after mount.
+  `auth.session` declares `sessionCookies: ["dune_session"]`, which core uses to decide
+  whether to authenticate a public page and whether to keep the response out of the shared
+  page cache.
 - **`mountDuneAdminEarly()` is gone** (core removed `DunePlugin.mountEarly`).
   `mountDuneAdmin(app, ctx, adminContext?)` falls back to the single-site context
   stored by the plugin's `mount()` instead of `ctx.adminContext`. A plugin route that

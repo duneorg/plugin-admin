@@ -127,6 +127,10 @@ export function createAdminPlugin(
       // (the admin bar, the inline-edit WebSocket, `dune serve`'s scheduler
       // loop); until mount() has built the context they report "nobody".
       api.capabilities.provide("auth.session", () => ({
+        // The cookie the admin's auth middleware sets (see createAuthMiddleware).
+        // Core uses it to decide whether to authenticate a public page and whether
+        // to keep the response out of the shared page cache.
+        sessionCookies: ["dune_session"],
         authenticate: (req) =>
           liveAdminContext
             ? liveAdminContext.auth.authenticate(req)

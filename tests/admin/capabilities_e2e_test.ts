@@ -36,6 +36,7 @@ Deno.test(
       assertExists(ctx.capabilities.get("scheduler.executor"));
       const anonymous = await auth.authenticate(new Request("http://localhost/"));
       assertEquals(anonymous.authenticated, false);
+      assertEquals(auth.sessionCookies, ["dune_session"]);
       const providers = Object.fromEntries(ctx.capabilities.providers().map((p) => [p.name, p.provider]));
       assertEquals(providers["auth.session"], "dune-admin");
       assertEquals(providers["scheduler.executor"], "dune-admin");
