@@ -36,6 +36,7 @@ import type { AuthzDbAdapter } from "@dune/core/auth/authz-adapter-db";
 import { initAdminContext } from "./src/admin/context.ts";
 import type { AdminContext } from "./src/admin/context.ts";
 import { createBlockEditorPlugin } from "./src/admin/block-editor-plugin.tsx";
+import type { App } from "fresh";
 import { getDuneAdminIslands, mountAdminPanel } from "./src/admin/mount.ts";
 import * as corePlugins from "@dune/core/plugins";
 import denoJson from "./deno.json" with { type: "json" };
@@ -373,7 +374,10 @@ export function createAdminPlugin(
       }
 
       // ── Mount admin Fresh routes ──────────────────────────────────────────────
-      mountAdminPanel(app, runtime, adminContext);
+      // The admin uses Fresh-only features (fsRoutes, layout, route), so it depends on Fresh
+      // and narrows the contract's PluginApp; core always passes the real Fresh App.
+      // deno-lint-ignore no-explicit-any
+      mountAdminPanel(app as unknown as App<any>, runtime, adminContext);
     },
   };
 }

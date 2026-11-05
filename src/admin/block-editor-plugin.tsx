@@ -9,6 +9,7 @@
  */
 
 import type { ContentEditorPlugin } from "@dune/core/hooks";
+import type { FreshContext } from "fresh";
 import PageEditor from "./islands/PageEditor.tsx";
 
 function PageEditorRoute(
@@ -28,7 +29,10 @@ function PageEditorRoute(
 
 export function createBlockEditorPlugin(): ContentEditorPlugin {
   return {
-    pageEditorHandler(ctx) {
+    // A full Fresh context (ctx.render): the contract's PluginRouteContext is narrowed here,
+    // which the contract allows because this plugin depends on Fresh itself.
+    // deno-lint-ignore no-explicit-any
+    pageEditorHandler(ctx: FreshContext<any>) {
       const { engine, prefix } = ctx.state.adminContext;
       const pagePath = ctx.url.searchParams.get("path");
       if (!pagePath) {

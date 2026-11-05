@@ -27,6 +27,11 @@ follows [Semantic Versioning](https://semver.org).
   `admin.routes`) and no longer registers public plugin routes or form endpoints a second time: core's
   `createDuneApp()` owns those. The headless `mountDuneAdmin(app, bootstrapResult)` is unchanged. Needs
   `@dune/core` 0.36.
+- **Narrows the contract's `PluginApp` to Fresh's `App` itself (#97).** Core's contract no longer names Fresh
+  types (`MountApi.app` is a `PluginApp`, handlers get a `PluginRouteContext`). The admin uses Fresh-only
+  features (`fsRoutes`, `layout`, `route`), so `mount()` casts `app` to Fresh's `App` and the block editor
+  declares `pageEditorHandler(ctx: FreshContext)`. No behaviour change. `deno task check` now also
+  type-checks `mod.ts`, which it silently skipped.
 
 ### Added
 
