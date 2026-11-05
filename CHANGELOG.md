@@ -21,6 +21,14 @@ follows [Semantic Versioning](https://semver.org).
   `services.authz.seedAdminTuples()` instead of importing `bootstrapAdminTuples`.
   Core builds them once per site under `admin.runtime_dir`; the admin no longer
   calls their factories. Requires `@dune/core` 0.36 or newer.
+- **Blueprints and data paths come from core's `services`**: `services.blueprints`
+  (`has` / `resolve` / `validate`, read from the content engine at call time)
+  replaces importing `resolveBlueprint` / `validateFrontmatter`, and
+  `services.paths.dataDir` replaces `resolveDataDir()`. Requires `@dune/core`
+  0.36 or newer.
+- **`GET /admin/api/search/analytics` is removed.** It summarised
+  `search-analytics.jsonl`, which nothing in core or the first-party plugins
+  ever wrote, so it always returned an empty summary.
 - **Security policy, sessions, users and passwords come from core's `services`**
   (`MountApi.services`, `@dune/core/plugin-api`) instead of imports from
   `@dune/core`: HTML sanitising, SSRF-guarded fetch, body limits, client IP, the

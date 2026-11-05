@@ -12,7 +12,6 @@
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, requireTsxWrite, requirePageOwner, requireOwnedPage, pageOwnerId, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
-import { resolveBlueprint, validateFrontmatter } from "@dune/core/blueprints";
 import { fireContentWebhooks } from "../../../../../admin/webhooks.ts";
 import type { PageFrontmatter } from "@dune/core/content/types";
 import type { FreshContext } from "fresh";
@@ -51,10 +50,7 @@ export const handler = {
       // nothing for every site with blueprints configured. Resolve
       // inheritance (`extends`) the same way PUT's validateFrontmatter()
       // does, rather than sending the raw unresolved definition.
-      const rawBlueprint = engine.blueprints[page.template];
-      const blueprint = rawBlueprint
-        ? resolveBlueprint(page.template, rawBlueprint, engine.blueprints, 0)
-        : null;
+      const blueprint = ctx.state.adminContext.services.blueprints.resolve(page.template);
       return json({
         sourcePath: page.sourcePath, route: page.route, format: page.format,
         template: page.template, frontmatter: page.frontmatter, rawContent: page.rawContent,
@@ -113,8 +109,9 @@ export const handler = {
         else delete mergedFm.createdBy;
 
         const template = (mergedFm.template as string) ?? page.template;
-        if (engine.blueprints[template]) {
-          const errors = validateFrontmatter(mergedFm as PageFrontmatter, template, engine.blueprints);
+        const { blueprints } = ctx.state.adminContext.services;
+        if (blueprints.has(template)) {
+          const errors = blueprints.validate(mergedFm as PageFrontmatter, template);
           if (errors.length > 0) {
             return json({ error: "Blueprint validation failed", validationErrors: errors }, 422);
           }

@@ -7,6 +7,7 @@
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { handler } from "../../src/admin/routes/api/config/theme-config.ts";
+import { makeServices } from "../helpers/services.ts";
 
 // deno-lint-ignore no-explicit-any
 function makeStorage(initial: Record<string, string> = {}): any {
@@ -48,6 +49,7 @@ function makeCtx(opts: {
     state: {
       auth: { authenticated: true, user: { id: "1", username: "admin" } },
       adminContext: {
+        services: makeServices(opts.storage),
         engine,
         storage: opts.storage,
         config: { admin: { data_dir: "data" } },

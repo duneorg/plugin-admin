@@ -26,7 +26,6 @@ import { LocalAuthProvider } from "./src/admin/auth/local-provider.ts";
 import type { AuthProvider } from "./src/admin/auth/provider.ts";
 import type { ScheduledAction } from "@dune/core/workflow";
 import { applyWorkflowTransition, SCHEDULED_ACTION_STATUS } from "./src/admin/workflow-actions.ts";
-import { resolveDataDir } from "@dune/core/forms";
 import { createCommentManager } from "./src/admin/comments.ts";
 import { createCollabManager } from "./src/collab/mod.ts";
 import type { MachineTranslator } from "@dune/core/mt";
@@ -146,7 +145,7 @@ export function createAdminPlugin(
       };
       const runtimeDir = adminCfg.runtime_dir ?? ".dune/admin";
       // `system.data_dir` — the same resolution core uses for the submissions it stores.
-      const dataDir = resolveDataDir(config);
+      const dataDir = services.paths.dataDir;
 
       // ── Admin services ────────────────────────────────────────────────────────
 
