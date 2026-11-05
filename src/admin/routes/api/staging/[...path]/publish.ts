@@ -7,6 +7,7 @@
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, requireTsxWrite, requireOwnedPage, json, serverError, csrfCheck, validatePagePath } from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
+import { announcePageEvent } from "../../../../page-events.ts";
 import type { FreshContext } from "fresh";
 
 async function maybeGitCommit(
@@ -68,6 +69,7 @@ export const handler = {
       await maybeGitCommit(filePath, pagePath, authResult.user?.name, config.admin?.git_commit);
       await staging.discard(pagePath);
       await engine.rebuild();
+      announcePageEvent(ctx, { event: "onPageUpdate", payload: { sourcePath: pageIndex.sourcePath } });
 
       return json({ published: true, sourcePath: pagePath });
     } catch (err) {

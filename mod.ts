@@ -254,6 +254,7 @@ export function createAdminPlugin(
         history: bootstrap.history,
         contentDir: config.system.content.dir,
         security: services.security,
+        hooks: bootstrap.hooks,
       });
 
       // Core accepts and stores public form submissions; the admin only

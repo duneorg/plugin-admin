@@ -6,6 +6,17 @@ follows [Semantic Versioning](https://semver.org).
 ## [Unreleased]
 
 
+### Fixed
+
+- **Every route that writes a page now announces it (#97).** Whoever writes a page fires its event; core
+  does not. Six admin paths wrote pages and fired nothing, so search indexes, webhooks and audit plugins
+  missed them: restoring a revision (`onPageUpdate`), staging publish (`onPageUpdate`), the two translate
+  routes (`onPageCreate`), the dev apply endpoint (create / update / delete), reorder (new `onPageMove`,
+  which lists every renamed folder) and collab auto-save (`onPageUpdate`, only when the save changed the file).
+  The routes share `announcePageEvent()`, which fires the hook and the configured content webhooks, so
+  `onPageMove` is also a valid webhook event. Needs `@dune/core` with `onPageMove` (0.36).
+  `tests/admin/page_events_test.ts` drives create, update, reorder, delete and restore through the real routes.
+
 ### Added
 
 - **Runs the admin conformance suite from `@dune/testing`** (`tests/admin/conformance_test.ts`): the checks
