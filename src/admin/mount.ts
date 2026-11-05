@@ -98,6 +98,47 @@ function registerAdminAuthMiddleware(
   app.use(adminMiddleware.handler as Middleware<any>);
 }
 
+/**
+ * Mount the plugin-contributed `admin.pages` under the admin prefix: GET pages
+ * rendered in the admin shell. An unauthenticated request is sent to the login
+ * page; an authenticated one needs the page's `permission` (403 otherwise).
+ * `permission` is required: an entry without one is skipped and logged as
+ * `admin.pages.invalid` rather than exposed to every authenticated admin, which
+ * also covers plugins written without type-checking.
+ */
+export function mountPluginAdminPages(
+  // deno-lint-ignore no-explicit-any
+  app: App<any>,
+  adminPrefix: string,
+  pages: readonly import("./context.ts").AdminPageRegistration[],
+  logger: { warn(event: string, fields?: Record<string, unknown>): void },
+): void {
+  for (const page of pages) {
+    if (typeof page.path !== "string" || !page.path.startsWith("/")) {
+      logger.warn("admin.pages.invalid", { path: page.path, reason: "path must start with /" });
+      continue;
+    }
+    if (typeof page.permission !== "string" || page.permission === "") {
+      logger.warn("admin.pages.invalid", { path: page.path, reason: "permission is required" });
+      continue;
+    }
+    app.get(`${adminPrefix}${page.path}`, async (fc) => {
+      // deno-lint-ignore no-explicit-any
+      const authResult = (fc.state as any).auth;
+      if (!authResult?.authenticated) {
+        return new Response(null, { status: 302, headers: { Location: `${adminPrefix}/login` } });
+      }
+      const ok = await checkPermission(
+        fc as unknown as FreshContext<AdminState>,
+        page.permission as AdminPermission,
+      );
+      if (!ok) return new Response("Forbidden", { status: 403 });
+      // deno-lint-ignore no-explicit-any
+      return page.handler(fc as any);
+    });
+  }
+}
+
 const ROUTE_METHODS = {
   GET: "get",
   POST: "post",
@@ -112,8 +153,8 @@ const ROUTE_METHODS = {
  * CSRF check (every non-GET method) and the route's `permission` check
  * (`403`), exactly as the admin's own API routes. Must run after the admin
  * middleware is registered, which is what puts `ctx.state.auth` in place.
- * A route with an unknown method or a path that does not start with `/` is
- * skipped and logged, not mounted.
+ * `permission` is required. A route with an unknown method, a path that does not
+ * start with `/`, or no permission is skipped and logged, not mounted.
  */
 export function mountPluginAdminRoutes(
   // deno-lint-ignore no-explicit-any
@@ -125,11 +166,15 @@ export function mountPluginAdminRoutes(
   for (const route of routes) {
     const register = ROUTE_METHODS[route.method as keyof typeof ROUTE_METHODS];
     if (!register || typeof route.path !== "string" || !route.path.startsWith("/")) {
-      logger.warn("admin.routes.invalid", { method: route.method, path: route.path });
+      logger.warn("admin.routes.invalid", { method: route.method, path: route.path, reason: "unknown method or path without leading /" });
+      continue;
+    }
+    if (typeof route.permission !== "string" || route.permission === "") {
+      logger.warn("admin.routes.invalid", { method: route.method, path: route.path, reason: "permission is required" });
       continue;
     }
     const guarded = withGuards(
-      { permission: route.permission as AdminPermission | undefined },
+      { permission: route.permission as AdminPermission },
       route.handler as unknown as GuardedHandler,
     );
     app[register](`${adminPrefix}${route.path}`, (fc) => {
@@ -207,33 +252,8 @@ export async function mountDuneAdmin(
       mountPluginAdminRoutes(app, adminPrefix, adminContext.pluginRoutes, adminContext.services.logger);
     }
 
-    const pluginAdminPages = adminContext?.pluginPages;
-    if (pluginAdminPages && pluginAdminPages.length > 0 && adminContext) {
-      for (const page of pluginAdminPages) {
-        const fullPath = `${adminPrefix}${page.path}`;
-        app.get(fullPath, async (fc) => {
-          // deno-lint-ignore no-explicit-any
-          const authResult = (fc.state as any).auth;
-          if (!authResult?.authenticated) {
-            return new Response(null, {
-              status: 302,
-              headers: { Location: `${adminPrefix}/login` },
-            });
-          }
-          if (page.permission) {
-            // deno-lint-ignore no-explicit-any
-            const ok = await checkPermission(
-              fc as unknown as FreshContext<AdminState>,
-              page.permission as any,
-            );
-            if (!ok) {
-              return new Response("Forbidden", { status: 403 });
-            }
-          }
-          // deno-lint-ignore no-explicit-any
-          return page.handler(fc as any);
-        });
-      }
+    if (adminContext?.pluginPages?.length) {
+      mountPluginAdminPages(app, adminPrefix, adminContext.pluginPages, adminContext.services.logger);
     }
   }
 

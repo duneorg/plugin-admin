@@ -56,6 +56,7 @@ Deno.test(
         api.capabilities.contribute("admin.pages", {
           path: "/my-plugin",
           label: "My plugin",
+          permission: "pages.read",
           handler: () => new Response("secret page"),
         });
       },

@@ -5,7 +5,7 @@
  */
 
 import { assertEquals } from "@std/assert";
-import { mountPluginAdminRoutes } from "../../src/admin/mount.ts";
+import { mountPluginAdminPages, mountPluginAdminRoutes } from "../../src/admin/mount.ts";
 
 type Handler = (fc: unknown) => Response | Promise<Response>;
 
@@ -111,15 +111,16 @@ Deno.test("admin.routes: an authenticated same-origin request with the permissio
   assertEquals(ran(), 1);
 });
 
-Deno.test("admin.routes: without a permission any authenticated admin passes, an anonymous one still does not", async () => {
-  const { routes, ran } = setup({ permission: undefined });
-  const handler = routes.get("POST /admin/api/my-plugin/save")!;
-  assertEquals((await handler(fc({ method: "POST", path: "/admin/api/my-plugin/save", headers: SAME_ORIGIN }))).status, 200);
-  assertEquals(
-    (await handler(fc({ method: "POST", path: "/admin/api/my-plugin/save", headers: SAME_ORIGIN, authenticated: false }))).status,
-    401,
-  );
-  assertEquals(ran(), 1);
+Deno.test("admin.routes: a route without a permission is refused at mount and logged, not exposed to every admin", () => {
+  logs.length = 0;
+  for (const permission of [undefined, ""]) {
+    const { routes } = setup({ permission: permission as never });
+    assertEquals(routes.size, 0);
+  }
+  assertEquals(logs.map((l) => [l.event, l.fields?.reason]), [
+    ["admin.routes.invalid", "permission is required"],
+    ["admin.routes.invalid", "permission is required"],
+  ]);
 });
 
 Deno.test("admin.routes: a GET route needs no CSRF token", async () => {
@@ -137,4 +138,69 @@ Deno.test("admin.routes: an invalid method or a path without a leading slash is 
   const bad = setup({ method: "TRACE" as never });
   assertEquals(bad.routes.size, 0);
   assertEquals(logs.map((l) => l.event), ["admin.routes.invalid", "admin.routes.invalid"]);
+  assertEquals(logs.map((l) => l.fields?.reason), [
+    "unknown method or path without leading /",
+    "unknown method or path without leading /",
+  ]);
+});
+
+// ── admin.pages ──────────────────────────────────────────────────────────────
+
+function setupPages(page: Record<string, unknown> = {}) {
+  const { app, routes } = fakeApp();
+  let ran = 0;
+  mountPluginAdminPages(
+    app,
+    "/admin",
+    [{
+      path: "/my-plugin",
+      label: "My plugin",
+      permission: "pages.read",
+      handler: () => {
+        ran++;
+        return new Response("page");
+      },
+      ...page,
+    } as never],
+    logger,
+  );
+  return { routes, ran: () => ran };
+}
+
+Deno.test("admin.pages: an anonymous request is sent to the login page and the handler does not run", async () => {
+  const { routes, ran } = setupPages();
+  const res = await routes.get("GET /admin/my-plugin")!(
+    fc({ method: "GET", path: "/admin/my-plugin", authenticated: false }),
+  ) as Response;
+  assertEquals(res.status, 302);
+  assertEquals(res.headers.get("location"), "/admin/login");
+  assertEquals(ran(), 0);
+});
+
+Deno.test("admin.pages: the permission is enforced, and the handler runs when it is held", async () => {
+  const { routes, ran } = setupPages();
+  const handler = routes.get("GET /admin/my-plugin")!;
+  assertEquals((await handler(fc({ method: "GET", path: "/admin/my-plugin", allow: false }))).status, 403);
+  assertEquals(ran(), 0);
+  assertEquals((await handler(fc({ method: "GET", path: "/admin/my-plugin" }))).status, 200);
+  assertEquals(ran(), 1);
+});
+
+Deno.test("admin.pages: a page without a permission is refused at mount and logged", () => {
+  logs.length = 0;
+  for (const permission of [undefined, ""]) {
+    const { routes } = setupPages({ permission });
+    assertEquals(routes.size, 0);
+  }
+  assertEquals(logs.map((l) => [l.event, l.fields?.reason]), [
+    ["admin.pages.invalid", "permission is required"],
+    ["admin.pages.invalid", "permission is required"],
+  ]);
+});
+
+Deno.test("admin.pages: a path without a leading slash is skipped and logged", () => {
+  logs.length = 0;
+  const { routes } = setupPages({ path: "no-slash" });
+  assertEquals(routes.size, 0);
+  assertEquals(logs.map((l) => l.event), ["admin.pages.invalid"]);
 });
