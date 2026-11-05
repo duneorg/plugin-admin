@@ -17,7 +17,7 @@ import type { Scheduler, ScheduledAction } from "@dune/core/workflow";
 import type { HistoryEngine } from "@dune/core/history";
 import type { SubmissionManager } from "./submissions.ts";
 import type { FlexEngine } from "@dune/core/flex";
-import type { HookRegistry, AdminPageRegistration } from "@dune/core/hooks";
+import type { HookRegistry, AdminPageRegistration, AdminRouteRegistration } from "@dune/core/hooks";
 import type { ContentEditorPlugin } from "@dune/core/hooks";
 import type { StagingEngine } from "@dune/core/staging";
 import type { CommentManager } from "./comments.ts";
@@ -33,7 +33,7 @@ import type { DuneAuthSystem } from "@dune/core/auth/authz";
 import type { SearchManager } from "@dune/core/search";
 import type { SectionRegistry } from "@dune/core/sections";
 
-export type { AdminPageRegistration };
+export type { AdminPageRegistration, AdminRouteRegistration };
 
 /** All services available to admin route handlers via `FreshContext.state.adminContext`. */
 export interface AdminContext {
@@ -108,6 +108,11 @@ export interface AdminContext {
    * The Fresh app registers these as programmatic routes after fsRoutes().
    */
   pluginPages?: AdminPageRegistration[];
+  /**
+   * Plugin-contributed guarded routes (`admin.routes`), collected at mount.
+   * Mounted behind the admin's authentication, CSRF and permission checks.
+   */
+  pluginRoutes?: AdminRouteRegistration[];
   /**
    * HMAC key for session-bound CSRF tokens. Tests inject this; production
    * loads or creates `runtimeDir/csrf-secret` on first use.

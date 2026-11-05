@@ -285,6 +285,7 @@ export function createAdminPlugin(
       const metricsEnabled = config.system.metrics?.enabled !== false;
 
       const pluginPages = capabilities.list("admin.pages");
+      const pluginRoutes = capabilities.list("admin.routes");
 
       const adminContext: AdminContext = {
         services,
@@ -315,6 +316,7 @@ export function createAdminPlugin(
         mt: setupState.mt,
         rateLimitStore,
         pluginPages: pluginPages.length > 0 ? [...pluginPages] : undefined,
+        pluginRoutes: pluginRoutes.length > 0 ? [...pluginRoutes] : undefined,
         // Created per serving process by `dune serve`, after mount(): read lazily.
         get jobScheduler() {
           return bootstrap.jobScheduler;

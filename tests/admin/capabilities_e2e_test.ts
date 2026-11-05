@@ -90,3 +90,40 @@ Deno.test(
     });
   },
 );
+
+Deno.test(
+  "admin mounts admin.routes behind its login: an anonymous POST is sent to the login page and the handler never runs",
+  { sanitizeOps: false, sanitizeResources: false },
+  async () => {
+    let ran = 0;
+    const contributor: DunePlugin = {
+      name: "test-route-contributor",
+      version: "1.0.0",
+      hooks: {},
+      setup(api) {
+        api.capabilities.contribute("admin.routes", {
+          method: "POST",
+          path: "/api/my-plugin/save",
+          permission: "config.update",
+          handler: () => {
+            ran++;
+            return new Response("saved");
+          },
+        });
+      },
+    };
+    await withSite([contributor], async (_ctx, handler) => {
+      const res = await handler(
+        new Request("http://localhost/admin/api/my-plugin/save", {
+          method: "POST",
+          headers: { origin: "http://localhost" },
+        }),
+      );
+      // Like every admin route, the admin middleware sends an anonymous request to
+      // the login page before the contributed handler (or its own 401) is reached.
+      assertEquals(res.status, 302);
+      assertEquals(res.headers.get("location")?.startsWith("/admin/login"), true);
+      assertEquals(ran, 0);
+    });
+  },
+);

@@ -38,9 +38,9 @@ import type { App, FreshContext, Middleware } from "fresh";
 import type { BootstrapResult } from "@dune/core/bootstrap";
 import { registerPluginPublicRoutes } from "@dune/core/fresh-app";
 import { registerFormRoutes } from "@dune/core/forms";
-import { checkPermission } from "./routes/api/_utils.ts";
+import { checkPermission, type GuardedHandler, withGuards } from "./routes/api/_utils.ts";
 import { getAdminContext } from "./context.ts";
-import type { AdminState } from "./types.ts";
+import type { AdminPermission, AdminState } from "./types.ts";
 import {
   adminIslands,
   adminLayout,
@@ -96,6 +96,51 @@ function registerAdminAuthMiddleware(
   authMiddlewareRegisteredFor.add(app);
   // deno-lint-ignore no-explicit-any
   app.use(adminMiddleware.handler as Middleware<any>);
+}
+
+const ROUTE_METHODS = {
+  GET: "get",
+  POST: "post",
+  PUT: "put",
+  PATCH: "patch",
+  DELETE: "delete",
+} as const;
+
+/**
+ * Mount the plugin-contributed `admin.routes` under the admin prefix. Each
+ * handler runs only for an authenticated admin (`401` otherwise), after the
+ * CSRF check (every non-GET method) and the route's `permission` check
+ * (`403`), exactly as the admin's own API routes. Must run after the admin
+ * middleware is registered, which is what puts `ctx.state.auth` in place.
+ * A route with an unknown method or a path that does not start with `/` is
+ * skipped and logged, not mounted.
+ */
+export function mountPluginAdminRoutes(
+  // deno-lint-ignore no-explicit-any
+  app: App<any>,
+  adminPrefix: string,
+  routes: readonly import("./context.ts").AdminRouteRegistration[],
+  logger: { warn(event: string, fields?: Record<string, unknown>): void },
+): void {
+  for (const route of routes) {
+    const register = ROUTE_METHODS[route.method as keyof typeof ROUTE_METHODS];
+    if (!register || typeof route.path !== "string" || !route.path.startsWith("/")) {
+      logger.warn("admin.routes.invalid", { method: route.method, path: route.path });
+      continue;
+    }
+    const guarded = withGuards(
+      { permission: route.permission as AdminPermission | undefined },
+      route.handler as unknown as GuardedHandler,
+    );
+    app[register](`${adminPrefix}${route.path}`, (fc) => {
+      // deno-lint-ignore no-explicit-any
+      if (!(fc.state as any).auth?.authenticated) {
+        return Response.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      // deno-lint-ignore no-explicit-any
+      return guarded(fc as any);
+    });
+  }
 }
 
 /** The single-site context `mount()` stored, or null before the plugin has mounted. */
@@ -158,6 +203,10 @@ export async function mountDuneAdmin(
     // The admin _middleware enforces authentication; here we additionally
     // honour the plugin-declared permission (if any) so plugin authors can
     // restrict access to a subset of admin roles.
+    if (adminContext?.pluginRoutes?.length) {
+      mountPluginAdminRoutes(app, adminPrefix, adminContext.pluginRoutes, adminContext.services.logger);
+    }
+
     const pluginAdminPages = adminContext?.pluginPages;
     if (pluginAdminPages && pluginAdminPages.length > 0 && adminContext) {
       for (const page of pluginAdminPages) {

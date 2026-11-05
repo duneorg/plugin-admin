@@ -19,11 +19,17 @@ follows [Semantic Versioning](https://semver.org).
 - **`mountDuneAdminEarly()` is gone** (core removed `DunePlugin.mountEarly`).
   `mountDuneAdmin(app, ctx, adminContext?)` falls back to the single-site context
   stored by the plugin's `mount()` instead of `ctx.adminContext`. A plugin route that
-  needs the admin identity calls `capabilities.get("auth.session")`; plugin routes
-  registered in a plugin's own `mount()` no longer sit behind the admin's
-  `ctx.state.adminContext` middleware, so `withGuards()` only works for pages the
-  admin mounts itself (`admin.pages`, GET). A contribution point for guarded
-  non-GET admin routes is a known gap.
+  needs the admin identity calls `capabilities.get("auth.session")`. Routes a plugin
+  registers in its own `mount()` no longer sit behind the admin's
+  `ctx.state.adminContext` middleware, so `withGuards()` no longer works there (it
+  throws a `TypeError`); a guarded `POST`/`PUT`/`PATCH`/`DELETE` admin route is now a
+  contribution to the `admin.routes` point (below).
+- **Mounts `admin.routes`**: a plugin contributes `{ method, path, permission?, handler }`
+  and the admin registers it under its prefix behind its own authentication (`401`
+  otherwise), CSRF check on every non-GET method (`403`) and the `permission` check
+  (`403`); the handler only runs when all three pass. `mountPluginAdminRoutes()` in
+  `src/admin/mount.ts` does it; a route with an unknown method or a path that does not
+  start with `/` is skipped and logged as `admin.routes.invalid`.
 - **The `admin:` block reads snake_case keys** (duneorg/dune#96, `@dune/core` 0.36):
   `session_lifetime`, `data_dir`, `runtime_dir`, `max_revisions`, `max_upload_mb`,
   `authz_store`, `audit.log_file`, and the LDAP/SAML provider fields (`base_dn`,
