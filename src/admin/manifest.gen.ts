@@ -51,53 +51,52 @@ import * as r44 from "./routes/api/preview.ts";
 import * as r45 from "./routes/api/registry/plugins.ts";
 import * as r46 from "./routes/api/registry/themes.ts";
 import * as r47 from "./routes/api/render-markdown.ts";
-import * as r48 from "./routes/api/search/analytics.ts";
-import * as r49 from "./routes/api/search/engines.ts";
-import * as r50 from "./routes/api/sections.ts";
-import * as r51 from "./routes/api/staging/[...path]/index.ts";
-import * as r52 from "./routes/api/staging/[...path]/publish.ts";
-import * as r53 from "./routes/api/theme-preview.ts";
-import * as r54 from "./routes/api/themes/install.ts";
-import * as r55 from "./routes/api/users/index.ts";
-import * as r56 from "./routes/api/users/[id]/index.ts";
-import * as r57 from "./routes/api/users/[id]/password.ts";
-import * as r58 from "./routes/api/webhooks/deliveries.ts";
-import * as r59 from "./routes/api/workflow/schedule/index.ts";
-import * as r60 from "./routes/api/workflow/schedule/[id].ts";
-import * as r61 from "./routes/api/workflow/scheduled/[...path].ts";
-import * as r62 from "./routes/api/workflow/stages.ts";
-import * as r63 from "./routes/api/workflow/status/[...path].ts";
-import * as r64 from "./routes/api/workflow/transition.ts";
-import * as r65 from "./routes/audit/index.tsx";
-import * as r66 from "./routes/collab/edit-ws.ts";
-import * as r67 from "./routes/collab/ws.ts";
-import * as r68 from "./routes/config/index.tsx";
-import * as r69 from "./routes/email-preview/index.tsx";
-import * as r70 from "./routes/flex/index.tsx";
-import * as r71 from "./routes/flex/[type]/index.tsx";
-import * as r72 from "./routes/flex/[type]/[id].tsx";
-import * as r73 from "./routes/i18n/index.tsx";
-import * as r74 from "./routes/i18n/memory.tsx";
-import * as r75 from "./routes/jobs/index.tsx";
-import * as r76 from "./routes/login.tsx";
-import * as r77 from "./routes/login/logout.ts";
-import * as r78 from "./routes/marketplace/index.tsx";
-import * as r79 from "./routes/media/index.tsx";
-import * as r80 from "./routes/metrics/index.tsx";
-import * as r81 from "./routes/pages/index.tsx";
-import * as r82 from "./routes/pages/builder.tsx";
-import * as r83 from "./routes/pages/edit.tsx";
-import * as r84 from "./routes/pages/history.tsx";
-import * as r85 from "./routes/plugins/index.tsx";
-import * as r86 from "./routes/search/index.tsx";
-import * as r87 from "./routes/submissions/index.tsx";
-import * as r88 from "./routes/submissions/[form]/index.tsx";
-import * as r89 from "./routes/submissions/[form]/[id]/index.tsx";
-import * as r90 from "./routes/submissions/[form]/[id]/delete.ts";
-import * as r91 from "./routes/submissions/[form]/[id]/files/[filename].ts";
-import * as r92 from "./routes/submissions/[form]/[id]/status.ts";
-import * as r93 from "./routes/themes/index.tsx";
-import * as r94 from "./routes/users/index.tsx";
+import * as r48 from "./routes/api/search/engines.ts";
+import * as r49 from "./routes/api/sections.ts";
+import * as r50 from "./routes/api/staging/[...path]/index.ts";
+import * as r51 from "./routes/api/staging/[...path]/publish.ts";
+import * as r52 from "./routes/api/theme-preview.ts";
+import * as r53 from "./routes/api/themes/install.ts";
+import * as r54 from "./routes/api/users/index.ts";
+import * as r55 from "./routes/api/users/[id]/index.ts";
+import * as r56 from "./routes/api/users/[id]/password.ts";
+import * as r57 from "./routes/api/webhooks/deliveries.ts";
+import * as r58 from "./routes/api/workflow/schedule/index.ts";
+import * as r59 from "./routes/api/workflow/schedule/[id].ts";
+import * as r60 from "./routes/api/workflow/scheduled/[...path].ts";
+import * as r61 from "./routes/api/workflow/stages.ts";
+import * as r62 from "./routes/api/workflow/status/[...path].ts";
+import * as r63 from "./routes/api/workflow/transition.ts";
+import * as r64 from "./routes/audit/index.tsx";
+import * as r65 from "./routes/collab/edit-ws.ts";
+import * as r66 from "./routes/collab/ws.ts";
+import * as r67 from "./routes/config/index.tsx";
+import * as r68 from "./routes/email-preview/index.tsx";
+import * as r69 from "./routes/flex/index.tsx";
+import * as r70 from "./routes/flex/[type]/index.tsx";
+import * as r71 from "./routes/flex/[type]/[id].tsx";
+import * as r72 from "./routes/i18n/index.tsx";
+import * as r73 from "./routes/i18n/memory.tsx";
+import * as r74 from "./routes/jobs/index.tsx";
+import * as r75 from "./routes/login.tsx";
+import * as r76 from "./routes/login/logout.ts";
+import * as r77 from "./routes/marketplace/index.tsx";
+import * as r78 from "./routes/media/index.tsx";
+import * as r79 from "./routes/metrics/index.tsx";
+import * as r80 from "./routes/pages/index.tsx";
+import * as r81 from "./routes/pages/builder.tsx";
+import * as r82 from "./routes/pages/edit.tsx";
+import * as r83 from "./routes/pages/history.tsx";
+import * as r84 from "./routes/plugins/index.tsx";
+import * as r85 from "./routes/search/index.tsx";
+import * as r86 from "./routes/submissions/index.tsx";
+import * as r87 from "./routes/submissions/[form]/index.tsx";
+import * as r88 from "./routes/submissions/[form]/[id]/index.tsx";
+import * as r89 from "./routes/submissions/[form]/[id]/delete.ts";
+import * as r90 from "./routes/submissions/[form]/[id]/files/[filename].ts";
+import * as r91 from "./routes/submissions/[form]/[id]/status.ts";
+import * as r92 from "./routes/themes/index.tsx";
+import * as r93 from "./routes/users/index.tsx";
 
 /** Shape of an fs-convention route module (subset Fresh cares about). */
 export interface AdminRouteModule {
@@ -165,53 +164,52 @@ export const adminRoutes: AdminRouteEntry[] = [
   { pattern: "/api/registry/plugins", mod: r45 },
   { pattern: "/api/registry/themes", mod: r46 },
   { pattern: "/api/render-markdown", mod: r47 },
-  { pattern: "/api/search/analytics", mod: r48 },
-  { pattern: "/api/search/engines", mod: r49 },
-  { pattern: "/api/sections", mod: r50 },
-  { pattern: "/api/staging/:path*", mod: r51 },
-  { pattern: "/api/staging/:path*/publish", mod: r52 },
-  { pattern: "/api/theme-preview", mod: r53 },
-  { pattern: "/api/themes/install", mod: r54 },
-  { pattern: "/api/users", mod: r55 },
-  { pattern: "/api/users/:id", mod: r56 },
-  { pattern: "/api/users/:id/password", mod: r57 },
-  { pattern: "/api/webhooks/deliveries", mod: r58 },
-  { pattern: "/api/workflow/schedule", mod: r59 },
-  { pattern: "/api/workflow/schedule/:id", mod: r60 },
-  { pattern: "/api/workflow/scheduled/:path*", mod: r61 },
-  { pattern: "/api/workflow/stages", mod: r62 },
-  { pattern: "/api/workflow/status/:path*", mod: r63 },
-  { pattern: "/api/workflow/transition", mod: r64 },
-  { pattern: "/audit", mod: r65 },
-  { pattern: "/collab/edit-ws", mod: r66 },
-  { pattern: "/collab/ws", mod: r67 },
-  { pattern: "/config", mod: r68 },
-  { pattern: "/email-preview", mod: r69 },
-  { pattern: "/flex", mod: r70 },
-  { pattern: "/flex/:type", mod: r71 },
-  { pattern: "/flex/:type/:id", mod: r72 },
-  { pattern: "/i18n", mod: r73 },
-  { pattern: "/i18n/memory", mod: r74 },
-  { pattern: "/jobs", mod: r75 },
-  { pattern: "/login", mod: r76 },
-  { pattern: "/login/logout", mod: r77 },
-  { pattern: "/marketplace", mod: r78 },
-  { pattern: "/media", mod: r79 },
-  { pattern: "/metrics", mod: r80 },
-  { pattern: "/pages", mod: r81 },
-  { pattern: "/pages/builder", mod: r82 },
-  { pattern: "/pages/edit", mod: r83 },
-  { pattern: "/pages/history", mod: r84 },
-  { pattern: "/plugins", mod: r85 },
-  { pattern: "/search", mod: r86 },
-  { pattern: "/submissions", mod: r87 },
-  { pattern: "/submissions/:form", mod: r88 },
-  { pattern: "/submissions/:form/:id", mod: r89 },
-  { pattern: "/submissions/:form/:id/delete", mod: r90 },
-  { pattern: "/submissions/:form/:id/files/:filename", mod: r91 },
-  { pattern: "/submissions/:form/:id/status", mod: r92 },
-  { pattern: "/themes", mod: r93 },
-  { pattern: "/users", mod: r94 },
+  { pattern: "/api/search/engines", mod: r48 },
+  { pattern: "/api/sections", mod: r49 },
+  { pattern: "/api/staging/:path*", mod: r50 },
+  { pattern: "/api/staging/:path*/publish", mod: r51 },
+  { pattern: "/api/theme-preview", mod: r52 },
+  { pattern: "/api/themes/install", mod: r53 },
+  { pattern: "/api/users", mod: r54 },
+  { pattern: "/api/users/:id", mod: r55 },
+  { pattern: "/api/users/:id/password", mod: r56 },
+  { pattern: "/api/webhooks/deliveries", mod: r57 },
+  { pattern: "/api/workflow/schedule", mod: r58 },
+  { pattern: "/api/workflow/schedule/:id", mod: r59 },
+  { pattern: "/api/workflow/scheduled/:path*", mod: r60 },
+  { pattern: "/api/workflow/stages", mod: r61 },
+  { pattern: "/api/workflow/status/:path*", mod: r62 },
+  { pattern: "/api/workflow/transition", mod: r63 },
+  { pattern: "/audit", mod: r64 },
+  { pattern: "/collab/edit-ws", mod: r65 },
+  { pattern: "/collab/ws", mod: r66 },
+  { pattern: "/config", mod: r67 },
+  { pattern: "/email-preview", mod: r68 },
+  { pattern: "/flex", mod: r69 },
+  { pattern: "/flex/:type", mod: r70 },
+  { pattern: "/flex/:type/:id", mod: r71 },
+  { pattern: "/i18n", mod: r72 },
+  { pattern: "/i18n/memory", mod: r73 },
+  { pattern: "/jobs", mod: r74 },
+  { pattern: "/login", mod: r75 },
+  { pattern: "/login/logout", mod: r76 },
+  { pattern: "/marketplace", mod: r77 },
+  { pattern: "/media", mod: r78 },
+  { pattern: "/metrics", mod: r79 },
+  { pattern: "/pages", mod: r80 },
+  { pattern: "/pages/builder", mod: r81 },
+  { pattern: "/pages/edit", mod: r82 },
+  { pattern: "/pages/history", mod: r83 },
+  { pattern: "/plugins", mod: r84 },
+  { pattern: "/search", mod: r85 },
+  { pattern: "/submissions", mod: r86 },
+  { pattern: "/submissions/:form", mod: r87 },
+  { pattern: "/submissions/:form/:id", mod: r88 },
+  { pattern: "/submissions/:form/:id/delete", mod: r89 },
+  { pattern: "/submissions/:form/:id/files/:filename", mod: r90 },
+  { pattern: "/submissions/:form/:id/status", mod: r91 },
+  { pattern: "/themes", mod: r92 },
+  { pattern: "/users", mod: r93 },
 ];
 
 /** Island files under src/admin/islands/, for Builder.registerIsland(). */
