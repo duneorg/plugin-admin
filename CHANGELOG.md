@@ -29,7 +29,8 @@ follows [Semantic Versioning](https://semver.org).
 - **`GET /admin/api/search/analytics` reads core's recorder.** Core now records
   `GET /api/search` queries itself when `system.search.analytics: true` (off by
   default: the log holds what visitors typed) and the route returns
-  `services.search.analytics.summarize()` plus an `enabled` flag. Nothing wrote
+  `services.search.analytics.summarize()` plus an `enabled` flag (the summary also
+  carries `since`, the time of the first counted search). Nothing wrote
   the log after the admin extraction, so the route used to return an empty
   summary. Requires `@dune/core` 0.36 or newer.
 - **Security policy, sessions, users and passwords come from core's `services`**
