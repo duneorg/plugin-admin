@@ -5,6 +5,16 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+
+### Added
+
+- **Runs the admin conformance suite from `@dune/testing`** (`tests/admin/conformance_test.ts`): the checks
+  the stub admin passes, against plugin-admin over a real temp site. It covers `auth.session`, session
+  recognition and marker scrubbing, the declared `dune_session` cookie, mount-order independence,
+  `onPageUpdate` fired once by an edit, `admin.pages` / `admin.routes` mounted behind the login and the CSRF
+  check, and the site serving with no admin. Needs `@dune/testing` with the conformance suite
+  (`"@dune/testing": "jsr:@dune/testing@^1"` in `deno.json`), so it is draft-only until that is released.
+
 ### Changed — BREAKING
 
 - **The admin provides and consumes core's capabilities instead of the untyped
