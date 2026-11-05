@@ -57,7 +57,13 @@ function comparePatterns(a: string, b: string): number {
     const y = sb[i];
     if (x === undefined) return -1;
     if (y === undefined) return 1;
-    if (x === y) continue;
+    if (x === y) {
+      // A shared wildcard swallows everything after it, so the pattern with
+      // more segments following it (`/:path*/publish`) is the narrower one
+      // and must be registered first, or the bare `/:path*` shadows it.
+      if (x.endsWith("*") && sa.length !== sb.length) return sb.length - sa.length;
+      continue;
+    }
     const rank = (s: string) => s.endsWith("*") ? 2 : s.startsWith(":") ? 1 : 0;
     const rx = rank(x);
     const ry = rank(y);

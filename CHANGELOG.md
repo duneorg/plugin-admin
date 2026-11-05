@@ -8,6 +8,13 @@ follows [Semantic Versioning](https://semver.org).
 
 ### Fixed
 
+- **Staging publish and the page-comment routes were unreachable.** The manifest generator registered a bare
+  wildcard (`/api/staging/:path*`) before routes that extend it (`/api/staging/:path*/publish`), so the
+  wildcard swallowed them: publishing a staged draft ran the upsert handler and 500ed on an empty body. The
+  same shadowing hit `/api/pages/:path*/comments`, `.../comments/:id` and `.../comments/:id/resolve`. The
+  generator now registers the route with more segments after a shared wildcard first.
+  `tests/admin/staging_publish_test.ts` publishes a staged draft over HTTP and checks the page file.
+
 - **Every route that writes a page now announces it (#97).** Whoever writes a page fires its event; core
   does not. Six admin paths wrote pages and fired nothing, so search indexes, webhooks and audit plugins
   missed them: restoring a revision (`onPageUpdate`), staging publish (`onPageUpdate`), the two translate
