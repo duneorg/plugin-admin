@@ -7,6 +7,23 @@ follows [Semantic Versioning](https://semver.org).
 
 ### Changed — BREAKING
 
+- **The admin provides and consumes core's capabilities instead of the untyped
+  `adminContext` bag (duneorg/dune#97, `@dune/core` 0.36).** It provides
+  `auth.session` (who is the admin on a request: the admin bar and the inline-edit
+  WebSocket's admin fallback) and `scheduler.executor` (runs due scheduled actions;
+  `dune serve` starts core's scheduler loop when it exists). It reads the
+  `inline-edit` and `editor.content` slots and the `admin.pages` contributions from
+  `MountApi.capabilities` instead of `adminServices` and each plugin's `adminPages`,
+  and no longer writes `bootstrap.adminContext`. The jobs view reads
+  `BootstrapResult.jobScheduler`, which `dune serve` sets after mount.
+- **`mountDuneAdminEarly()` is gone** (core removed `DunePlugin.mountEarly`).
+  `mountDuneAdmin(app, ctx, adminContext?)` falls back to the single-site context
+  stored by the plugin's `mount()` instead of `ctx.adminContext`. A plugin route that
+  needs the admin identity calls `capabilities.get("auth.session")`; plugin routes
+  registered in a plugin's own `mount()` no longer sit behind the admin's
+  `ctx.state.adminContext` middleware, so `withGuards()` only works for pages the
+  admin mounts itself (`admin.pages`, GET). A contribution point for guarded
+  non-GET admin routes is a known gap.
 - **The `admin:` block reads snake_case keys** (duneorg/dune#96, `@dune/core` 0.36):
   `session_lifetime`, `data_dir`, `runtime_dir`, `max_revisions`, `max_upload_mb`,
   `authz_store`, `audit.log_file`, and the LDAP/SAML provider fields (`base_dn`,

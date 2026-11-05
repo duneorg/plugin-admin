@@ -36,7 +36,7 @@ import type { AuthzDbAdapter } from "@dune/core/auth/authz-adapter-db";
 import { initAdminContext } from "./src/admin/context.ts";
 import type { AdminContext } from "./src/admin/context.ts";
 import { createBlockEditorPlugin } from "./src/admin/block-editor-plugin.tsx";
-import { getDuneAdminIslands, mountDuneAdmin, mountDuneAdminEarly } from "./src/admin/mount.ts";
+import { getDuneAdminIslands, mountDuneAdmin } from "./src/admin/mount.ts";
 import { sectionRegistry } from "@dune/core/sections";
 import type { SectionRegistry } from "@dune/core/sections";
 import * as corePlugins from "@dune/core/plugins";
@@ -94,11 +94,9 @@ export function createAdminPlugin(
   opts: AdminPluginOptions,
 ): DunePlugin {
   let setupState: AdminSetupState | null = null;
-  // Set partway through mount(), once AdminContext is actually built.
-  // mountEarly() registers a middleware that reads this lazily (per
-  // request) rather than needing the built value up front — see
-  // mountDuneAdminEarly()'s doc comment for why that's necessary (it runs
-  // before mount() has built anything).
+  // Set at the end of mount(), once AdminContext is built. The capabilities
+  // declared in setup() delegate to it lazily (per request), because core
+  // resolves them before mount() has built the auth middleware and the rest.
   let liveAdminContext: AdminContext | null = null;
 
   return {
@@ -107,12 +105,6 @@ export function createAdminPlugin(
     description: "Built-in Dune admin panel",
     hooks: {},
     islandSpecifiers: getDuneAdminIslands(),
-
-    mountEarly({ app, bootstrap }: MountApi) {
-      if (!setupState) return; // admin disabled
-      // deno-lint-ignore no-explicit-any
-      mountDuneAdminEarly(app as any, bootstrap, () => liveAdminContext);
-    },
 
     async setup(api) {
       const adminCfg = config.admin ?? {
@@ -130,9 +122,24 @@ export function createAdminPlugin(
       const { audit: auditLogger, mt } = api.services.engines;
 
       setupState = { config, storage, opts, auditLogger, mt };
+
+      // What this plugin provides to core. Core reads them at request time
+      // (the admin bar, the inline-edit WebSocket, `dune serve`'s scheduler
+      // loop); until mount() has built the context they report "nobody".
+      api.capabilities.provide("auth.session", () => ({
+        authenticate: (req) =>
+          liveAdminContext
+            ? liveAdminContext.auth.authenticate(req)
+            : Promise.resolve({ authenticated: false }),
+      }));
+      api.capabilities.provide("scheduler.executor", () => ({
+        execute: async (action) => {
+          await liveAdminContext?.executeScheduledAction?.(action);
+        },
+      }));
     },
 
-    async mount({ app, bootstrap, adminServices, services }: MountApi) {
+    async mount({ app, bootstrap, services, capabilities }: MountApi) {
       const { logger } = services;
       if (!setupState) return; // admin disabled
 
@@ -271,15 +278,13 @@ export function createAdminPlugin(
       });
 
       // ── Default content editor ────────────────────────────────────────────────
-      if (!adminServices.contentEditor) {
-        adminServices.contentEditor = createBlockEditorPlugin();
-      }
+      const inlineEdit = capabilities.get("inline-edit");
+      const contentEditor = capabilities.get("editor.content") ?? createBlockEditorPlugin();
 
       // ── Build AdminContext ────────────────────────────────────────────────────
       const metricsEnabled = config.system.metrics?.enabled !== false;
 
-      const pluginPages = bootstrap.hooks.plugins()
-        .flatMap((p) => p.adminPages ?? []);
+      const pluginPages = capabilities.list("admin.pages");
 
       const adminContext: AdminContext = {
         services,
@@ -302,14 +307,18 @@ export function createAdminPlugin(
         staging: stagingEngine,
         comments: commentManager,
         collab: collabManager,
-        inlineEdit: adminServices.inlineEdit,
-        contentEditor: adminServices.contentEditor,
+        inlineEdit,
+        contentEditor,
         imageCache: bootstrap.imageCache,
         auditLogger: setupState.auditLogger ?? undefined,
         metrics: metricsEnabled ? bootstrap.metrics : undefined,
         mt: setupState.mt,
         rateLimitStore,
-        pluginPages: pluginPages.length > 0 ? pluginPages : undefined,
+        pluginPages: pluginPages.length > 0 ? [...pluginPages] : undefined,
+        // Created per serving process by `dune serve`, after mount(): read lazily.
+        get jobScheduler() {
+          return bootstrap.jobScheduler;
+        },
         authz: bootstrap.authz,
         // Cores older than 0.31 don't expose `sections` on BootstrapResult;
         // fall back to this package's own module singleton, which resolves to
@@ -321,17 +330,9 @@ export function createAdminPlugin(
       // Keep the singleton for single-site serve paths (serve.ts, dev.ts).
       initAdminContext(adminContext);
 
-      // Unblocks mountEarly()'s ctx.state.adminContext middleware — see its
-      // doc comment. Must happen before any other plugin's route could
-      // conceivably run, which it does: mountPlugins() finishes every
-      // plugin's mount() before the app starts serving requests.
+      // Lets the capabilities declared in setup() answer. mountPlugins()
+      // finishes every plugin's mount() before the app serves requests.
       liveAdminContext = adminContext;
-
-      // Expose adminContext on the bootstrap result so serve.ts can wire the
-      // job scheduler into it after mount() returns. BootstrapResult types
-      // this loosely (Record<string, unknown>) since core has no concrete
-      // AdminContext type — plugin-admin owns the actual shape.
-      bootstrap.adminContext = adminContext as unknown as Record<string, unknown>;
 
       // No default admin is ever created. The first admin is an explicit act:
       // `dune users:create <email> --role admin --password-prompt`, or

@@ -67,9 +67,9 @@ export interface AdminContext {
   staging?: StagingEngine;
   comments?: CommentManager;
   collab?: CollabManager;
-  /** Inline editing manager, provided by a plugin via adminServices (v0.16+). */
+  /** Inline editing manager, provided by a plugin as the `inline-edit` capability. */
   inlineEdit?: InlineEditManager;
-  /** Custom page editor, provided by a plugin via adminServices (v0.24+). Replaces the built-in block editor. */
+  /** Custom page editor, provided by a plugin as the `editor.content` capability. Replaces the built-in block editor. */
   contentEditor?: ContentEditorPlugin;
   imageCache?: ImageCache;
   auditLogger?: AuditLogger;

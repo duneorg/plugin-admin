@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 /**
  * Built-in block editor — the default ContentEditorPlugin loaded by bootstrap
- * when no plugin overrides adminServices.contentEditor.
+ * when no plugin provides the `editor.content` capability.
  *
  * Wraps the PageEditor island in the same way the old hardwired route did, but
  * now as a proper ContentEditorPlugin so it participates in the same slot that
