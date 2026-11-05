@@ -32,6 +32,12 @@ follows [Semantic Versioning](https://semver.org).
   features (`fsRoutes`, `layout`, `route`), so `mount()` casts `app` to Fresh's `App` and the block editor
   declares `pageEditorHandler(ctx: FreshContext)`. No behaviour change. `deno task check` now also
   type-checks `mod.ts`, which it silently skipped.
+- **`mountDuneAdmin()` no longer registers plugin public routes or the form endpoints, and the
+  `createSubmissionManager` re-export is gone (#97, slice 4).** Both were core's own work: `createDuneApp()`
+  registers plugins' `publicRoutes` and `/api/forms/*`, `/api/webhook/incoming` itself (the admin's second call
+  was a no-op there), and the submission store is `PluginRuntime.submissions`. The admin now imports neither
+  `registerPluginPublicRoutes` nor `registerFormRoutes`, which lets core stop exporting them. `mountDuneAdmin()`
+  now mounts only the panel. The `Submission*` types are still re-exported.
 
 ### Added
 

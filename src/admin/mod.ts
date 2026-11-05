@@ -39,7 +39,6 @@ export type {
 export { toUserInfo } from "./types.ts";
 
 // Submissions
-export { createSubmissionManager } from "./submissions.ts";
 export type {
   Submission,
   SubmissionStatus,

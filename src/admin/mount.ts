@@ -36,8 +36,6 @@
 // deno-lint-ignore no-explicit-any
 import type { App, FreshContext, Middleware } from "fresh";
 import type { BootstrapResult } from "@dune/core/bootstrap";
-import { registerPluginPublicRoutes } from "@dune/core/fresh-app";
-import { registerFormRoutes } from "@dune/core/forms";
 import { checkPermission, type GuardedHandler, withGuards } from "./routes/api/_utils.ts";
 import { getAdminContext } from "./context.ts";
 import type { AdminPermission, AdminState } from "./types.ts";
@@ -199,16 +197,16 @@ function currentAdminContextOrNull(): import("./context.ts").AdminContext | null
 }
 
 /**
- * Mount Dune's admin panel and public API routes onto an existing Fresh app.
+ * Mount Dune's admin panel onto an existing Fresh app.
  *
  * Registers:
- * - Per-site admin context middleware (required for admin route handlers) —
- *   a no-op here if `mountDuneAdminEarly()` already registered it (see
- *   `contextMiddlewareRegisteredFor`).
+ * - Per-site admin context middleware (required for admin route handlers)
  * - Admin file-system routes under `adminPrefix` (default `/admin`)
- * - Plugin admin pages (programmatic routes registered by plugins)
- * - Plugin public routes (registered by plugins)
- * - Public form and webhook API endpoints
+ * - The plugins' `admin.pages` and `admin.routes`
+ *
+ * It does not register plugins' `publicRoutes` or the public form and webhook
+ * endpoints: `createDuneApp()` in `@dune/core` owns those, and no longer
+ * exports the functions that registered them.
  *
  * @param app - The Fresh App instance to mount onto.
  * @param ctx - A fully-bootstrapped BootstrapResult from `bootstrap()`.
@@ -224,26 +222,7 @@ export async function mountDuneAdmin(
    */
   adminCtxOverride?: import("./context.ts").AdminContext,
 ): Promise<void> {
-  const { config } = ctx;
-  const adminPrefix = config.admin?.path ?? "/admin";
   mountAdminPanel(app, ctx, adminCtxOverride ?? currentAdminContextOrNull());
-
-  // ── Plugin public routes ────────────────────────────────────────────────────
-  // @dune/core's own createDuneApp() registers these itself now (it collects
-  // BootstrapResult.pluginPublicRoutes in bootstrap.ts and wires them before
-  // its content catch-all) — this call only matters for the headless-mode
-  // path this file's own module docstring documents, where a developer calls
-  // bootstrap() + mountDuneAdmin() directly and never goes through
-  // createDuneApp() at all. Delegating to the same core function (rather than
-  // re-implementing the validation/shadowing logic here) keeps exactly one
-  // place that decides what a plugin route is allowed to do.
-  registerPluginPublicRoutes(app, ctx, { adminPrefix });
-
-  // ── Public form / webhook API ───────────────────────────────────────────────
-  // Served by core, with or without the admin panel. createDuneApp() already
-  // registers them, so this only matters for the headless path above, and it
-  // is a no-op when they are already there.
-  registerFormRoutes(app, ctx);
 }
 
 /**
