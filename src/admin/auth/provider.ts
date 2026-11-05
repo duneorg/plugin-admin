@@ -7,7 +7,6 @@
  * @module
  */
 
-import type { Role } from "@dune/core/config";
 
 /**
  * User attributes returned by an external auth provider after successful authentication.
@@ -41,13 +40,14 @@ export interface AuthCredentials {
 
 /**
  * An authentication provider handles identity verification.
- * Multiple provider types are supported; the session and user-provisioning layer is shared.
+ * The built-in provider is `local`; any other (LDAP, SAML, OIDC, ...) is injected through
+ * the plugin's `authProvider` option. The session and user-provisioning layer is shared.
  *
  * Username+password flows (local, LDAP) use `authenticate()`.
  * Redirect-based flows (SAML, OIDC) use `initiateLogin()` + `handleCallback()`.
  */
 export interface AuthProvider {
-  readonly type: "local" | "ldap" | "saml" | "oidc";
+  readonly type: string;
 
   /**
    * Verify credentials and return provider user attributes.
@@ -69,85 +69,3 @@ export interface AuthProvider {
   handleCallback?(req: Request): Promise<AuthProviderUser | null>;
 }
 
-/** Configuration union for all supported provider types. */
-export type AuthProviderConfig =
-  | { type: "local" }
-  | LdapProviderConfig
-  | SamlProviderConfig;
-
-/** LDAP authentication provider configuration. */
-export interface LdapProviderConfig {
-  type: "ldap";
-  /**
-   * LDAP server URL.
-   * @example "ldap://ldap.example.com:389"
-   * @example "ldaps://ldap.example.com:636"
-   */
-  url: string;
-  /**
-   * Base DN for user search.
-   * @example "ou=users,dc=example,dc=com"
-   */
-  base_dn: string;
-  /**
-   * LDAP attribute containing the login name.
-   * Default: "sAMAccountName" (Active Directory) or "uid" (OpenLDAP).
-   */
-  username_attr?: string;
-  /**
-   * Optional bind DN for a service account used to search the directory.
-   * If omitted, Dune attempts a direct bind using the user's constructed DN.
-   */
-  bind_dn?: string;
-  /**
-   * Service account password. Supports "$ENV_VAR" expansion.
-   * @example "$LDAP_BIND_PASSWORD"
-   */
-  bind_password?: string;
-  /** LDAP attribute to use as email. Default: "mail" */
-  email_attr?: string;
-  /** LDAP attribute to use as display name. Default: "cn" */
-  name_attr?: string;
-  /**
-   * Map LDAP group membership to Dune roles. First match wins.
-   * @example
-   * ```yaml
-   * roleMap:
-   *   - group: "cn=cms-admins,ou=groups,dc=example,dc=com"
-   *     role: "admin"
-   *   - group: "cn=cms-editors,ou=groups,dc=example,dc=com"
-   *     role: "editor"
-   * ```
-   */
-  role_map?: Array<{ group: string; role: Role }>;
-  /** Default role for authenticated users not in any mapped group. Default: "author" */
-  default_role?: Role;
-}
-
-/** SAML 2.0 authentication provider configuration. */
-export interface SamlProviderConfig {
-  type: "saml";
-  /** Your application's Entity ID (SP entity ID). */
-  entity_id: string;
-  /**
-   * Assertion Consumer Service URL — where the IdP POSTs the assertion after authentication.
-   * @example "https://example.com/admin/saml/acs"
-   */
-  acs_url: string;
-  /** Identity provider metadata as a URL (fetched at startup) or inline XML. */
-  idp_metadata: string;
-  /** SAML attribute containing the username. Default: "NameID" */
-  username_attr?: string;
-  /** SAML attribute containing the email. Default: "email" or "mail" */
-  email_attr?: string;
-  /** SAML attribute containing the display name. Default: "displayName" */
-  name_attr?: string;
-  /**
-   * Map IdP group/role attribute values to Dune roles. First match wins.
-   */
-  role_map?: Array<{ value: string; role: Role }>;
-  /** SAML attribute carrying the role or group value. Default: "role" or "groups" */
-  role_attr?: string;
-  /** Default role for users with no matching roleMap entry. Default: "author" */
-  default_role?: Role;
-}

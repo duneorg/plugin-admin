@@ -17,6 +17,16 @@ follows [Semantic Versioning](https://semver.org).
   `onPageMove` is also a valid webhook event. Needs `@dune/core` with `onPageMove` (0.36).
   `tests/admin/page_events_test.ts` drives create, update, reorder, delete and restore through the real routes.
 
+### Removed — BREAKING
+
+- **The LDAP and SAML auth providers (#97).** `LdapAuthProvider` and `SamlAuthProvider` were stubs whose
+  `authenticate()` threw, and `mount()` refused `auth_provider.type: ldap | saml` anyway. They are deleted, with
+  `LdapProviderConfig`, `SamlProviderConfig` and the admin's `AuthProviderConfig` union (core's is now just
+  `{ type: "local" }`). `AuthProvider.type` is a plain string. To use another identity source, pass your own
+  provider through the `authProvider` plugin option; the `AuthProvider` interface (`authenticate`,
+  `initiateLogin`, `handleCallback`) is unchanged. An unknown `auth_provider.type` now fails with a message
+  saying so.
+
 ### Changed — BREAKING
 
 - **`mount()` reads the site from `MountApi.runtime`, not `MountApi.bootstrap` (#97).** Core's `mount()`

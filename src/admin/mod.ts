@@ -18,13 +18,8 @@ export type {
   AuthProvider,
   AuthProviderUser,
   AuthCredentials,
-  AuthProviderConfig,
-  LdapProviderConfig,
-  SamlProviderConfig,
 } from "./auth/provider.ts";
 export { LocalAuthProvider } from "./auth/local-provider.ts";
-export { LdapAuthProvider } from "./auth/ldap-provider.ts";
-export { SamlAuthProvider } from "./auth/saml-provider.ts";
 export { findOrProvisionUser } from "./auth/provisioner.ts";
 
 export type {

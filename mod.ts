@@ -196,14 +196,10 @@ export function createAdminPlugin(
         const provCfg = config.admin?.auth_provider;
         if (!provCfg || provCfg.type === "local") {
           authProvider = new LocalAuthProvider(users, services.passwords);
-        } else if (provCfg.type === "ldap" || provCfg.type === "saml") {
-          throw new Error(
-            `[dune] auth_provider.type "${provCfg.type}" is not implemented. ` +
-              `Set auth_provider.type to "local" or remove the section.`,
-          );
         } else {
           throw new Error(
-            `[dune] auth_provider.type "${(provCfg as { type?: string }).type ?? "<missing>"}" is not recognized.`,
+            `[dune] auth_provider.type "${(provCfg as { type?: string }).type ?? "<missing>"}" is not supported. ` +
+              `Only "local" is built in; inject your own provider with the \`authProvider\` plugin option.`,
           );
         }
       }
