@@ -36,9 +36,7 @@ import type { AuthzDbAdapter } from "@dune/core/auth/authz-adapter-db";
 import { initAdminContext } from "./src/admin/context.ts";
 import type { AdminContext } from "./src/admin/context.ts";
 import { createBlockEditorPlugin } from "./src/admin/block-editor-plugin.tsx";
-import { getDuneAdminIslands, mountDuneAdmin } from "./src/admin/mount.ts";
-import { sectionRegistry } from "@dune/core/sections";
-import type { SectionRegistry } from "@dune/core/sections";
+import { getDuneAdminIslands, mountAdminPanel } from "./src/admin/mount.ts";
 import * as corePlugins from "@dune/core/plugins";
 import denoJson from "./deno.json" with { type: "json" };
 
@@ -143,7 +141,7 @@ export function createAdminPlugin(
       }));
     },
 
-    async mount({ app, bootstrap, services, capabilities }: MountApi) {
+    async mount({ app, runtime, services, capabilities }: MountApi) {
       const { logger } = services;
       if (!setupState) return; // admin disabled
 
@@ -235,7 +233,7 @@ export function createAdminPlugin(
           return;
         }
         try {
-          await applyWorkflowTransition({ engine: bootstrap.engine, storage, config, hooks: bootstrap.hooks, workflow, services }, action.sourcePath, newStatus);
+          await applyWorkflowTransition({ engine: runtime.engine, storage, config, hooks: runtime.hooks, workflow, services }, action.sourcePath, newStatus);
         } catch (err) {
           logger.error("scheduler.action-failed", {
             actionId: action.id,
@@ -250,16 +248,16 @@ export function createAdminPlugin(
 
       const collabManager = createCollabManager({
         storage,
-        engine: bootstrap.engine,
-        history: bootstrap.history,
+        engine: runtime.engine,
+        history: runtime.history,
         contentDir: config.system.content.dir,
         security: services.security,
-        hooks: bootstrap.hooks,
+        hooks: runtime.hooks,
       });
 
       // Core accepts and stores public form submissions; the admin only
       // manages them. An older core has no store to read.
-      const submissionManager = bootstrap.submissions;
+      const submissionManager = runtime.submissions;
       if (!submissionManager) {
         throw new Error(
           "@dune/plugin-admin 3.2+ needs a @dune/core that stores form submissions itself " +
@@ -268,7 +266,7 @@ export function createAdminPlugin(
       }
 
       // The incoming webhook runs in core; keep the admin's audit trail.
-      bootstrap.hooks.on<
+      runtime.hooks.on<
         { action: "rebuild" | "purge-cache"; ip: string | null; userAgent: string | null }
       >("onSystemAction", ({ data }) => {
         void setupState?.auditLogger?.log({
@@ -294,8 +292,8 @@ export function createAdminPlugin(
 
       const adminContext: AdminContext = {
         services,
-        engine: bootstrap.engine,
-        search: bootstrap.search,
+        engine: runtime.engine,
+        search: runtime.search,
         storage,
         config,
         auth,
@@ -306,32 +304,28 @@ export function createAdminPlugin(
         workflow,
         scheduler,
         executeScheduledAction,
-        history: bootstrap.history,
+        history: runtime.history,
         submissions: submissionManager,
-        flex: bootstrap.flexEngine,
-        hooks: bootstrap.hooks,
+        flex: runtime.flexEngine,
+        hooks: runtime.hooks,
         staging: stagingEngine,
         comments: commentManager,
         collab: collabManager,
         inlineEdit,
         contentEditor,
-        imageCache: bootstrap.imageCache,
+        imageCache: runtime.imageCache,
         auditLogger: setupState.auditLogger ?? undefined,
-        metrics: metricsEnabled ? bootstrap.metrics : undefined,
+        metrics: metricsEnabled ? runtime.metrics : undefined,
         mt: setupState.mt,
         rateLimitStore,
         pluginPages: pluginPages.length > 0 ? [...pluginPages] : undefined,
         pluginRoutes: pluginRoutes.length > 0 ? [...pluginRoutes] : undefined,
         // Created per serving process by `dune serve`, after mount(): read lazily.
         get jobScheduler() {
-          return bootstrap.jobScheduler;
+          return runtime.jobs;
         },
-        authz: bootstrap.authz,
-        // Cores older than 0.31 don't expose `sections` on BootstrapResult;
-        // fall back to this package's own module singleton, which resolves to
-        // the host's copy anyway once the @0 range unifies the two.
-        sections: (bootstrap as unknown as { sections?: SectionRegistry }).sections ??
-          sectionRegistry,
+        authz: runtime.authz,
+        sections: runtime.sections,
       };
 
       // Keep the singleton for single-site serve paths (serve.ts, dev.ts).
@@ -358,7 +352,7 @@ export function createAdminPlugin(
       // ── authz tuple bootstrap ─────────────────────────────────────────────────
       // Runs after core's env bootstrap so a freshly-created first admin's
       // tuple gets registered too, instead of being locked out on first run.
-      if (bootstrap.authz && bootstrap.authzAdapter) {
+      if (runtime.authz) {
         try {
           // users.list() returns every account in the unified store
           // (data/users/) — not just admin-tier ones once public site
@@ -379,7 +373,7 @@ export function createAdminPlugin(
       }
 
       // ── Mount admin Fresh routes ──────────────────────────────────────────────
-      await mountDuneAdmin(app, bootstrap, adminContext);
+      mountAdminPanel(app, runtime, adminContext);
     },
   };
 }

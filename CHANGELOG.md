@@ -17,6 +17,17 @@ follows [Semantic Versioning](https://semver.org).
   `onPageMove` is also a valid webhook event. Needs `@dune/core` with `onPageMove` (0.36).
   `tests/admin/page_events_test.ts` drives create, update, reorder, delete and restore through the real routes.
 
+### Changed — BREAKING
+
+- **`mount()` reads the site from `MountApi.runtime`, not `MountApi.bootstrap` (#97).** Core's `mount()`
+  argument no longer carries the whole bootstrap result, so the admin takes engine, search, history, hooks,
+  submissions, flex, image cache, metrics, sections, authz and the job scheduler from the curated
+  `PluginRuntime`. `authz` replaces the `authz && authzAdapter` check (the adapter is no longer reachable).
+  `mount()` now calls the new `mountAdminPanel()` (panel routes, context middleware, `admin.pages` /
+  `admin.routes`) and no longer registers public plugin routes or form endpoints a second time: core's
+  `createDuneApp()` owns those. The headless `mountDuneAdmin(app, bootstrapResult)` is unchanged. Needs
+  `@dune/core` 0.36.
+
 ### Added
 
 - **Runs the admin conformance suite from `@dune/testing`** (`tests/admin/conformance_test.ts`): the checks
