@@ -8,6 +8,7 @@ import { join } from "@std/path";
 import { runAdminConformance } from "@dune/testing/conformance";
 import type { ConformanceApp } from "@dune/testing/conformance";
 import { bootstrap } from "@dune/core/bootstrap";
+import { createAdminPlugin } from "../../mod.ts";
 import { createDuneApp } from "@dune/core/fresh-app";
 import { createStorage } from "@dune/core/storage";
 import { createLocalUserStore } from "@dune/core/auth/user-store";
@@ -44,7 +45,8 @@ async function login(app: ConformanceApp, username: string): Promise<string> {
 
 runAdminConformance({
   name: "plugin-admin",
-  adminPrefix: "/admin",
+  // The prefix is read from the admin.prefix slot; this admin hosts admin.pages / admin.routes contributions.
+  hostsContributions: true,
 
   async createApp({ content, extraPlugins, withAdmin }) {
     const root = await Deno.makeTempDir({ prefix: "dune_admin_conformance_" });
@@ -65,10 +67,9 @@ runAdminConformance({
         roles: ["admin"],
       });
     }
+    // Plugins register in this order and mount in it, so the extras come before the admin.
     const ctx = await bootstrap(root, {
-      plugins: extraPlugins,
-      // deno-lint-ignore no-explicit-any
-      configOverrides: withAdmin ? undefined : { admin: { enabled: false } as any },
+      plugins: [...extraPlugins, ...(withAdmin ? [createAdminPlugin({ root, dev: false })] : [])],
     });
     const { app } = await createDuneApp(ctx, { root, port: 0, dev: false });
     const handler = app.handler();

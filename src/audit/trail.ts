@@ -17,14 +17,14 @@ export interface AuditTrailOptions {
 }
 
 /**
- * The trail is on unless `admin.enabled` or `admin.audit.enabled` is false. The
+ * The trail is on unless `admin.audit.enabled` is false. The
  * log file must resolve under the site root: a configured `log_file` that
  * escapes it is refused.
  */
 export function createAuditTrail(opts: AuditTrailOptions): AuditLogger | null {
   const { config, root, runtimeDir } = opts;
   const audit = config.admin?.audit;
-  if (config.admin?.enabled === false || audit?.enabled === false || !root) return null;
+  if (audit?.enabled === false || !root) return null;
   const logFile = audit?.log_file ? join(root, audit.log_file) : join(root, runtimeDir, "audit.log");
   const containmentRoot = root.endsWith("/") || root.endsWith("\\") ? root : root + "/";
   if (!logFile.startsWith(containmentRoot)) {

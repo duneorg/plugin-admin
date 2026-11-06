@@ -9,6 +9,7 @@ import { join } from "@std/path";
 import { bootstrap } from "@dune/core/bootstrap";
 import { createDuneApp } from "@dune/core/fresh-app";
 import type { DunePlugin } from "@dune/core/hooks";
+import { createAdminPlugin } from "../../mod.ts";
 
 async function withSite(
   plugins: DunePlugin[],
@@ -18,7 +19,7 @@ async function withSite(
   try {
     await Deno.mkdir(join(root, "content", "01.home"), { recursive: true });
     await Deno.writeTextFile(join(root, "content", "01.home", "default.md"), "---\ntitle: Home\n---\n\nHello\n");
-    const ctx = await bootstrap(root, { plugins });
+    const ctx = await bootstrap(root, { plugins: [createAdminPlugin({ root, dev: false }), ...plugins] });
     const { app } = await createDuneApp(ctx, { root, port: 0, dev: false });
     await fn(ctx, app.handler());
   } finally {
@@ -61,7 +62,7 @@ Deno.test(
       await Deno.writeTextFile(join(root, "content", "01.home", "default.md"), "---\ntitle: Home\n---\n");
       await Deno.mkdir(join(root, "config"), { recursive: true });
       await Deno.writeTextFile(join(root, "config", "system.yaml"), "admin:\n  path: /cms\n");
-      const ctx = await bootstrap(root, {});
+      const ctx = await bootstrap(root, { plugins: [createAdminPlugin({ root, dev: false })] });
       const { app } = await createDuneApp(ctx, { root, port: 0, dev: false });
       assertEquals(ctx.capabilities.get("admin.prefix"), { prefix: "/cms" });
       // The panel answers at the provided prefix, and /admin is just a missing content page.

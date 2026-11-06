@@ -246,7 +246,7 @@ export function mountAdminPanel(
   const adminPrefix = config.admin?.path ?? "/admin";
 
   // ── Admin panel ─────────────────────────────────────────────────────────────
-  if (config.admin?.enabled !== false) {
+  {
     // Per-site admin context middleware — captures the correct context in
     // closure so multisite setups don't suffer from the module-level
     // singleton. A second registration for the same ctx is a no-op.

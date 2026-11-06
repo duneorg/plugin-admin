@@ -14,7 +14,6 @@
  * @since 0.24.0
  */
 
-import { join } from "@std/path";
 import type { DunePlugin, MountApi } from "@dune/core/hooks";
 import type { DuneConfig } from "@dune/core/config";
 import type { StorageAdapter } from "@dune/core/storage";
@@ -30,9 +29,6 @@ import { createCommentManager } from "./src/admin/comments.ts";
 import { createCollabManager } from "./src/collab/mod.ts";
 import { createMachineTranslator, type MachineTranslationConfig, type MachineTranslator } from "./src/mt/mod.ts";
 import { type AuditLogger, createAuditTrail } from "./src/audit/mod.ts";
-import type { DuneAuthSystem } from "@dune/core/auth/authz";
-import type { AuthzLocalAdapter } from "@dune/core/auth/authz-adapter-local";
-import type { AuthzDbAdapter } from "@dune/core/auth/authz-adapter-db";
 import { initAdminContext } from "./src/admin/context.ts";
 import type { AdminContext } from "./src/admin/context.ts";
 import { createBlockEditorPlugin } from "./src/admin/block-editor-plugin.tsx";
@@ -58,14 +54,14 @@ export const resolvedCoreSentinel: unknown = _core.CORE_INSTANCE;
 /** The `@dune/core` version this package resolved. Undefined on cores ≤0.30. */
 export const resolvedCoreVersion: string | undefined = _core.CORE_VERSION;
 
-/** Options forwarded from bootstrap() to the admin plugin factory. */
+/** Options for the admin plugin factory. */
 export interface AdminPluginOptions {
+  /** Absolute site root (where the audit log is written). */
   root: string;
+  /** True under `dune dev` (cookies are not marked Secure). */
   dev: boolean;
+  /** A custom sign-in provider; takes precedence over `admin.auth_provider`. */
   authProvider?: AuthProvider;
-  authz?: DuneAuthSystem;
-  authzAdapter?: AuthzLocalAdapter | AuthzDbAdapter;
-  hmacKey?: CryptoKey | null;
 }
 
 /** State created during setup(), consumed by mount(). */
@@ -81,17 +77,18 @@ interface AdminSetupState {
 }
 
 /**
- * Factory for the built-in admin panel plugin.
+ * Factory for the admin panel plugin.
  *
- * Receives bootstrap-time context (root, dev flag, optional custom auth
- * provider) that can't come through `PluginApi` because they exist before
- * plugins are loaded.
+ * Takes the facts that exist before plugins load (site root, dev flag, an
+ * optional custom auth provider); the site config and storage come from
+ * `PluginApi` in `setup()`. A site normally lists the package under `plugins:`
+ * and the default export below builds the plugin; call this directly to pass a
+ * custom `authProvider`.
  */
-export function createAdminPlugin(
-  config: DuneConfig,
-  storage: StorageAdapter,
-  opts: AdminPluginOptions,
-): DunePlugin {
+export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
+  // Taken from PluginApi in setup(), which always runs before mount().
+  let config!: DuneConfig;
+  let storage!: StorageAdapter;
   let setupState: AdminSetupState | null = null;
   // Set at the end of mount(), once AdminContext is built. The capabilities
   // declared in setup() delegate to it lazily (per request), because core
@@ -106,15 +103,12 @@ export function createAdminPlugin(
     islandSpecifiers: getDuneAdminIslands(),
 
     async setup(api) {
+      config = api.config;
+      storage = api.storage;
       const adminCfg = config.admin ?? {
         path: "/admin",
         session_lifetime: 86400,
-        enabled: true,
       };
-      if (adminCfg.enabled === false) {
-        setupState = null;
-        return;
-      }
 
       // The audit trail and the machine translator are the admin's own. Translator
       // requests go through core's SSRF-checked fetch.
@@ -156,7 +150,6 @@ export function createAdminPlugin(
       const adminCfg = config.admin ?? {
         path: "/admin",
         session_lifetime: 86400,
-        enabled: true,
       };
       // `system.runtime_dir`, as core resolved it.
       const runtimeDir = services.paths.runtimeDir;
@@ -382,3 +375,15 @@ export function createAdminPlugin(
     },
   };
 }
+
+/**
+ * The plugin loader's entry point: `plugins: [{ src: jsr:@dune/plugin-admin@^4 }]`
+ * calls this with the entry's config and `{ root, dev }`.
+ */
+export default function adminPluginFactory(
+  _pluginConfig: Record<string, unknown>,
+  ctx: { root: string; dev: boolean },
+): DunePlugin {
+  return createAdminPlugin({ root: ctx.root, dev: ctx.dev });
+}
+adminPluginFactory.pluginName = "dune-admin";

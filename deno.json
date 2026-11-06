@@ -20,7 +20,7 @@
     "./mt": "./src/mt/mod.ts"
   },
   "imports": {
-    "@dune/testing": "jsr:@dune/testing@^1",
+    "@dune/testing": "jsr:@dune/testing@^2",
     "@dune/core": "jsr:@dune/core@^0.35.3",
     "fresh": "jsr:@fresh/core@^2",
     "preact": "npm:preact@^10",

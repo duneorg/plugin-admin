@@ -14,6 +14,7 @@ import { createDuneApp } from "@dune/core/fresh-app";
 import { createStorage } from "@dune/core/storage";
 import { createLocalUserStore } from "@dune/core/auth/user-store";
 import { hashPassword } from "@dune/core/auth/passwords";
+import { createAdminPlugin } from "../../mod.ts";
 
 const PASSWORD = "correct horse battery staple";
 const ORIGIN = "http://localhost:8000";
@@ -59,7 +60,7 @@ async function withSite(
         onPageMove: record("onPageMove"),
       } as DunePlugin["hooks"],
     };
-    const ctx = await bootstrap(root, { plugins: [recorder] });
+    const ctx = await bootstrap(root, { plugins: [createAdminPlugin({ root, dev: false }), recorder] });
     const { app } = await createDuneApp(ctx, { root, port: 0, dev: false });
     const handler = app.handler();
     const req = (path: string, init?: RequestInit) => handler(new Request(new URL(path, ORIGIN), init));

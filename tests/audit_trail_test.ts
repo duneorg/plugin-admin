@@ -9,7 +9,7 @@ Deno.test("createAuditTrail: no site root, no trail", () => {
   assertEquals(createAuditTrail({ config: config(), root: undefined, runtimeDir: ".dune/admin" }), null);
 });
 
-Deno.test("createAuditTrail: logs without an explicit init, and enabled:false turns it off", async () => {
+Deno.test("createAuditTrail: logs without an explicit init, and audit.enabled: false turns it off", async () => {
   const root = await Deno.makeTempDir();
   try {
     const trail = createAuditTrail({ config: config(), root, runtimeDir: ".dune/admin" });
@@ -17,9 +17,7 @@ Deno.test("createAuditTrail: logs without an explicit init, and enabled:false tu
     await trail.log(entry);
     assertEquals((await trail.query({ event: "page.update" })).entries.length, 1);
 
-    for (const admin of [{ audit: { enabled: false } }, { enabled: false }]) {
-      assertEquals(createAuditTrail({ config: config(admin), root, runtimeDir: ".dune/admin" }), null);
-    }
+    assertEquals(createAuditTrail({ config: config({ audit: { enabled: false } }), root, runtimeDir: ".dune/admin" }), null);
   } finally {
     await Deno.remove(root, { recursive: true });
   }
