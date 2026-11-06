@@ -109,7 +109,6 @@ export function createAdminPlugin(
       const adminCfg = config.admin ?? {
         path: "/admin",
         session_lifetime: 86400,
-        runtime_dir: ".dune/admin",
         enabled: true,
       };
       if (adminCfg.enabled === false) {
@@ -150,10 +149,10 @@ export function createAdminPlugin(
       const adminCfg = config.admin ?? {
         path: "/admin",
         session_lifetime: 86400,
-        runtime_dir: ".dune/admin",
         enabled: true,
       };
-      const runtimeDir = adminCfg.runtime_dir ?? ".dune/admin";
+      // `system.runtime_dir`, as core resolved it.
+      const runtimeDir = services.paths.runtimeDir;
       // `system.data_dir` — the same resolution core uses for the submissions it stores.
       const dataDir = services.paths.dataDir;
 

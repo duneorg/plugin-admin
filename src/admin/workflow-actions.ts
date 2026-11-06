@@ -76,7 +76,7 @@ export async function applyWorkflowTransition(
   await engine.rebuild();
 
   const webhookEndpoints = config.admin?.webhooks ?? [];
-  const runtimeDir = config.admin?.runtime_dir ?? ".dune/admin";
+  const runtimeDir = services.paths.runtimeDir;
   if (hooks) hooks.fire("onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }).catch(() => {});
   fireContentWebhooks(webhookEndpoints, "onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }, runtimeDir, services.security);
 

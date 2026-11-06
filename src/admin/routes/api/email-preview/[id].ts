@@ -19,7 +19,7 @@ export const handler = {
       return json({ error: "Invalid id" }, 400);
     }
 
-    const runtimeDir = ctx.state.adminContext.config.admin?.runtime_dir ?? ".dune/admin";
+    const runtimeDir = ctx.state.adminContext.services.paths.runtimeDir;
     const filePath = join(runtimeDir, "dev-email", `${id}.json`);
 
     try {

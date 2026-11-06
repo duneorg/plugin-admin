@@ -116,7 +116,7 @@ export default function EmailPreviewPage({ data }: { data: PageData }) {
 export const handler = {
   async GET(ctx: FreshContext<AdminState>): Promise<Response> {
     const { prefix } = ctx.state.adminContext;
-    const runtimeDir = ctx.state.adminContext.config.admin?.runtime_dir ?? ".dune/admin";
+    const runtimeDir = ctx.state.adminContext.services.paths.runtimeDir;
 
     if (Deno.env.get("DUNE_ENV") !== "dev") {
       return ctx.render(

@@ -17,6 +17,16 @@ follows [Semantic Versioning](https://semver.org).
   `onPageMove` is also a valid webhook event. Needs `@dune/core` with `onPageMove` (0.36).
   `tests/admin/page_events_test.ts` drives create, update, reorder, delete and restore through the real routes.
 
+### Changed — BREAKING (admin config move)
+
+- **The runtime directory comes from core, not from `admin.runtime_dir`.** `runtime_dir` (and
+  `max_revisions`) are `system.runtime_dir` / `system.max_revisions` in `@dune/core` 0.36: core's history,
+  job state, analytics and public sessions use them too. The admin reads `services.paths.runtimeDir` everywhere
+  it used `config.admin.runtime_dir` (webhook delivery logs, email preview, CSRF secret, workflow and page
+  events), so a site that sets `runtime_dir` keeps one directory for core and the admin. Needs `@dune/core` 0.36.
+- **`/api/introspect` reports `pageCacheEnabled`** (from `system.page_cache`) instead of `cacheEnabled` and
+  `cacheDriver`: core 0.36 no longer has a `system.cache` block.
+
 ### Removed — BREAKING
 
 - **The LDAP and SAML auth providers (#97).** `LdapAuthProvider` and `SamlAuthProvider` were stubs whose

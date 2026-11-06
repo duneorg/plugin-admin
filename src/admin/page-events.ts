@@ -33,7 +33,7 @@ export function announcePageEvent(ctx: FreshContext<AdminState>, e: PageEvent): 
     config.admin?.webhooks ?? [],
     e.event,
     e.payload,
-    config.admin?.runtime_dir ?? ".dune/admin",
+    services.paths.runtimeDir,
     services.security,
   );
 }

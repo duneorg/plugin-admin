@@ -268,7 +268,7 @@ async function deliverWithRetry(
  * @param endpoints - Configured webhook endpoints (from admin.webhooks)
  * @param event     - The content event that occurred
  * @param payload   - Event-specific data included in the POST body
- * @param logDir    - Base directory for delivery logs (admin.runtime_dir)
+ * @param logDir    - Base directory for delivery logs (system.runtime_dir)
  * @param security  - Core's security service (SSRF-guarded fetch)
  */
 export function fireContentWebhooks(
@@ -308,7 +308,7 @@ export interface ListDeliveryLogsOptions {
  * Reads logs from the last 7 days of log directories and returns up to `limit`
  * records. Silently returns an empty array if the log directory doesn't exist.
  *
- * @param logDir - Base directory (admin.runtime_dir)
+ * @param logDir - Base directory (system.runtime_dir)
  * @param limitOrOpts  - Maximum records, or `{ limit, sourcePath }`
  */
 export async function listDeliveryLogs(
