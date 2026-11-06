@@ -17,6 +17,16 @@ follows [Semantic Versioning](https://semver.org).
   `onPageMove` is also a valid webhook event. Needs `@dune/core` with `onPageMove` (0.36).
   `tests/admin/page_events_test.ts` drives create, update, reorder, delete and restore through the real routes.
 
+### Changed — BREAKING (machine translation and the audit trail)
+
+- **The admin owns the audit trail and machine translation (#123, step 3).** `AuditLogger`, the audit types, the
+  DeepL / Google / LibreTranslate translators and their types moved here from `@dune/core` (`@dune/core/audit` and
+  `@dune/core/mt` are gone); they are exported as `@dune/plugin-admin/audit` and `@dune/plugin-admin/mt`. The admin
+  builds both in `setup()`: the trail from `admin.audit` and `services.paths.runtimeDir` (a `log_file` outside the
+  site root is still refused), the translator from `site.machine_translation`. Translators take the fetch they use as
+  a constructor argument and the admin passes `services.security.safeFetch`, so core's SSRF policy still applies.
+  Needs `@dune/core` 0.36.
+
 ### Changed — BREAKING (admin config move)
 
 - **The runtime directory comes from core, not from `admin.runtime_dir`.** `runtime_dir` (and

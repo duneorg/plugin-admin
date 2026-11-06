@@ -17,9 +17,9 @@ export const handler = {
       );
     }
     const eventFilter = ctx.url.searchParams.get("event") ?? "";
-    const q: import("@dune/core/audit").AuditQuery = { limit: 50 };
+    const q: import("../../../audit/mod.ts").AuditQuery = { limit: 50 };
     if (eventFilter) {
-      q.event = eventFilter as import("@dune/core/audit").AuditEventType;
+      q.event = eventFilter as import("../../../audit/mod.ts").AuditEventType;
     }
     const result = await auditLogger.query(q);
     return ctx.render(

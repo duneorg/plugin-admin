@@ -28,8 +28,8 @@ import type { ScheduledAction } from "@dune/core/workflow";
 import { applyWorkflowTransition, SCHEDULED_ACTION_STATUS } from "./src/admin/workflow-actions.ts";
 import { createCommentManager } from "./src/admin/comments.ts";
 import { createCollabManager } from "./src/collab/mod.ts";
-import type { MachineTranslator } from "@dune/core/mt";
-import type { AuditLogger } from "@dune/core/audit";
+import { createMachineTranslator, type MachineTranslationConfig, type MachineTranslator } from "./src/mt/mod.ts";
+import { type AuditLogger, createAuditTrail } from "./src/audit/mod.ts";
 import type { DuneAuthSystem } from "@dune/core/auth/authz";
 import type { AuthzLocalAdapter } from "@dune/core/auth/authz-adapter-local";
 import type { AuthzDbAdapter } from "@dune/core/auth/authz-adapter-db";
@@ -116,8 +116,11 @@ export function createAdminPlugin(
         return;
       }
 
-      // Audit trail and machine translator are built by core.
-      const { audit: auditLogger, mt } = api.services.engines;
+      // The audit trail and the machine translator are the admin's own. Translator
+      // requests go through core's SSRF-checked fetch.
+      const auditLogger = createAuditTrail({ config, root: opts.root, runtimeDir: api.services.paths.runtimeDir });
+      const mtConfig = (config.site as { machine_translation?: MachineTranslationConfig }).machine_translation;
+      const mt = mtConfig ? createMachineTranslator(mtConfig, api.services.security.safeFetch) : null;
 
       setupState = { config, storage, opts, auditLogger, mt };
 

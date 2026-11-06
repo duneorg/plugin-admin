@@ -304,7 +304,7 @@ export function actorFromAuth(
   authResult: {
     user?: { id: string; username?: string; name?: string } | null;
   },
-): import("@dune/core/audit").AuditActor | null {
+): import("../../../audit/mod.ts").AuditActor | null {
   if (!authResult.user) return null;
   const username = authResult.user.username ?? authResult.user.id;
   return {
