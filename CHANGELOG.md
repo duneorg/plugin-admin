@@ -24,6 +24,9 @@ follows [Semantic Versioning](https://semver.org).
   job state, analytics and public sessions use them too. The admin reads `services.paths.runtimeDir` everywhere
   it used `config.admin.runtime_dir` (webhook delivery logs, email preview, CSRF secret, workflow and page
   events), so a site that sets `runtime_dir` keeps one directory for core and the admin. Needs `@dune/core` 0.36.
+- **The admin provides the `admin.prefix` capability** (`{ prefix: admin.path ?? "/admin" }`), the way core learns
+  where the admin is mounted. Core no longer reads `admin.path` or assumes `/admin`: with no admin installed, `/admin`
+  is an ordinary content path. Needs `@dune/core` 0.36 (#123, step 2).
 - **`/api/introspect` reports `pageCacheEnabled`** (from `system.page_cache`) instead of `cacheEnabled` and
   `cacheDriver`: core 0.36 no longer has a `system.cache` block.
 

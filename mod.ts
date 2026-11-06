@@ -124,6 +124,10 @@ export function createAdminPlugin(
       // What this plugin provides to core. Core reads them at request time
       // (the admin bar, the inline-edit WebSocket, `dune serve`'s scheduler
       // loop); until mount() has built the context they report "nobody".
+      // Where this admin is mounted: core keeps these paths out of the page
+      // cache, the static build and the plugin-route namespace. The default
+      // `/admin` lives here, not in core.
+      api.capabilities.provide("admin.prefix", () => ({ prefix: adminCfg.path ?? "/admin" }));
       api.capabilities.provide("auth.session", () => ({
         // The cookie the admin's auth middleware sets (see createAuthMiddleware).
         // Core uses it to decide whether to authenticate a public page and whether

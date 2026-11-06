@@ -45,6 +45,36 @@ Deno.test(
 );
 
 Deno.test(
+  "admin provides admin.prefix: /admin by default, admin.path when set",
+  { sanitizeOps: false, sanitizeResources: false },
+  async () => {
+    await withSite([], (ctx) => {
+      assertEquals(ctx.capabilities.get("admin.prefix"), { prefix: "/admin" });
+      const providers = Object.fromEntries(ctx.capabilities.providers().map((p) => [p.name, p.provider]));
+      assertEquals(providers["admin.prefix"], "dune-admin");
+      return Promise.resolve();
+    });
+
+    const root = await Deno.makeTempDir({ prefix: "dune_admin_prefix_" });
+    try {
+      await Deno.mkdir(join(root, "content", "01.home"), { recursive: true });
+      await Deno.writeTextFile(join(root, "content", "01.home", "default.md"), "---\ntitle: Home\n---\n");
+      await Deno.mkdir(join(root, "config"), { recursive: true });
+      await Deno.writeTextFile(join(root, "config", "system.yaml"), "admin:\n  path: /cms\n");
+      const ctx = await bootstrap(root, {});
+      const { app } = await createDuneApp(ctx, { root, port: 0, dev: false });
+      assertEquals(ctx.capabilities.get("admin.prefix"), { prefix: "/cms" });
+      // The panel answers at the provided prefix, and /admin is just a missing content page.
+      const handler = app.handler();
+      assertEquals((await handler(new Request("http://localhost/admin/"))).status, 404);
+      assertEquals((await handler(new Request("http://localhost/cms/login"))).status !== 404, true);
+    } finally {
+      await Deno.remove(root, { recursive: true }).catch(() => {});
+    }
+  },
+);
+
+Deno.test(
   "admin mounts admin.pages contributed by another plugin, behind its login",
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
