@@ -310,7 +310,6 @@ export function createAdminPlugin(
         collab: collabManager,
         inlineEdit,
         contentEditor,
-        imageCache: runtime.imageCache,
         auditLogger: setupState.auditLogger ?? undefined,
         metrics: metricsEnabled ? runtime.metrics : undefined,
         mt: setupState.mt,

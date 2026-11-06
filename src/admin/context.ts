@@ -23,7 +23,6 @@ import type { StagingEngine } from "@dune/core/staging";
 import type { CommentManager } from "./comments.ts";
 import type { CollabManager } from "../collab/mod.ts";
 import type { InlineEditManager } from "@dune/core/inline-edit";
-import type { ImageCache } from "@dune/core/images";
 import type { AuditLogger } from "@dune/core/audit";
 import type { MetricsCollector } from "@dune/core/metrics";
 import type { MachineTranslator } from "@dune/core/mt";
@@ -71,7 +70,6 @@ export interface AdminContext {
   inlineEdit?: InlineEditManager;
   /** Custom page editor, provided by a plugin as the `editor.content` capability. Replaces the built-in block editor. */
   contentEditor?: ContentEditorPlugin;
-  imageCache?: ImageCache;
   auditLogger?: AuditLogger;
   metrics?: MetricsCollector;
   mt?: MachineTranslator | null;
