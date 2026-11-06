@@ -17,32 +17,36 @@ Optional: `sha256` (ZIP integrity), `demoUrl`, `screenshotUrl`, `tags`, `compati
 
 ## Usage
 
-The plugin is auto-registered by `@dune/core` bootstrap unless explicitly disabled. No configuration is required for the default setup.
+The admin is a plugin like any other: `@dune/core` loads it only when `config/site.yaml` lists it.
+`dune new` writes the entry, and `dune migrate:config` adds it to an existing site.
 
-### Explicit registration (for custom wiring)
+```yaml
+# config/site.yaml
+plugins:
+  - src: jsr:@dune/plugin-admin@^4
+```
+
+No further configuration is required. A site that does not list it has no admin panel: it serves,
+builds and runs jobs as usual, and says once at boot that nothing provides the admin.
+
+### Custom wiring
+
+To pass a custom sign-in provider, build the plugin yourself and hand it to `bootstrap()` instead of
+listing it:
 
 ```ts
 import { createAdminPlugin } from "@dune/plugin-admin";
 import { bootstrap } from "@dune/core";
 
-const result = await bootstrap({ root: Deno.cwd() });
-// Admin is auto-registered; pass options to override defaults:
-const adminPlugin = createAdminPlugin(result.config, result.storage, {
-  root: Deno.cwd(),
-  dev: false,
-  // authProvider: myCustomAuthProvider,
+const ctx = await bootstrap(Deno.cwd(), {
+  plugins: [createAdminPlugin({ root: Deno.cwd(), dev: false, authProvider: myCustomAuthProvider })],
 });
 ```
 
-### Disabling the admin panel
+### Running without the admin
 
-```yaml
-# site.yaml
-admin:
-  enabled: false
-```
-
-This produces a headless Dune deployment — useful for statically generated sites or when you want a fully custom management interface.
+Do not list it. (`admin.enabled` no longer exists: core refuses it.) This is a headless Dune deployment,
+useful for statically generated sites or when you want a fully custom management interface.
 
 ## Configuration
 

@@ -17,6 +17,19 @@ follows [Semantic Versioning](https://semver.org).
   `onPageMove` is also a valid webhook event. Needs `@dune/core` with `onPageMove` (0.36).
   `tests/admin/page_events_test.ts` drives create, update, reorder, delete and restore through the real routes.
 
+### Changed — BREAKING (the admin is a plugin you list)
+
+- **`@dune/core` 0.36 no longer loads the admin by itself (#123, step 4).** List it under `plugins:` in
+  `config/site.yaml` (`- src: jsr:@dune/plugin-admin@^4`; `dune new` writes it and `dune migrate:config` adds it).
+  The package's default export is the plugin-loader factory `(config, { root, dev })`, so that is all it takes.
+- **`createAdminPlugin(opts)` takes `{ root, dev, authProvider? }` only.** The site config and storage come from
+  `PluginApi` in `setup()`, and the unused `authz`, `authzAdapter` and `hmacKey` options are gone. To use a custom
+  `authProvider`, call it yourself and pass the result in `bootstrap(root, { plugins })`; core's `authProvider`
+  bootstrap option is gone.
+- **`admin.enabled` is gone** (core refuses it: do not list the admin to run without it), along with the admin's
+  `enabled` config type field and the `enabled` check in `mountAdminPanel()` and the audit trail.
+- Needs `@dune/core` 0.36 and `@dune/testing` 2 for the conformance run.
+
 ### Changed — BREAKING (machine translation and the audit trail)
 
 - **The admin owns the audit trail and machine translation (#123, step 3).** `AuditLogger`, the audit types, the
