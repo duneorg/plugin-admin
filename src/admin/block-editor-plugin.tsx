@@ -1,14 +1,14 @@
 /** @jsxImportSource preact */
 /**
  * Built-in block editor — the default ContentEditorPlugin loaded by bootstrap
- * when no plugin provides the `editor.content` capability.
+ * when no plugin provides the `admin.editor` capability.
  *
  * Wraps the PageEditor island in the same way the old hardwired route did, but
  * now as a proper ContentEditorPlugin so it participates in the same slot that
  * third-party editors use.
  */
 
-import type { ContentEditorPlugin } from "@dune/core/hooks";
+import type { ContentEditorPlugin } from "./contributions.ts";
 import type { FreshContext } from "fresh";
 import PageEditor from "./islands/PageEditor.tsx";
 

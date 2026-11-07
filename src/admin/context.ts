@@ -17,8 +17,8 @@ import type { Scheduler, ScheduledAction } from "@dune/core/workflow";
 import type { HistoryEngine } from "@dune/core/history";
 import type { SubmissionManager } from "./submissions.ts";
 import type { FlexEngine } from "@dune/core/flex";
-import type { HookRegistry, AdminPageRegistration, AdminRouteRegistration } from "@dune/core/hooks";
-import type { ContentEditorPlugin } from "@dune/core/hooks";
+import type { HookRegistry } from "@dune/core/hooks";
+import type { AdminPageRegistration, AdminRouteRegistration, ContentEditorPlugin } from "./contributions.ts";
 import type { StagingEngine } from "@dune/core/staging";
 import type { CommentManager } from "./comments.ts";
 import type { CollabManager } from "../collab/mod.ts";
@@ -68,7 +68,7 @@ export interface AdminContext {
   collab?: CollabManager;
   /** Inline editing manager, provided by a plugin as the `editor.inline` capability. */
   inlineEdit?: InlineEditManager;
-  /** Custom page editor, provided by a plugin as the `editor.content` capability. Replaces the built-in block editor. */
+  /** Custom page editor, provided by a plugin as the `admin.editor` capability. Replaces the built-in block editor. */
   contentEditor?: ContentEditorPlugin;
   auditLogger?: AuditLogger;
   metrics?: MetricsCollector;

@@ -52,6 +52,17 @@ const _core = corePlugins as unknown as {
 
 /** The `@dune/core` instance sentinel this package resolved. See core's `plugins/mod.ts`. */
 export const resolvedCoreSentinel: unknown = _core.CORE_INSTANCE;
+/**
+ * The admin's extension points. Importing them also teaches TypeScript the keys
+ * (`admin.pages`, `admin.routes`, `admin.editor`) this plugin declares on the
+ * capability registry.
+ */
+export type {
+  AdminPageRegistration,
+  AdminRouteRegistration,
+  ContentEditorPlugin,
+} from "./src/admin/contributions.ts";
+
 /** The `@dune/core` version this package resolved. Undefined on cores ≤0.30. */
 export const resolvedCoreVersion: string | undefined = _core.CORE_VERSION;
 
@@ -273,7 +284,7 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
 
       // ── Default content editor ────────────────────────────────────────────────
       const inlineEdit = capabilities.get("editor.inline");
-      const contentEditor = capabilities.get("editor.content") ?? createBlockEditorPlugin();
+      const contentEditor = capabilities.get("admin.editor") ?? createBlockEditorPlugin();
 
       // ── Build AdminContext ────────────────────────────────────────────────────
       const metricsEnabled = config.system.metrics?.enabled !== false;

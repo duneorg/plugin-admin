@@ -104,7 +104,7 @@ Deno.test(
 );
 
 Deno.test(
-  "admin uses the editor.content slot another plugin provides",
+  "admin uses the admin.editor slot another plugin provides",
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const editor: DunePlugin = {
@@ -112,15 +112,15 @@ Deno.test(
       version: "1.0.0",
       hooks: {},
       setup(api) {
-        api.capabilities.provide("editor.content", () => ({
+        api.capabilities.provide("admin.editor", () => ({
           pageEditorHandler: () => new Response("custom editor"),
         }));
       },
     };
     await withSite([editor], async (ctx) => {
-      assertExists(ctx.capabilities.get("editor.content"));
+      assertExists(ctx.capabilities.get("admin.editor"));
       assertEquals(
-        ctx.capabilities.providers().find((p) => p.name === "editor.content")?.provider,
+        ctx.capabilities.providers().find((p) => p.name === "admin.editor")?.provider,
         "test-editor",
       );
     });

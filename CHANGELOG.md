@@ -17,6 +17,15 @@ follows [Semantic Versioning](https://semver.org).
   `onPageMove` is also a valid webhook event. Needs `@dune/core` with `onPageMove` (0.36).
   `tests/admin/page_events_test.ts` drives create, update, reorder, delete and restore through the real routes.
 
+### Changed — BREAKING (the admin declares its own extension points, #127)
+
+- **`AdminPageRegistration`, `AdminRouteRegistration` and `ContentEditorPlugin` live here now**, exported
+  from `@dune/plugin-admin` (and `@dune/plugin-admin/contributions`). Core's contract never read them. The
+  keys `admin.pages` and `admin.routes` are declared by this package by declaration merging, so importing
+  the types is what makes a plugin's `contribute("admin.pages", ...)` type-check. The `editor.content`
+  slot is renamed **`admin.editor`**: a key carries the name of the plugin that reads it. A plugin that
+  provides a replacement page editor changes the key and imports `ContentEditorPlugin` from here.
+
 ### Changed — BREAKING (the admin is called `admin`, and its settings are its plugin config)
 
 - **The plugin is named `admin`** (it was `dune-admin`), so its settings are `config.plugins.admin`, and
