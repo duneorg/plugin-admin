@@ -27,7 +27,7 @@ import type { ScheduledAction } from "@dune/core/workflow";
 import { applyWorkflowTransition, SCHEDULED_ACTION_STATUS } from "./src/admin/workflow-actions.ts";
 import { createCommentManager } from "./src/admin/comments.ts";
 import { createCollabManager } from "./src/collab/mod.ts";
-import { createMachineTranslator, type MachineTranslationConfig, type MachineTranslator } from "./src/mt/mod.ts";
+import { createMachineTranslator, type MachineTranslator } from "./src/mt/mod.ts";
 import { type AuditLogger, createAuditTrail } from "./src/audit/mod.ts";
 import { initAdminContext } from "./src/admin/context.ts";
 import type { AdminContext } from "./src/admin/context.ts";
@@ -111,7 +111,7 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
       // The audit trail and the machine translator are the admin's own. Translator
       // requests go through core's SSRF-checked fetch.
       const auditLogger = createAuditTrail({ config, root: opts.root, runtimeDir: api.services.paths.runtimeDir });
-      const mtConfig = (config.site as { machine_translation?: MachineTranslationConfig }).machine_translation;
+      const mtConfig = adminCfg.machine_translation;
       const mt = mtConfig ? createMachineTranslator(mtConfig, api.services.security.safeFetch) : null;
 
       setupState = { config, storage, opts, auditLogger, mt };

@@ -19,7 +19,7 @@ export function createMachineTranslator(
 ): MachineTranslator | null {
   if (config.enabled === false) return null;
 
-  const rawKey = config.apiKey ?? "";
+  const rawKey = config.api_key ?? "";
   const key = rawKey.startsWith("$")
     ? (Deno.env.get(rawKey.slice(1)) ?? rawKey)
     : rawKey;
@@ -31,7 +31,7 @@ export function createMachineTranslator(
       return new GoogleTranslator(key, safeFetch);
     case "libretranslate":
       return new LibreTranslateTranslator(
-        config.baseUrl ?? "https://libretranslate.com",
+        config.base_url ?? "https://libretranslate.com",
         key || undefined,
         safeFetch,
       );

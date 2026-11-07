@@ -29,6 +29,8 @@ follows [Semantic Versioning](https://semver.org).
   than `local`, stops the site instead of leaving the admin mounted where core does not protect it.
   `WebhookEndpointConfig`, `WebhookContentEvent` and `AuthProviderConfig` moved here from `@dune/core`.
   `runtime_dir` and `max_revisions` stay core settings (`system.yaml`).
+- **`machine_translation` is a setting of the admin's config** (it was `site.machine_translation`), with `api_key`
+  and `base_url` (they were `apiKey` and `baseUrl`); `dune migrate:config` moves and renames it.
 - `adminSettings(config)` (`src/admin/settings.ts`) is the one place the settings are read.
 
 ### Changed — BREAKING (the admin is a plugin you list)

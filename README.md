@@ -75,6 +75,9 @@ plugins:
       audit:
         enabled: true
         log_file: .dune/admin/audit.log   # must resolve under the site root
+      machine_translation:      # optional: translate pages from the editor
+        provider: deepl         # deepl | google | libretranslate
+        api_key: $DEEPL_API_KEY
       webhooks:                 # outbound webhooks on content events
         - url: https://hooks.example.com/content
           secret: $WEBHOOK_SECRET

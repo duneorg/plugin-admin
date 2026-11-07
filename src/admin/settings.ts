@@ -35,6 +35,8 @@ export interface WebhookEndpointConfig {
 /** Sign-in provider configuration: only the built-in local passwords are configurable. */
 export type AuthProviderConfig = { type: "local" };
 
+import type { MachineTranslationConfig } from "../mt/types.ts";
+
 /** The admin plugin's settings, defaults applied. */
 export interface AdminSettings {
   /** URL prefix the admin is mounted at (default `/admin`). */
@@ -51,6 +53,8 @@ export interface AdminSettings {
   auth_provider?: AuthProviderConfig;
   /** Audit trail: `enabled` (default true) and `log_file` (under the site root). */
   audit?: { enabled?: boolean; log_file?: string };
+  /** Machine translation provider; absent when none is configured. */
+  machine_translation?: MachineTranslationConfig;
 }
 
 const PATH_RE = /^\/[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*$/;
@@ -95,6 +99,7 @@ export function adminSettings(config: SettingsSource): AdminSettings {
     webhooks: Array.isArray(raw.webhooks) ? raw.webhooks as WebhookEndpointConfig[] : [],
     auth_provider: provider as AuthProviderConfig | undefined,
     audit: raw.audit as AdminSettings["audit"],
+    machine_translation: raw.machine_translation as MachineTranslationConfig | undefined,
   };
   cache.set(raw, settings);
   return settings;

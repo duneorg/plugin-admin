@@ -11,6 +11,7 @@ Deno.test("adminSettings: defaults when the plugin has no config", () => {
       webhooks: [],
       auth_provider: undefined,
       audit: undefined,
+      machine_translation: undefined,
     });
   }
 });

@@ -23,7 +23,7 @@ Deno.test("createMachineTranslator: sends provider requests through the given fe
     return Promise.resolve(new Response(JSON.stringify({ translatedText: "hola" })));
   };
   const mt = createMachineTranslator(
-    { provider: "libretranslate", baseUrl: "https://mt.example" },
+    { provider: "libretranslate", base_url: "https://mt.example" },
     fake,
   );
   assertEquals(await mt!.translate("hello", "en", "es"), "hola");

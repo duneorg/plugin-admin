@@ -27,12 +27,12 @@ export interface MachineTranslationConfig {
    * API key for the provider.
    * Supports "$ENV_VAR" expansion.
    */
-  apiKey?: string;
+  api_key?: string;
   /**
    * For LibreTranslate: base URL of the self-hosted instance.
    * Default: "https://libretranslate.com"
    */
-  baseUrl?: string;
+  base_url?: string;
   /** Whether machine translation is enabled (default: true when this block is present) */
   enabled?: boolean;
 }
