@@ -17,56 +17,76 @@ Optional: `sha256` (ZIP integrity), `demoUrl`, `screenshotUrl`, `tags`, `compati
 
 ## Usage
 
-The plugin is auto-registered by `@dune/core` bootstrap unless explicitly disabled. No configuration is required for the default setup.
+The admin is a plugin like any other: `@dune/core` loads it only when `config/site.yaml` lists it.
+`dune new` writes the entry, and `dune migrate:config` adds it to an existing site.
 
-### Explicit registration (for custom wiring)
+```yaml
+# config/site.yaml
+plugins:
+  - src: jsr:@dune/plugin-admin@^4
+```
+
+No further configuration is required. Settings go under `config:` of that entry:
+
+```yaml
+plugins:
+  - src: jsr:@dune/plugin-admin@^4
+    config:
+      path: /cms              # URL prefix (default /admin)
+      session_lifetime: 3600  # seconds (default 86400)
+```
+ A site that does not list it has no admin panel: it serves,
+builds and runs jobs as usual, and says once at boot that nothing provides the admin.
+
+### Custom wiring
+
+To pass a custom sign-in provider, build the plugin yourself and hand it to `bootstrap()` instead of
+listing it:
 
 ```ts
 import { createAdminPlugin } from "@dune/plugin-admin";
 import { bootstrap } from "@dune/core";
 
-const result = await bootstrap({ root: Deno.cwd() });
-// Admin is auto-registered; pass options to override defaults:
-const adminPlugin = createAdminPlugin(result.config, result.storage, {
-  root: Deno.cwd(),
-  dev: false,
-  // authProvider: myCustomAuthProvider,
+const ctx = await bootstrap(Deno.cwd(), {
+  plugins: [createAdminPlugin({ root: Deno.cwd(), dev: false, authProvider: myCustomAuthProvider })],
 });
 ```
 
-### Disabling the admin panel
+### Running without the admin
 
-```yaml
-# site.yaml
-admin:
-  enabled: false
-```
-
-This produces a headless Dune deployment — useful for statically generated sites or when you want a fully custom management interface.
+Do not list it. (`admin.enabled` no longer exists: core refuses it.) This is a headless Dune deployment,
+useful for statically generated sites or when you want a fully custom management interface.
 
 ## Configuration
 
-All admin configuration lives under the `admin:` key in `site.yaml`.
+The admin's settings are its plugin config: `config:` under its entry in `plugins:` (`config/site.yaml`).
+Core reads none of them.
 
 ```yaml
-admin:
-  path: /admin              # URL prefix for the admin panel (default: /admin)
-  enabled: true             # Set to false to disable entirely
-  session_lifetime: 86400   # Session duration in seconds (default: 24h)
-  data_dir: data            # Directory for users, submissions, etc.
-  runtime_dir: .dune/admin   # Directory for sessions, audit log, etc.
-
-  auth_provider:
-    type: local             # Only "local" is supported today
-
-  audit:
-    enabled: true
-    log_file: .dune/admin/audit.log   # Override the audit log path
-
-  session_store:
-    type: local             # "local" (default) or "redis"
-    url: $REDIS_URL         # Required when type is redis
+plugins:
+  - src: jsr:@dune/plugin-admin@^4
+    config:
+      path: /admin              # URL prefix for the admin panel (default /admin)
+      session_lifetime: 86400   # session duration in seconds (default 24h)
+      max_upload_mb: 100        # admin upload limit (default 100)
+      git_commit: false         # commit to git after each page save (default false)
+      auth_provider:
+        type: local             # the only supported value; omit for the same result
+      audit:
+        enabled: true
+        log_file: .dune/admin/audit.log   # must resolve under the site root
+      machine_translation:      # optional: translate pages from the editor
+        provider: deepl         # deepl | google | libretranslate
+        api_key: $DEEPL_API_KEY
+      webhooks:                 # outbound webhooks on content events
+        - url: https://hooks.example.com/content
+          secret: $WEBHOOK_SECRET
+          events: [onPageUpdate]
 ```
+
+A `path` that is not a clean prefix, or an `auth_provider` other than `local`, stops the site at boot.
+Shared settings live in core's `system.yaml`: `data_dir` (users, submissions), `runtime_dir` (sessions, audit
+log, revisions) and `max_revisions`.
 
 ### Roles and permissions
 

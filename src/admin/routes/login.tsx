@@ -11,6 +11,7 @@ import { findOrProvisionUser } from "../auth/provisioner.ts";
 import type { PluginServices } from "@dune/core/plugin-api";
 import type { RateLimiter } from "@dune/core/security";
 import { actorFromAuth, csrfCheck } from "./api/_utils.ts";
+import { adminSettings } from "../settings.ts";
 
 // Module-level fallback limiter — used when no rateLimitStore is injected via
 // AdminContext (single-process deployments, tests, etc.).
@@ -110,7 +111,7 @@ export const handler = {
     if (csrfDenied) return csrfDenied;
 
     const { auth, users, sessions, prefix, auditLogger, authProvider, config, rateLimitStore, services } = ctx.state.adminContext;
-    const adminConfig = config.admin!;
+    const adminConfig = adminSettings(config);
     const url = ctx.url;
 
     // Logout sub-action

@@ -111,7 +111,7 @@ function takeToken(rate: ConnectionRate): boolean {
 }
 
 export function createCollabManager(options: CollabManagerOptions): CollabManager {
-  const { storage, engine, history, contentDir, security } = options;
+  const { storage, engine, history, contentDir, security, hooks } = options;
 
   // docId → CollabSessionState
   const sessions = new Map<string, CollabSessionState>();
@@ -192,6 +192,13 @@ export function createCollabManager(options: CollabManagerOptions): CollabManage
     } catch (err) {
       console.error(`[collab] auto-save: cannot write ${session.docId}:`, err);
       return;
+    }
+
+    // Whoever writes a page fires its event. Skip a save that changed nothing.
+    if (hooks && updated !== raw) {
+      hooks.fire("onPageUpdate", { sourcePath: session.docId }).catch((err: unknown) =>
+        console.warn(`[collab] onPageUpdate hook failed for ${session.docId}:`, err)
+      );
     }
 
     if (history && session.lastEditor) {

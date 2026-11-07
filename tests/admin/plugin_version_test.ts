@@ -7,8 +7,6 @@
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { createAdminPlugin } from "../../mod.ts";
-import type { DuneConfig } from "@dune/core/config";
-import type { StorageAdapter } from "@dune/core/storage";
 
 Deno.test("admin plugin version matches deno.json", async () => {
   const denoJsonText = await Deno.readTextFile(
@@ -16,11 +14,7 @@ Deno.test("admin plugin version matches deno.json", async () => {
   );
   const { version } = JSON.parse(denoJsonText);
 
-  const plugin = createAdminPlugin(
-    {} as DuneConfig,
-    {} as StorageAdapter,
-    { root: "/tmp", dev: true },
-  );
+  const plugin = createAdminPlugin({ root: "/tmp", dev: true });
 
   assertEquals(plugin.version, version);
 });

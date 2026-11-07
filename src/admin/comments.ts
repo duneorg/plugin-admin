@@ -9,7 +9,7 @@
  *   data/comments/{encodedPath}.json   → { comments: PageComment[] }
  *   encodedPath: sourcePath with "/" → "__" and "." → "-dot-"
  *
- * Mention read-state (inside admin.runtime_dir — gitignored, machine-local):
+ * Mention read-state (inside system.runtime_dir — gitignored, machine-local):
  *   .dune/admin/mention-reads/{username}.json → { readIds: string[] }
  *
  * All public methods are async to allow future storage adapter swapping.
@@ -65,7 +65,7 @@ interface MentionReadState {
 export interface CommentManagerOptions {
   /** admin.data_dir — git-tracked persistent storage */
   dataDir: string;
-  /** admin.runtime_dir — ephemeral machine-local storage */
+  /** system.runtime_dir — ephemeral machine-local storage */
   runtimeDir: string;
 }
 

@@ -110,6 +110,11 @@ export interface CollabManagerOptions {
   contentDir: string;
   /** Core's security service (safe YAML parsing of frontmatter). */
   security: Pick<import("@dune/core/plugin-api").SecurityService, "parseUserYaml">;
+  /**
+   * Hook registry. An auto-save that changes the file fires `onPageUpdate`
+   * (the save is already debounced, so this is not per keystroke).
+   */
+  hooks?: Pick<import("@dune/core/hooks").HookRegistry, "fire">;
 }
 
 /** The CollabManager public interface exposed to the admin server. */

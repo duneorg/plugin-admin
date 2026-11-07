@@ -66,8 +66,6 @@ export interface AdminConfig {
    * (default: ".dune/admin")
    */
   runtimeDir: string;
-  /** Whether admin panel is enabled (default: true) */
-  enabled: boolean;
 }
 
 /** Result of an auth check */

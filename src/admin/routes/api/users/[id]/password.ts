@@ -3,6 +3,7 @@
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../../_utils.ts";
 import type { FreshContext } from "fresh";
+import { adminSettings } from "../../../../settings.ts";
 
 export const handler = {
   async POST(ctx: FreshContext<AdminState>) {
@@ -29,7 +30,7 @@ export const handler = {
         const session = await sessions.create(userId);
         res.headers.set(
           "Set-Cookie",
-          auth.createSessionCookie(session.id, config.admin?.session_lifetime ?? 86400),
+          auth.createSessionCookie(session.id, adminSettings(config).session_lifetime),
         );
       }
 

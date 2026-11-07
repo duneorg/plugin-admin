@@ -13,6 +13,7 @@ import type { FreshContext } from "fresh";
 import type { AdminState } from "../../types.ts";
 import { json, requirePermission } from "./_utils.ts";
 import { PLUGIN_API_VERSION } from "@dune/core/plugins";
+import { adminSettings } from "../../settings.ts";
 
 /** Derive Dune package version from the module URL (same logic as CLI). */
 function getDuneVersion(): string {
@@ -102,20 +103,19 @@ export const handler = {
     const configSummary = {
       siteTitle: config.site.title,
       siteUrl: config.site.url,
-      adminPath: config.admin?.path ?? "/admin",
+      adminPath: adminSettings(config).path,
       themeName: config.theme.name,
       taxonomies: config.site.taxonomies,
       languages: {
         supported: config.system.languages?.supported ?? [],
         default: config.system.languages?.default ?? "en",
       },
-      cacheEnabled: config.system.cache?.enabled ?? false,
-      cacheDriver: config.system.cache?.driver ?? "memory",
+      pageCacheEnabled: config.system.page_cache?.enabled ?? false,
       debugMode: config.system.debug ?? false,
       authMode: ((config as unknown as Record<string, unknown>).auth as Record<string, unknown> | undefined)?.mode ?? null,
       feedEnabled: config.site.feed?.enabled !== false,
       workflowEnabled: !!config.site.workflow,
-      auditEnabled: config.admin?.audit?.enabled !== false,
+      auditEnabled: adminSettings(config).audit?.enabled !== false,
     };
 
     // ── Response ───────────────────────────────────────────────────────────

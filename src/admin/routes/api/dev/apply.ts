@@ -41,6 +41,7 @@ import type { FreshContext } from "fresh";
 import type { AdminState } from "../../../types.ts";
 import { json, requirePermission, requireTsxWrite, requireOwnedPage, csrfCheck, validatePagePath } from "../_utils.ts";
 import { ValidationError } from "../../../http.ts";
+import { announcePageEvent } from "../../../page-events.ts";
 import { join } from "@std/path";
 import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
 
@@ -482,10 +483,19 @@ export const handler = {
       try {
         if (change.op === "delete") {
           await Deno.remove(absPath);
+          announcePageEvent(ctx, { event: "onPageDelete", payload: { sourcePath: change.path ?? "" } });
           results.push({ op: change.op, path: change.path, status: "deleted", errors: [] });
         } else {
           const existed = await Deno.stat(absPath).then(() => true).catch(() => false);
           await applyWrite(contentDir, change as Change & { op: "write" | "frontmatter"; path: string });
+          const sourcePath = change.path ?? "";
+          const title = change.op === "frontmatter" ? change.patch?.title : undefined;
+          announcePageEvent(
+            ctx,
+            existed
+              ? { event: "onPageUpdate", payload: { sourcePath } }
+              : { event: "onPageCreate", payload: { sourcePath, title: typeof title === "string" ? title : "" } },
+          );
           results.push({
             op: change.op,
             path: change.path,

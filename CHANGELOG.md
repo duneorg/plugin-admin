@@ -5,8 +5,142 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+
+### Fixed
+
+- **Every route that writes a page now announces it (#97).** Whoever writes a page fires its event; core
+  does not. Six admin paths wrote pages and fired nothing, so search indexes, webhooks and audit plugins
+  missed them: restoring a revision (`onPageUpdate`), staging publish (`onPageUpdate`), the two translate
+  routes (`onPageCreate`), the dev apply endpoint (create / update / delete), reorder (new `onPageMove`,
+  which lists every renamed folder) and collab auto-save (`onPageUpdate`, only when the save changed the file).
+  The routes share `announcePageEvent()`, which fires the hook and the configured content webhooks, so
+  `onPageMove` is also a valid webhook event. Needs `@dune/core` with `onPageMove` (0.36).
+  `tests/admin/page_events_test.ts` drives create, update, reorder, delete and restore through the real routes.
+
+### Changed — BREAKING (the admin is called `admin`, and its settings are its plugin config)
+
+- **The plugin is named `admin`** (it was `dune-admin`), so its settings are `config.plugins.admin`, and
+  `capabilities.providers()`, `dune doctor` and the logs name it `admin`.
+- **Settings come from the plugin's config, not from an `admin:` block in system.yaml (#123, step 5).**
+  `path`, `session_lifetime`, `max_upload_mb`, `git_commit`, `webhooks`, `auth_provider` and `audit` are
+  `config:` under the admin's entry in `plugins:` (site.yaml); `dune migrate:config` moves an existing
+  `admin:` block there. Core 0.36 has no `admin` config at all and refuses the old block. The admin
+  validates its own settings at boot: a `path` that is not a clean prefix, or an `auth_provider` other
+  than `local`, stops the site instead of leaving the admin mounted where core does not protect it.
+  `WebhookEndpointConfig`, `WebhookContentEvent` and `AuthProviderConfig` moved here from `@dune/core`.
+  `runtime_dir` and `max_revisions` stay core settings (`system.yaml`).
+- **`machine_translation` is a setting of the admin's config** (it was `site.machine_translation`), with `api_key`
+  and `base_url` (they were `apiKey` and `baseUrl`); `dune migrate:config` moves and renames it.
+- `adminSettings(config)` (`src/admin/settings.ts`) is the one place the settings are read.
+
+### Changed — BREAKING (the admin is a plugin you list)
+
+- **`@dune/core` 0.36 no longer loads the admin by itself (#123, step 4).** List it under `plugins:` in
+  `config/site.yaml` (`- src: jsr:@dune/plugin-admin@^4`; `dune new` writes it and `dune migrate:config` adds it).
+  The package's default export is the plugin-loader factory `(config, { root, dev })`, so that is all it takes.
+- **`createAdminPlugin(opts)` takes `{ root, dev, authProvider? }` only.** The site config and storage come from
+  `PluginApi` in `setup()`, and the unused `authz`, `authzAdapter` and `hmacKey` options are gone. To use a custom
+  `authProvider`, call it yourself and pass the result in `bootstrap(root, { plugins })`; core's `authProvider`
+  bootstrap option is gone.
+- **`admin.enabled` is gone** (core refuses it: do not list the admin to run without it), along with the admin's
+  `enabled` config type field and the `enabled` check in `mountAdminPanel()` and the audit trail.
+- Needs `@dune/core` 0.36 and `@dune/testing` 2 for the conformance run.
+
+### Changed — BREAKING (machine translation and the audit trail)
+
+- **The admin owns the audit trail and machine translation (#123, step 3).** `AuditLogger`, the audit types, the
+  DeepL / Google / LibreTranslate translators and their types moved here from `@dune/core` (`@dune/core/audit` and
+  `@dune/core/mt` are gone); they are exported as `@dune/plugin-admin/audit` and `@dune/plugin-admin/mt`. The admin
+  builds both in `setup()`: the trail from `admin.audit` and `services.paths.runtimeDir` (a `log_file` outside the
+  site root is still refused), the translator from `site.machine_translation`. Translators take the fetch they use as
+  a constructor argument and the admin passes `services.security.safeFetch`, so core's SSRF policy still applies.
+  Needs `@dune/core` 0.36.
+
+### Changed — BREAKING (admin config move)
+
+- **The runtime directory comes from core, not from `admin.runtime_dir`.** `runtime_dir` (and
+  `max_revisions`) are `system.runtime_dir` / `system.max_revisions` in `@dune/core` 0.36: core's history,
+  job state, analytics and public sessions use them too. The admin reads `services.paths.runtimeDir` everywhere
+  it used `config.admin.runtime_dir` (webhook delivery logs, email preview, CSRF secret, workflow and page
+  events), so a site that sets `runtime_dir` keeps one directory for core and the admin. Needs `@dune/core` 0.36.
+- **The admin provides the `admin.prefix` capability** (`{ prefix: admin.path ?? "/admin" }`), the way core learns
+  where the admin is mounted. Core no longer reads `admin.path` or assumes `/admin`: with no admin installed, `/admin`
+  is an ordinary content path. Needs `@dune/core` 0.36 (#123, step 2).
+- **`/api/introspect` reports `pageCacheEnabled`** (from `system.page_cache`) instead of `cacheEnabled` and
+  `cacheDriver`: core 0.36 no longer has a `system.cache` block.
+
+### Removed — BREAKING
+
+- **The LDAP and SAML auth providers (#97).** `LdapAuthProvider` and `SamlAuthProvider` were stubs whose
+  `authenticate()` threw, and `mount()` refused `auth_provider.type: ldap | saml` anyway. They are deleted, with
+  `LdapProviderConfig`, `SamlProviderConfig` and the admin's `AuthProviderConfig` union (core's is now just
+  `{ type: "local" }`). `AuthProvider.type` is a plain string. To use another identity source, pass your own
+  provider through the `authProvider` plugin option; the `AuthProvider` interface (`authenticate`,
+  `initiateLogin`, `handleCallback`) is unchanged. An unknown `auth_provider.type` now fails with a message
+  saying so.
+
 ### Changed — BREAKING
 
+- **`mount()` reads the site from `MountApi.runtime`, not `MountApi.bootstrap` (#97).** Core's `mount()`
+  argument no longer carries the whole bootstrap result, so the admin takes engine, search, history, hooks,
+  submissions, flex, image cache, metrics, sections, authz and the job scheduler from the curated
+  `PluginRuntime`. `authz` replaces the `authz && authzAdapter` check (the adapter is no longer reachable).
+  `mount()` now calls the new `mountAdminPanel()` (panel routes, context middleware, `admin.pages` /
+  `admin.routes`) and no longer registers public plugin routes or form endpoints a second time: core's
+  `createDuneApp()` owns those. The headless `mountDuneAdmin(app, bootstrapResult)` is unchanged. Needs
+  `@dune/core` 0.36.
+- **Narrows the contract's `PluginApp` to Fresh's `App` itself (#97).** Core's contract no longer names Fresh
+  types (`MountApi.app` is a `PluginApp`, handlers get a `PluginRouteContext`). The admin uses Fresh-only
+  features (`fsRoutes`, `layout`, `route`), so `mount()` casts `app` to Fresh's `App` and the block editor
+  declares `pageEditorHandler(ctx: FreshContext)`. No behaviour change. `deno task check` now also
+  type-checks `mod.ts`, which it silently skipped.
+- **`mountDuneAdmin()` no longer registers plugin public routes or the form endpoints, and the
+  `createSubmissionManager` re-export is gone (#97, slice 4).** Both were core's own work: `createDuneApp()`
+  registers plugins' `publicRoutes` and `/api/forms/*`, `/api/webhook/incoming` itself (the admin's second call
+  was a no-op there), and the submission store is `PluginRuntime.submissions`. The admin now imports neither
+  `registerPluginPublicRoutes` nor `registerFormRoutes`, which lets core stop exporting them. `mountDuneAdmin()`
+  now mounts only the panel. The `Submission*` types are still re-exported.
+
+### Added
+
+- **Runs the admin conformance suite from `@dune/testing`** (`tests/admin/conformance_test.ts`): the checks
+  the stub admin passes, against plugin-admin over a real temp site. It covers `auth.session`, session
+  recognition and marker scrubbing, the declared `dune_session` cookie, mount-order independence,
+  `onPageUpdate` fired once by an edit, `admin.pages` / `admin.routes` mounted behind the login and the CSRF
+  check, and the site serving with no admin. Needs `@dune/testing` with the conformance suite
+  (`"@dune/testing": "jsr:@dune/testing@^1"` in `deno.json`), so it is draft-only until that is released.
+
+### Changed — BREAKING
+
+- **The admin provides and consumes core's capabilities instead of the untyped
+  `adminContext` bag (duneorg/dune#97, `@dune/core` 0.36).** It provides
+  `auth.session` (who is the admin on a request: the admin bar and the inline-edit
+  WebSocket's admin fallback) and `scheduler.executor` (runs due scheduled actions;
+  `dune serve` starts core's scheduler loop when it exists). It reads the
+  `inline-edit` and `editor.content` slots and the `admin.pages` contributions from
+  `MountApi.capabilities` instead of `adminServices` and each plugin's `adminPages`,
+  and no longer writes `bootstrap.adminContext`. The jobs view reads
+  `BootstrapResult.jobScheduler`, which `dune serve` sets after mount.
+  `auth.session` declares `sessionCookies: ["dune_session"]`, which core uses to decide
+  whether to authenticate a public page and whether to keep the response out of the shared
+  page cache.
+- **`mountDuneAdminEarly()` is gone** (core removed `DunePlugin.mountEarly`).
+  `mountDuneAdmin(app, ctx, adminContext?)` falls back to the single-site context
+  stored by the plugin's `mount()` instead of `ctx.adminContext`. A plugin route that
+  needs the admin identity calls `capabilities.get("auth.session")`. Routes a plugin
+  registers in its own `mount()` no longer sit behind the admin's
+  `ctx.state.adminContext` middleware, so `withGuards()` no longer works there (it
+  throws a `TypeError`); a guarded `POST`/`PUT`/`PATCH`/`DELETE` admin route is now a
+  contribution to the `admin.routes` point (below).
+- **Mounts `admin.routes`** and the `admin.pages` contributions through `mountPluginAdminRoutes()`
+  / `mountPluginAdminPages()` (`src/admin/mount.ts`). A route is `{ method, path, permission, handler }`
+  and is registered under the admin prefix behind the admin's own authentication (`401`
+  otherwise), the CSRF check on every non-GET method (`403`) and the `permission` check (`403`); the
+  handler only runs when all three pass. A page is the same for GET with a login redirect. **`permission`
+  is required on both** (core's `AdminPageRegistration` / `AdminRouteRegistration` type it that way):
+  an entry without one, or with an unknown method or a path that does not start with `/`, is skipped
+  and logged (`admin.routes.invalid` / `admin.pages.invalid`) instead of being exposed to every
+  authenticated admin, which also covers plugins written without type-checking.
 - **The `admin:` block reads snake_case keys** (duneorg/dune#96, `@dune/core` 0.36):
   `session_lifetime`, `data_dir`, `runtime_dir`, `max_revisions`, `max_upload_mb`,
   `authz_store`, `audit.log_file`, and the LDAP/SAML provider fields (`base_dn`,

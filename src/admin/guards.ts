@@ -2,10 +2,10 @@
  * Public guard primitives for plugin-registered admin mutation routes.
  *
  * `DunePlugin.mount({ app })` hands a plugin author the raw Fresh `app`
- * with no built-in enforcement — `adminPages` gets CSRF protection and
- * permission checking for free, but `mount()`-registered routes (the only
- * way to register a `POST`/`PUT`/`DELETE` admin route, or anything
- * `adminPages` can't express) previously had no supported way to reuse
+ * with no built-in enforcement — `admin.pages` contributions get CSRF
+ * protection and permission checking for free, but `mount()`-registered routes
+ * (the only way to register a `POST`/`PUT`/`DELETE` admin route, or anything
+ * `admin.pages` can't express) previously had no supported way to reuse
  * Dune's own checks at all.
  *
  * Re-implementing these by hand is exactly what caused three real
