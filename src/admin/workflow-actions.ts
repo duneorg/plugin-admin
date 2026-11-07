@@ -12,14 +12,11 @@
  * @module
  */
 
-import type { PluginServices } from "@dune/core/plugin-api";
 import type { DuneEngine } from "@dune/core/engine";
 import type { StorageAdapter } from "@dune/core/storage";
 import type { DuneConfig } from "@dune/core/config";
 import type { HookRegistry } from "@dune/core/hooks";
 import type { WorkflowEngine } from "@dune/core/workflow";
-import { fireContentWebhooks } from "./webhooks.ts";
-import { adminSettings } from "./settings.ts";
 
 export interface WorkflowActionContext {
   engine: DuneEngine;
@@ -27,8 +24,6 @@ export interface WorkflowActionContext {
   config: DuneConfig;
   hooks?: HookRegistry;
   workflow: WorkflowEngine;
-  /** Core's services (webhook delivery uses the SSRF-guarded fetch). */
-  services: PluginServices;
 }
 
 /**
@@ -41,7 +36,7 @@ export async function applyWorkflowTransition(
   sourcePath: string,
   newStatus: string,
 ): Promise<{ from: string; to: string }> {
-  const { workflow, engine, storage, config, hooks, services } = ctx;
+  const { workflow, engine, storage, config, hooks } = ctx;
 
   const pageIndex = engine.pages.find((p) => p.sourcePath === sourcePath);
   if (!pageIndex) throw new Error(`Page not found: ${sourcePath}`);
@@ -76,10 +71,8 @@ export async function applyWorkflowTransition(
   await storage.write(filePath, new TextEncoder().encode(updated));
   await engine.rebuild();
 
-  const webhookEndpoints = adminSettings(config).webhooks;
-  const runtimeDir = services.paths.runtimeDir;
+  // The admin's content webhooks listen to this event (see mount()).
   if (hooks) hooks.fire("onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }).catch(() => {});
-  fireContentWebhooks(webhookEndpoints, "onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }, runtimeDir, services.security);
 
   return { from: currentStatus, to: newStatus };
 }

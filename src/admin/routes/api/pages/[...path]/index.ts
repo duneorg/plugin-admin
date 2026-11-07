@@ -12,7 +12,7 @@
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, requireTsxWrite, requirePageOwner, requireOwnedPage, pageOwnerId, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
-import { fireContentWebhooks } from "../../../../../admin/webhooks.ts";
+import { announcePageEvent } from "../../../../page-events.ts";
 import type { PageFrontmatter } from "@dune/core/content/types";
 import type { FreshContext } from "fresh";
 import { adminSettings } from "../../../../settings.ts";
@@ -69,7 +69,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "pages.update");
     if (denied) return denied;
 
-    const { engine, storage, config, hooks, auditLogger, services } = ctx.state.adminContext;
+    const { engine, storage, config, auditLogger, services } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
     const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
@@ -130,10 +130,7 @@ export const handler = {
       await engine.rebuild();
       await maybeGitCommit(filePath, pagePath, undefined, config);
 
-      const webhookEndpoints = adminSettings(config).webhooks;
-      const runtimeDir = ctx.state.adminContext.services.paths.runtimeDir;
-      if (hooks) hooks.fire("onPageUpdate", { sourcePath: page.sourcePath }).catch(() => {});
-      fireContentWebhooks(webhookEndpoints, "onPageUpdate", { sourcePath: page.sourcePath }, runtimeDir, ctx.state.adminContext.services.security);
+      announcePageEvent(ctx, { event: "onPageUpdate", payload: { sourcePath: page.sourcePath } });
 
       void auditLogger?.log({
         event: "page.update",
@@ -157,7 +154,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "pages.delete");
     if (denied) return denied;
 
-    const { engine, storage, config, hooks, auditLogger } = ctx.state.adminContext;
+    const { engine, storage, config, auditLogger } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
     const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
@@ -172,10 +169,7 @@ export const handler = {
       await storage.delete(`${contentDir}/${page.sourcePath}`);
       await engine.rebuild();
 
-      const webhookEndpoints = adminSettings(config).webhooks;
-      const runtimeDir = ctx.state.adminContext.services.paths.runtimeDir;
-      if (hooks) hooks.fire("onPageDelete", { sourcePath: page.sourcePath }).catch(() => {});
-      fireContentWebhooks(webhookEndpoints, "onPageDelete", { sourcePath: page.sourcePath }, runtimeDir, ctx.state.adminContext.services.security);
+      announcePageEvent(ctx, { event: "onPageDelete", payload: { sourcePath: page.sourcePath } });
 
       void auditLogger?.log({
         event: "page.delete",

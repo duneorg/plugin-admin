@@ -2,10 +2,9 @@
 
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, requireTsxWrite, json, serverError, actorFromAuth, getClientIp, validatePagePath, csrfCheck } from "../_utils.ts";
-import { fireContentWebhooks } from "../../../../admin/webhooks.ts";
+import { announcePageEvent } from "../../../page-events.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import type { FreshContext } from "fresh";
-import { adminSettings } from "../../../settings.ts";
 
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
@@ -29,7 +28,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "pages.create");
     if (denied) return denied;
 
-    const { engine, storage, config, hooks, auditLogger } = ctx.state.adminContext;
+    const { engine, storage, config, auditLogger } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
     try {
       const body = await ctx.req.json();
@@ -68,10 +67,7 @@ export const handler = {
       await storage.write(filePath, new TextEncoder().encode(fm + "\n" + defaultContent));
       await engine.rebuild();
 
-      const webhookEndpoints = adminSettings(config).webhooks;
-      const runtimeDir = ctx.state.adminContext.services.paths.runtimeDir;
-      if (hooks) hooks.fire("onPageCreate", { sourcePath: `${pagePath}/default${ext}`, title }).catch(() => {});
-      fireContentWebhooks(webhookEndpoints, "onPageCreate", { sourcePath: `${pagePath}/default${ext}`, title }, runtimeDir, ctx.state.adminContext.services.security);
+      announcePageEvent(ctx, { event: "onPageCreate", payload: { sourcePath: `${pagePath}/default${ext}`, title } });
 
       void auditLogger?.log({
         event: "page.create",

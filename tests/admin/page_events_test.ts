@@ -96,11 +96,11 @@ Deno.test("admin page routes announce create, update, move and delete", async ()
   await withSite(async ({ seen, call }) => {
     let res = await call("POST", "/admin/api/pages", { path: "blog", title: "Hello" });
     assertEquals(res.ok, true);
-    assertEquals(seen.splice(0), [{ event: "onPageCreate", data: { sourcePath: "blog/default.md", title: "Hello" } }]);
+    assertEquals(seen.splice(0), [{ event: "onPageCreate", data: { sourcePath: "blog/default.md", title: "Hello", actor: "ed" } }]);
 
     res = await call("PUT", "/admin/api/pages/blog/default.md", { content: "changed" });
     assertEquals(res.status, 200);
-    assertEquals(seen.splice(0), [{ event: "onPageUpdate", data: { sourcePath: "blog/default.md" } }]);
+    assertEquals(seen.splice(0), [{ event: "onPageUpdate", data: { sourcePath: "blog/default.md", actor: "ed" } }]);
 
     // Move 02.beta before 01.alpha: both folders are renumbered.
     res = await call("POST", "/admin/api/pages/reorder", {
@@ -116,12 +116,13 @@ Deno.test("admin page routes announce create, update, move and delete", async ()
           { from: "02.beta", to: "01.beta" },
           { from: "01.alpha", to: "02.alpha" },
         ],
+        actor: "ed",
       },
     }]);
 
     res = await call("DELETE", "/admin/api/pages/blog/default.md");
     assertEquals(res.status, 200);
-    assertEquals(seen.splice(0), [{ event: "onPageDelete", data: { sourcePath: "blog/default.md" } }]);
+    assertEquals(seen.splice(0), [{ event: "onPageDelete", data: { sourcePath: "blog/default.md", actor: "ed" } }]);
   });
 });
 
@@ -139,6 +140,6 @@ Deno.test("history restore announces onPageUpdate", async () => {
 
     const res = await call("POST", `/admin/api/history/01.alpha/default.md/${revisions[0].number}/restore`);
     assertEquals(res.status, 200);
-    assertEquals(seen.splice(0), [{ event: "onPageUpdate", data: { sourcePath: "01.alpha/default.md" } }]);
+    assertEquals(seen.splice(0), [{ event: "onPageUpdate", data: { sourcePath: "01.alpha/default.md", actor: "ed" } }]);
   });
 });

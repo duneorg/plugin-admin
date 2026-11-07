@@ -37,6 +37,8 @@ import { getDuneAdminIslands, mountAdminPanel } from "./src/admin/mount.ts";
 import * as corePlugins from "@dune/core/plugins";
 import denoJson from "./deno.json" with { type: "json" };
 import { adminSettings } from "./src/admin/settings.ts";
+import { adminBarActions } from "./src/admin/bar-actions.ts";
+import { listenForContentWebhooks } from "./src/admin/webhooks.ts";
 
 // ── Core-instance handshake ──────────────────────────────────────────────────
 // Re-export the CORE_INSTANCE sentinel and CORE_VERSION that THIS package's
@@ -149,6 +151,15 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
           await liveAdminContext?.executeScheduledAction?.(action);
         },
       }));
+
+      // The admin's own buttons on the inline-edit bar. `bar.actions` is that
+      // plugin's extension point; contributing without importing its types
+      // keeps it an optional neighbour (a site without it simply never reads
+      // this).
+      (api.capabilities as unknown as { contribute(point: string, item: unknown): void }).contribute(
+        "bar.actions",
+        (ctx: { page: { sourcePath: string } | null }) => adminBarActions(adminCfg.path, ctx),
+      );
     },
 
     async mount({ app, runtime, services, capabilities }: MountApi) {
@@ -235,7 +246,7 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
           return;
         }
         try {
-          await applyWorkflowTransition({ engine: runtime.engine, storage, config, hooks: runtime.hooks, workflow, services }, action.sourcePath, newStatus);
+          await applyWorkflowTransition({ engine: runtime.engine, storage, config, hooks: runtime.hooks, workflow }, action.sourcePath, newStatus);
         } catch (err) {
           logger.error("scheduler.action-failed", {
             actionId: action.id,
@@ -280,6 +291,16 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
           detail: {},
           outcome: "success",
         }).catch(() => {});
+      });
+
+      // Outbound content webhooks follow the page events, whoever wrote the
+      // page (an admin route, the inline-edit bar, MCP, the CLI): the rule is
+      // that the writer fires the event, and this is a listener like any other.
+      listenForContentWebhooks({
+        hooks: runtime.hooks,
+        endpoints: () => adminSettings(config).webhooks,
+        runtimeDir,
+        security: services.security,
       });
 
       // ── Default content editor ────────────────────────────────────────────────

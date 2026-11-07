@@ -19,6 +19,7 @@ import { join } from "@std/path";
 import { encodeHex } from "@std/encoding/hex";
 import { isDuneError } from "@dune/core/plugin-api";
 import type { SecurityService } from "@dune/core/plugin-api";
+import type { HookRegistry } from "@dune/core/hooks";
 
 /** The slice of the security service webhook delivery needs. */
 export type WebhookSecurity = Pick<SecurityService, "safeFetch">;
@@ -293,6 +294,33 @@ export function fireContentWebhooks(
   ).catch(() => {
     // Belt-and-suspenders: Promise.all itself should not throw, but just in case
   });
+}
+
+/** The content events an endpoint can subscribe to. */
+const CONTENT_EVENTS: WebhookContentEvent[] = [
+  "onPageCreate",
+  "onPageUpdate",
+  "onPageDelete",
+  "onPageMove",
+  "onWorkflowChange",
+];
+
+/**
+ * Deliver content webhooks for every page event that is fired, whoever fires
+ * it. `endpoints` is read per event, so a settings change applies without a
+ * restart. Delivery is fire-and-forget (see {@link fireContentWebhooks}).
+ */
+export function listenForContentWebhooks(opts: {
+  hooks: Pick<HookRegistry, "on">;
+  endpoints: () => WebhookEndpointConfig[];
+  runtimeDir: string;
+  security: WebhookSecurity;
+}): void {
+  for (const event of CONTENT_EVENTS) {
+    opts.hooks.on(event, ({ data }) => {
+      fireContentWebhooks(opts.endpoints(), event, data, opts.runtimeDir, opts.security);
+    });
+  }
 }
 
 export interface ListDeliveryLogsOptions {
