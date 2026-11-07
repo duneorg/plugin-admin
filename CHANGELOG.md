@@ -19,6 +19,15 @@ follows [Semantic Versioning](https://semver.org).
 
 ### Changed — BREAKING (the admin declares its own extension points, #127)
 
+- **The inline-edit content routes are gone; the admin's buttons on the bar are the admin's own (#127).**
+  `/admin/api/content/*` (source, commit, fields) moved to `@dune/plugin-inline-edit`
+  (`/api/inline-edit/content/*`), served for any signed-in editor with or without this plugin. The
+  admin contributes "Edit source" (an overlay with its page editor) and "Open in admin" to the bar's
+  `bar.actions` point, so the bar needs no knowledge of the admin's URLs.
+- **Content webhooks are a listener on the page events**, not a call in each admin route: a write
+  from the inline-edit bar, MCP or the CLI now reaches them too. `announcePageEvent()` names the
+  signed-in user as `actor`, which the webhook payload carries.
+
 - **`AdminPageRegistration`, `AdminRouteRegistration` and `ContentEditorPlugin` live here now**, exported
   from `@dune/plugin-admin` (and `@dune/plugin-admin/contributions`). Core's contract never read them. The
   keys `admin.pages` and `admin.routes` are declared by this package by declaration merging, so importing
