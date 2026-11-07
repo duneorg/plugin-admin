@@ -17,6 +17,20 @@ follows [Semantic Versioning](https://semver.org).
   `onPageMove` is also a valid webhook event. Needs `@dune/core` with `onPageMove` (0.36).
   `tests/admin/page_events_test.ts` drives create, update, reorder, delete and restore through the real routes.
 
+### Changed — BREAKING (the admin is called `admin`, and its settings are its plugin config)
+
+- **The plugin is named `admin`** (it was `dune-admin`), so its settings are `config.plugins.admin`, and
+  `capabilities.providers()`, `dune doctor` and the logs name it `admin`.
+- **Settings come from the plugin's config, not from an `admin:` block in system.yaml (#123, step 5).**
+  `path`, `session_lifetime`, `max_upload_mb`, `git_commit`, `webhooks`, `auth_provider` and `audit` are
+  `config:` under the admin's entry in `plugins:` (site.yaml); `dune migrate:config` moves an existing
+  `admin:` block there. Core 0.36 has no `admin` config at all and refuses the old block. The admin
+  validates its own settings at boot: a `path` that is not a clean prefix, or an `auth_provider` other
+  than `local`, stops the site instead of leaving the admin mounted where core does not protect it.
+  `WebhookEndpointConfig`, `WebhookContentEvent` and `AuthProviderConfig` moved here from `@dune/core`.
+  `runtime_dir` and `max_revisions` stay core settings (`system.yaml`).
+- `adminSettings(config)` (`src/admin/settings.ts`) is the one place the settings are read.
+
 ### Changed — BREAKING (the admin is a plugin you list)
 
 - **`@dune/core` 0.36 no longer loads the admin by itself (#123, step 4).** List it under `plugins:` in

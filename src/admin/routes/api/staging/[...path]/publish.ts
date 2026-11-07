@@ -9,6 +9,7 @@ import { requirePermission, requireTsxWrite, requireOwnedPage, json, serverError
 import { stringify as stringifyYaml } from "@std/yaml";
 import { announcePageEvent } from "../../../../page-events.ts";
 import type { FreshContext } from "fresh";
+import { adminSettings } from "../../../../settings.ts";
 
 async function maybeGitCommit(
   filePath: string, sourcePath: string, author: string | undefined,
@@ -66,7 +67,7 @@ export const handler = {
         });
       }
 
-      await maybeGitCommit(filePath, pagePath, authResult.user?.name, config.admin?.git_commit);
+      await maybeGitCommit(filePath, pagePath, authResult.user?.name, adminSettings(config).git_commit);
       await staging.discard(pagePath);
       await engine.rebuild();
       announcePageEvent(ctx, { event: "onPageUpdate", payload: { sourcePath: pageIndex.sourcePath } });

@@ -2,7 +2,7 @@ import { assertEquals, assertExists } from "@std/assert";
 import type { DuneConfig } from "@dune/core/config";
 import { createAuditTrail } from "../src/audit/mod.ts";
 
-const config = (admin?: Record<string, unknown>) => ({ system: {}, site: {}, admin } as unknown as DuneConfig);
+const config = (admin?: Record<string, unknown>) => ({ system: {}, site: {}, plugins: { admin } } as unknown as DuneConfig);
 const entry = { event: "page.update", actor: null, ip: null, userAgent: null, target: null, detail: {} } as never;
 
 Deno.test("createAuditTrail: no site root, no trail", () => {

@@ -52,7 +52,7 @@ function makeCtx(opts: {
         services: makeServices(opts.storage),
         engine,
         storage: opts.storage,
-        config: { admin: { data_dir: "data" } },
+        config: { plugins: {} },
         // authz.check() always allows — this test exercises theme-config
         // behavior, not permission logic (ROLE_PERMISSIONS/hasPermission()
         // were removed in 3.0.0; authz.check() is the sole authority now).

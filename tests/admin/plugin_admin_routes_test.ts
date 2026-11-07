@@ -40,7 +40,7 @@ function fc(opts: {
       adminContext: {
         authz: { check: () => Promise.resolve(opts.allow !== false) },
         csrfSecret: "test-secret",
-        config: { admin: {} },
+        config: { plugins: {} },
       },
     },
   };

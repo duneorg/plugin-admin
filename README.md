@@ -26,7 +26,16 @@ plugins:
   - src: jsr:@dune/plugin-admin@^4
 ```
 
-No further configuration is required. A site that does not list it has no admin panel: it serves,
+No further configuration is required. Settings go under `config:` of that entry:
+
+```yaml
+plugins:
+  - src: jsr:@dune/plugin-admin@^4
+    config:
+      path: /cms              # URL prefix (default /admin)
+      session_lifetime: 3600  # seconds (default 86400)
+```
+ A site that does not list it has no admin panel: it serves,
 builds and runs jobs as usual, and says once at boot that nothing provides the admin.
 
 ### Custom wiring
@@ -50,27 +59,31 @@ useful for statically generated sites or when you want a fully custom management
 
 ## Configuration
 
-All admin configuration lives under the `admin:` key in `site.yaml`.
+The admin's settings are its plugin config: `config:` under its entry in `plugins:` (`config/site.yaml`).
+Core reads none of them.
 
 ```yaml
-admin:
-  path: /admin              # URL prefix for the admin panel (default: /admin)
-  enabled: true             # Set to false to disable entirely
-  session_lifetime: 86400   # Session duration in seconds (default: 24h)
-  data_dir: data            # Directory for users, submissions, etc.
-  runtime_dir: .dune/admin   # Directory for sessions, audit log, etc.
-
-  auth_provider:
-    type: local             # Only "local" is supported today
-
-  audit:
-    enabled: true
-    log_file: .dune/admin/audit.log   # Override the audit log path
-
-  session_store:
-    type: local             # "local" (default) or "redis"
-    url: $REDIS_URL         # Required when type is redis
+plugins:
+  - src: jsr:@dune/plugin-admin@^4
+    config:
+      path: /admin              # URL prefix for the admin panel (default /admin)
+      session_lifetime: 86400   # session duration in seconds (default 24h)
+      max_upload_mb: 100        # admin upload limit (default 100)
+      git_commit: false         # commit to git after each page save (default false)
+      auth_provider:
+        type: local             # the only supported value; omit for the same result
+      audit:
+        enabled: true
+        log_file: .dune/admin/audit.log   # must resolve under the site root
+      webhooks:                 # outbound webhooks on content events
+        - url: https://hooks.example.com/content
+          secret: $WEBHOOK_SECRET
+          events: [onPageUpdate]
 ```
+
+A `path` that is not a clean prefix, or an `auth_provider` other than `local`, stops the site at boot.
+Shared settings live in core's `system.yaml`: `data_dir` (users, submissions), `runtime_dir` (sessions, audit
+log, revisions) and `max_revisions`.
 
 ### Roles and permissions
 

@@ -45,6 +45,7 @@ import {
   adminMiddleware,
   adminRoutes,
 } from "./manifest.gen.ts";
+import { adminSettings } from "./settings.ts";
 
 /**
  * `ctx` objects (`BootstrapResult`) for which the `ctx.state.adminContext`
@@ -243,7 +244,7 @@ export function mountAdminPanel(
 ): void {
   const { config } = site;
   const ctx = site;
-  const adminPrefix = config.admin?.path ?? "/admin";
+  const adminPrefix = adminSettings(config).path;
 
   // ── Admin panel ─────────────────────────────────────────────────────────────
   {

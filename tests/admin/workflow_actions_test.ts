@@ -48,7 +48,7 @@ function makePageIndex(overrides: Partial<PageIndex> = {}): PageIndex {
 
 const CONFIG = {
   system: { content: { dir: "content" } },
-  admin: { webhooks: [] },
+  plugins: { admin: { webhooks: [] } },
 } as unknown as DuneConfig;
 
 function makeEngine(pages: PageIndex[]) {

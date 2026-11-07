@@ -5,6 +5,7 @@ import { requirePermission, requireTsxWrite, json, serverError, actorFromAuth, g
 import { fireContentWebhooks } from "../../../../admin/webhooks.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import type { FreshContext } from "fresh";
+import { adminSettings } from "../../../settings.ts";
 
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
@@ -67,7 +68,7 @@ export const handler = {
       await storage.write(filePath, new TextEncoder().encode(fm + "\n" + defaultContent));
       await engine.rebuild();
 
-      const webhookEndpoints = config.admin?.webhooks ?? [];
+      const webhookEndpoints = adminSettings(config).webhooks;
       const runtimeDir = ctx.state.adminContext.services.paths.runtimeDir;
       if (hooks) hooks.fire("onPageCreate", { sourcePath: `${pagePath}/default${ext}`, title }).catch(() => {});
       fireContentWebhooks(webhookEndpoints, "onPageCreate", { sourcePath: `${pagePath}/default${ext}`, title }, runtimeDir, ctx.state.adminContext.services.security);

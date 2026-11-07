@@ -7,6 +7,7 @@
 import { join } from "@std/path";
 import type { DuneConfig } from "@dune/core/config";
 import { AuditLogger } from "./logger.ts";
+import { adminSettings } from "../admin/settings.ts";
 
 export interface AuditTrailOptions {
   config: DuneConfig;
@@ -23,7 +24,7 @@ export interface AuditTrailOptions {
  */
 export function createAuditTrail(opts: AuditTrailOptions): AuditLogger | null {
   const { config, root, runtimeDir } = opts;
-  const audit = config.admin?.audit;
+  const audit = adminSettings(config).audit;
   if (audit?.enabled === false || !root) return null;
   const logFile = audit?.log_file ? join(root, audit.log_file) : join(root, runtimeDir, "audit.log");
   const containmentRoot = root.endsWith("/") || root.endsWith("\\") ? root : root + "/";

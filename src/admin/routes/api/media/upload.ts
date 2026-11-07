@@ -7,6 +7,7 @@ import { isMediaFile, dirPathToRoute } from "@dune/core/content/path-utils";
 import { getMimeType } from "@dune/core/content/page-loader";
 import { isDuneError } from "@dune/core/plugin-api";
 import type { FreshContext } from "fresh";
+import { adminSettings } from "../../../settings.ts";
 
 export const handler = {
   async POST(ctx: FreshContext<AdminState>) {
@@ -17,7 +18,7 @@ export const handler = {
 
     const { storage, config, auditLogger, services } = ctx.state.adminContext;
     const MAX_FILE_SIZE = 50 * 1024 * 1024;
-    const maxBodyBytes = (config.admin?.max_upload_mb ?? 100) * 1024 * 1024;
+    const maxBodyBytes = adminSettings(config).max_upload_mb * 1024 * 1024;
 
     try {
       const tooLarge = services.security.checkBodySize(ctx.req, maxBodyBytes);

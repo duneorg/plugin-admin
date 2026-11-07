@@ -36,6 +36,7 @@ import type { App } from "fresh";
 import { getDuneAdminIslands, mountAdminPanel } from "./src/admin/mount.ts";
 import * as corePlugins from "@dune/core/plugins";
 import denoJson from "./deno.json" with { type: "json" };
+import { adminSettings } from "./src/admin/settings.ts";
 
 // ── Core-instance handshake ──────────────────────────────────────────────────
 // Re-export the CORE_INSTANCE sentinel and CORE_VERSION that THIS package's
@@ -96,7 +97,7 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
   let liveAdminContext: AdminContext | null = null;
 
   return {
-    name: "dune-admin",
+    name: "admin",
     version: denoJson.version,
     description: "Built-in Dune admin panel",
     hooks: {},
@@ -105,10 +106,7 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
     async setup(api) {
       config = api.config;
       storage = api.storage;
-      const adminCfg = config.admin ?? {
-        path: "/admin",
-        session_lifetime: 86400,
-      };
+      const adminCfg = adminSettings(config); // throws on a bad path / auth_provider: the site does not boot
 
       // The audit trail and the machine translator are the admin's own. Translator
       // requests go through core's SSRF-checked fetch.
@@ -124,7 +122,7 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
       // Where this admin is mounted: core keeps these paths out of the page
       // cache, the static build and the plugin-route namespace. The default
       // `/admin` lives here, not in core.
-      api.capabilities.provide("admin.prefix", () => ({ prefix: adminCfg.path ?? "/admin" }));
+      api.capabilities.provide("admin.prefix", () => ({ prefix: adminCfg.path }));
       api.capabilities.provide("auth.session", () => ({
         // The cookie the admin's auth middleware sets (see createAuthMiddleware).
         // Core uses it to decide whether to authenticate a public page and whether
@@ -147,10 +145,7 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
       if (!setupState) return; // admin disabled
 
       const { opts: o } = setupState;
-      const adminCfg = config.admin ?? {
-        path: "/admin",
-        session_lifetime: 86400,
-      };
+      const adminCfg = adminSettings(config); // throws on a bad path / auth_provider: the site does not boot
       // `system.runtime_dir`, as core resolved it.
       const runtimeDir = services.paths.runtimeDir;
       // `system.data_dir` — the same resolution core uses for the submissions it stores.
@@ -192,7 +187,7 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
       if (o.authProvider) {
         authProvider = o.authProvider;
       } else {
-        const provCfg = config.admin?.auth_provider;
+        const provCfg = adminCfg.auth_provider;
         if (!provCfg || provCfg.type === "local") {
           authProvider = new LocalAuthProvider(users, services.passwords);
         } else {
@@ -295,7 +290,7 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
         auth,
         users,
         sessions,
-        prefix: adminCfg.path ?? "/admin",
+        prefix: adminCfg.path,
         authProvider,
         workflow,
         scheduler,
@@ -386,4 +381,4 @@ export default function adminPluginFactory(
 ): DunePlugin {
   return createAdminPlugin({ root: ctx.root, dev: ctx.dev });
 }
-adminPluginFactory.pluginName = "dune-admin";
+adminPluginFactory.pluginName = "admin";

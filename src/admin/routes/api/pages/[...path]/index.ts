@@ -15,12 +15,13 @@ import { stringify as stringifyYaml } from "@std/yaml";
 import { fireContentWebhooks } from "../../../../../admin/webhooks.ts";
 import type { PageFrontmatter } from "@dune/core/content/types";
 import type { FreshContext } from "fresh";
+import { adminSettings } from "../../../../settings.ts";
 
 async function maybeGitCommit(
   filePath: string, sourcePath: string, author: string | undefined,
   config: import("../../../../context.ts").AdminContext["config"],
 ): Promise<void> {
-  if (!config.admin?.git_commit) return;
+  if (!adminSettings(config).git_commit) return;
   try {
     const msg = author ? `Admin: update ${sourcePath} (by ${author})` : `Admin: update ${sourcePath}`;
     const add = new Deno.Command("git", { args: ["add", filePath], stderr: "inherit" });
@@ -129,7 +130,7 @@ export const handler = {
       await engine.rebuild();
       await maybeGitCommit(filePath, pagePath, undefined, config);
 
-      const webhookEndpoints = config.admin?.webhooks ?? [];
+      const webhookEndpoints = adminSettings(config).webhooks;
       const runtimeDir = ctx.state.adminContext.services.paths.runtimeDir;
       if (hooks) hooks.fire("onPageUpdate", { sourcePath: page.sourcePath }).catch(() => {});
       fireContentWebhooks(webhookEndpoints, "onPageUpdate", { sourcePath: page.sourcePath }, runtimeDir, ctx.state.adminContext.services.security);
@@ -171,7 +172,7 @@ export const handler = {
       await storage.delete(`${contentDir}/${page.sourcePath}`);
       await engine.rebuild();
 
-      const webhookEndpoints = config.admin?.webhooks ?? [];
+      const webhookEndpoints = adminSettings(config).webhooks;
       const runtimeDir = ctx.state.adminContext.services.paths.runtimeDir;
       if (hooks) hooks.fire("onPageDelete", { sourcePath: page.sourcePath }).catch(() => {});
       fireContentWebhooks(webhookEndpoints, "onPageDelete", { sourcePath: page.sourcePath }, runtimeDir, ctx.state.adminContext.services.security);

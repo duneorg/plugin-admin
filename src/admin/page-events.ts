@@ -13,6 +13,7 @@
 import type { FreshContext } from "fresh";
 import type { AdminState } from "./types.ts";
 import { fireContentWebhooks } from "./webhooks.ts";
+import { adminSettings } from "./settings.ts";
 
 /** Paths are relative to the content directory. */
 export type PageEvent =
@@ -30,7 +31,7 @@ export function announcePageEvent(ctx: FreshContext<AdminState>, e: PageEvent): 
     );
   }
   fireContentWebhooks(
-    config.admin?.webhooks ?? [],
+    adminSettings(config).webhooks,
     e.event,
     e.payload,
     services.paths.runtimeDir,

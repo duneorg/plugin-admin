@@ -22,7 +22,7 @@ import type { SecurityService } from "@dune/core/plugin-api";
 
 /** The slice of the security service webhook delivery needs. */
 export type WebhookSecurity = Pick<SecurityService, "safeFetch">;
-import type { WebhookContentEvent, WebhookEndpointConfig } from "@dune/core/config";
+import type { WebhookContentEvent, WebhookEndpointConfig } from "./settings.ts";
 
 // === Types ===
 
