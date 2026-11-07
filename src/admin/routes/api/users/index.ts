@@ -79,7 +79,7 @@ export const handler = {
         await authz.allow({
           who: { type: "user", id: user.id },
           toBe: role,
-          onWhat: { type: "app", id: "admin" },
+          onWhat: { type: "app", id: "site" },
         }).catch(() => {});
       }
 

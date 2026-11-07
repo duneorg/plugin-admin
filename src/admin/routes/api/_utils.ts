@@ -148,7 +148,7 @@ export async function checkPermission(
   return await authz.check({
     who: { type: "user", id: authResult.user.id },
     canThey: permission as any,
-    onWhat: { type: "app", id: "admin" },
+    onWhat: { type: "app", id: "site" },
   });
 }
 

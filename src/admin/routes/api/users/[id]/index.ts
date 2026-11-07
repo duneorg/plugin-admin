@@ -69,7 +69,7 @@ export const handler = {
               await authz.disallowAllMatching({
                 who: { type: "user", id: userId },
                 was: existingRole,
-                onWhat: { type: "app", id: "admin" },
+                onWhat: { type: "app", id: "site" },
               }).catch((err) => {
                 console.warn(`[dune/authz] disallowAllMatching failed on role change for user ${userId}:`, err);
               });
@@ -77,7 +77,7 @@ export const handler = {
             await authz.allow({
               who: { type: "user", id: userId },
               toBe: role,
-              onWhat: { type: "app", id: "admin" },
+              onWhat: { type: "app", id: "site" },
             });
           }
           if (enabled !== undefined) {
@@ -96,7 +96,7 @@ export const handler = {
                 await authz.allow({
                   who: { type: "user", id: userId },
                   toBe: effectiveRole,
-                  onWhat: { type: "app", id: "admin" },
+                  onWhat: { type: "app", id: "site" },
                 }).catch((err) => {
                   console.warn(`[dune/authz] allow failed on re-enable for user ${userId}:`, err);
                 });
