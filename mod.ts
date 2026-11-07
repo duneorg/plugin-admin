@@ -123,7 +123,7 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
       // cache, the static build and the plugin-route namespace. The default
       // `/admin` lives here, not in core.
       api.capabilities.provide("admin.prefix", () => ({ prefix: adminCfg.path }));
-      api.capabilities.provide("auth.session", () => ({
+      api.capabilities.provide("editor.session", () => ({
         // The cookie the admin's auth middleware sets (see createAuthMiddleware).
         // Core uses it to decide whether to authenticate a public page and whether
         // to keep the response out of the shared page cache.
@@ -272,7 +272,7 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
       });
 
       // ── Default content editor ────────────────────────────────────────────────
-      const inlineEdit = capabilities.get("inline-edit");
+      const inlineEdit = capabilities.get("editor.inline");
       const contentEditor = capabilities.get("editor.content") ?? createBlockEditorPlugin();
 
       // ── Build AdminContext ────────────────────────────────────────────────────

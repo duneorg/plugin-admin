@@ -104,7 +104,7 @@ follows [Semantic Versioning](https://semver.org).
 ### Added
 
 - **Runs the admin conformance suite from `@dune/testing`** (`tests/admin/conformance_test.ts`): the checks
-  the stub admin passes, against plugin-admin over a real temp site. It covers `auth.session`, session
+  the stub admin passes, against plugin-admin over a real temp site. It covers `editor.session`, session
   recognition and marker scrubbing, the declared `dune_session` cookie, mount-order independence,
   `onPageUpdate` fired once by an edit, `admin.pages` / `admin.routes` mounted behind the login and the CSRF
   check, and the site serving with no admin. Needs `@dune/testing` with the conformance suite
@@ -114,20 +114,20 @@ follows [Semantic Versioning](https://semver.org).
 
 - **The admin provides and consumes core's capabilities instead of the untyped
   `adminContext` bag (duneorg/dune#97, `@dune/core` 0.36).** It provides
-  `auth.session` (who is the admin on a request: the admin bar and the inline-edit
+  `editor.session` (who is the admin on a request: the admin bar and the inline-edit
   WebSocket's admin fallback) and `scheduler.executor` (runs due scheduled actions;
   `dune serve` starts core's scheduler loop when it exists). It reads the
-  `inline-edit` and `editor.content` slots and the `admin.pages` contributions from
+  `editor.inline` and `editor.content` slots and the `admin.pages` contributions from
   `MountApi.capabilities` instead of `adminServices` and each plugin's `adminPages`,
   and no longer writes `bootstrap.adminContext`. The jobs view reads
   `BootstrapResult.jobScheduler`, which `dune serve` sets after mount.
-  `auth.session` declares `sessionCookies: ["dune_session"]`, which core uses to decide
+  `editor.session` declares `sessionCookies: ["dune_session"]`, which core uses to decide
   whether to authenticate a public page and whether to keep the response out of the shared
   page cache.
 - **`mountDuneAdminEarly()` is gone** (core removed `DunePlugin.mountEarly`).
   `mountDuneAdmin(app, ctx, adminContext?)` falls back to the single-site context
   stored by the plugin's `mount()` instead of `ctx.adminContext`. A plugin route that
-  needs the admin identity calls `capabilities.get("auth.session")`. Routes a plugin
+  needs the admin identity calls `capabilities.get("editor.session")`. Routes a plugin
   registers in its own `mount()` no longer sit behind the admin's
   `ctx.state.adminContext` middleware, so `withGuards()` no longer works there (it
   throws a `TypeError`); a guarded `POST`/`PUT`/`PATCH`/`DELETE` admin route is now a

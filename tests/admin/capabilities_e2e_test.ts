@@ -1,5 +1,5 @@
 /**
- * End to end against a real core: the admin plugin provides `auth.session` and
+ * End to end against a real core: the admin plugin provides `editor.session` and
  * `scheduler.executor`, consumes `admin.pages` contributions, and no longer
  * writes core's removed `adminContext` bag.
  */
@@ -28,18 +28,18 @@ async function withSite(
 }
 
 Deno.test(
-  "admin provides auth.session and scheduler.executor",
+  "admin provides editor.session and scheduler.executor",
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     await withSite([], async (ctx) => {
-      const auth = ctx.capabilities.get("auth.session");
+      const auth = ctx.capabilities.get("editor.session");
       assertExists(auth);
       assertExists(ctx.capabilities.get("scheduler.executor"));
       const anonymous = await auth.authenticate(new Request("http://localhost/"));
       assertEquals(anonymous.authenticated, false);
       assertEquals(auth.sessionCookies, ["dune_session"]);
       const providers = Object.fromEntries(ctx.capabilities.providers().map((p) => [p.name, p.provider]));
-      assertEquals(providers["auth.session"], "admin");
+      assertEquals(providers["editor.session"], "admin");
       assertEquals(providers["scheduler.executor"], "admin");
     });
   },
