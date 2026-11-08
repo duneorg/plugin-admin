@@ -9,7 +9,7 @@ import { join } from "@std/path";
 import { bootstrap } from "@dune/core/bootstrap";
 import { createDuneApp } from "@dune/core/fresh-app";
 import type { DunePlugin } from "@dune/core/hooks";
-import { createAdminPlugin } from "../../mod.ts";
+import { ADMIN_EDITOR, ADMIN_PAGES, ADMIN_ROUTES, createAdminPlugin } from "../../mod.ts";
 
 async function withSite(
   plugins: DunePlugin[],
@@ -87,7 +87,7 @@ Deno.test(
       version: "1.0.0",
       hooks: {},
       setup(api) {
-        api.capabilities.contribute("admin.pages", {
+        api.capabilities.contribute(ADMIN_PAGES, {
           path: "/my-plugin",
           label: "My plugin",
           permission: "pages.read",
@@ -112,13 +112,13 @@ Deno.test(
       version: "1.0.0",
       hooks: {},
       setup(api) {
-        api.capabilities.provide("admin.editor", () => ({
+        api.capabilities.provide(ADMIN_EDITOR, () => ({
           pageEditorHandler: () => new Response("custom editor"),
         }));
       },
     };
     await withSite([editor], async (ctx) => {
-      assertExists(ctx.capabilities.get("admin.editor"));
+      assertExists(ctx.capabilities.get(ADMIN_EDITOR));
       assertEquals(
         ctx.capabilities.providers().find((p) => p.name === "admin.editor")?.provider,
         "test-editor",
@@ -137,7 +137,7 @@ Deno.test(
       version: "1.0.0",
       hooks: {},
       setup(api) {
-        api.capabilities.contribute("admin.routes", {
+        api.capabilities.contribute(ADMIN_ROUTES, {
           method: "POST",
           path: "/api/my-plugin/save",
           permission: "config.update",

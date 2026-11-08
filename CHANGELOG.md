@@ -30,8 +30,8 @@ follows [Semantic Versioning](https://semver.org).
 
 - **`AdminPageRegistration`, `AdminRouteRegistration` and `ContentEditorPlugin` live here now**, exported
   from `@dune/plugin-admin` (and `@dune/plugin-admin/contributions`). Core's contract never read them. The
-  keys `admin.pages` and `admin.routes` are declared by this package by declaration merging, so importing
-  the types is what makes a plugin's `contribute("admin.pages", ...)` type-check. The `editor.content`
+  keys are exported from here as typed tokens, `ADMIN_PAGES`, `ADMIN_ROUTES` and `ADMIN_EDITOR`
+  (`@dune/plugin-admin/contributions`): a plugin writes `contribute(ADMIN_PAGES, ...)`. The `editor.content`
   slot is renamed **`admin.editor`**: a key carries the name of the plugin that reads it. A plugin that
   provides a replacement page editor changes the key and imports `ContentEditorPlugin` from here.
 

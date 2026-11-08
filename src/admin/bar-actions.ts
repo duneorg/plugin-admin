@@ -6,12 +6,14 @@
  * point: a link to the page's editor here, and a button that opens that editor
  * in an overlay on the page.
  *
- * The contribution is made without importing the bar plugin's types (that would
- * make an optional neighbour a dependency), so the shapes below are this
- * plugin's own restatement of the `BarAction` contract.
+ * The contribution is made without importing the bar plugin's package (that would
+ * make an optional neighbour a dependency), so the shapes and the key below are
+ * this plugin's own restatement of the `BarAction` contract.
  *
  * @module
  */
+
+import { type CapabilityKey, capabilityKey } from "@dune/core/plugin-api";
 
 /** A bar button, as `@dune/plugin-inline-edit` renders it. */
 export interface AdminBarAction {
@@ -27,6 +29,13 @@ export interface AdminBarAction {
 export interface AdminBarContext {
   page: { sourcePath: string } | null;
 }
+
+/**
+ * The bar's `bar.actions` contribution point, recreated from its documented name
+ * so this plugin needs no dependency on the bar's package: two keys with one
+ * name are one capability.
+ */
+export const BAR_ACTIONS: CapabilityKey<(ctx: AdminBarContext) => AdminBarAction[]> = capabilityKey("bar.actions");
 
 /**
  * Script for the "Edit source" button: show the admin's page editor

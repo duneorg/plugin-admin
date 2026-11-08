@@ -2,29 +2,28 @@
  * The admin's own extension points.
  *
  * Core's contract names none of these: it never reads them. The admin is their
- * only consumer, so it declares them here, by declaration merging into the
- * capability registry, under its own `admin.` prefix. A plugin that contributes
- * an admin page, an admin route or a replacement page editor imports the types
- * from `@dune/plugin-admin`; importing them is also what makes the keys known to
- * TypeScript:
+ * only consumer, so it declares them here, as typed keys under its own `admin.`
+ * prefix. A plugin that contributes an admin page, an admin route or a
+ * replacement page editor imports the key (which carries the type) from
+ * `@dune/plugin-admin`:
  *
  * ```ts
- * import type { AdminPageRegistration } from "@dune/plugin-admin";
- * api.capabilities.contribute("admin.pages", { path: "/billing", label: "Billing", permission: "billing.manage", handler });
+ * import { ADMIN_PAGES } from "@dune/plugin-admin";
+ * api.capabilities.contribute(ADMIN_PAGES, { path: "/billing", label: "Billing", permission: "billing.manage", handler });
  * ```
  *
  * @module
  */
 
-import type { PluginRouteContext } from "@dune/core/plugin-api";
+import { type CapabilityKey, capabilityKey, type PluginRouteContext } from "@dune/core/plugin-api";
 
 /**
  * A custom admin page contributed by a plugin.
  *
  * Plugins contribute these to the `admin.pages` point:
- * `api.capabilities.contribute("admin.pages", { path, label, permission, handler })`.
+ * `api.capabilities.contribute(ADMIN_PAGES, { path, label, permission, handler })`.
  * Unlike `publicRoutes`, this is **not** wired by `@dune/core`: the admin reads the list
- * (`capabilities.list("admin.pages")`) and mounts each page as a programmatic route,
+ * (`capabilities.list(ADMIN_PAGES)`) and mounts each page as a programmatic route,
  * enforcing its declared `permission`. A site without the admin gets no admin pages.
  *
  * @since 4.0.0
@@ -57,9 +56,9 @@ export interface AdminPageRegistration<S = any> {
  * under the admin prefix.
  *
  * Plugins contribute these to the `admin.routes` point:
- * `api.capabilities.contribute("admin.routes", { method, path, permission, handler })`.
+ * `api.capabilities.contribute(ADMIN_ROUTES, { method, path, permission, handler })`.
  * The admin reads the list
- * (`capabilities.list("admin.routes")`) and mounts each route behind its own
+ * (`capabilities.list(ADMIN_ROUTES)`) and mounts each route behind its own
  * authentication, with the CSRF check applied to every non-safe method and the
  * declared `permission` enforced, so the handler only runs for a request that
  * passed all three. A site without the admin mounts nothing.
@@ -93,7 +92,7 @@ export interface AdminRouteRegistration<S = any> {
 /**
  * Plugin-provided replacement for the built-in block editor.
  *
- * Provide it as the `admin.editor` capability: `api.capabilities.provide("admin.editor", () => impl)`.
+ * Provide it as the `admin.editor` capability: `api.capabilities.provide(ADMIN_EDITOR, () => impl)`.
  * The edit route delegates to `pageEditorHandler` instead of the default block editor.
  *
  * Declared by the admin plugin, which is the only reader of the `admin.editor` slot; a plugin
@@ -127,15 +126,14 @@ export interface ContentEditorPlugin {
   ) => Response;
 }
 
-declare module "@dune/core/plugin-api" {
-  interface Capabilities {
-    /** A replacement page editor. Consumer: the admin. */
-    "admin.editor": ContentEditorPlugin;
-  }
-  interface Contributions {
-    /** An extra admin page. Consumer: the admin. */
-    "admin.pages": AdminPageRegistration;
-    /** A guarded admin route (any method) under the admin prefix. Consumer: the admin, which applies authentication, CSRF and permission checks. */
-    "admin.routes": AdminRouteRegistration;
-  }
-}
+/** A replacement page editor (slot). Consumer: the admin. */
+export const ADMIN_EDITOR: CapabilityKey<ContentEditorPlugin> = capabilityKey("admin.editor");
+
+/** An extra admin page (contribution point). Consumer: the admin. */
+export const ADMIN_PAGES: CapabilityKey<AdminPageRegistration> = capabilityKey("admin.pages");
+
+/**
+ * A guarded admin route, any method, under the admin prefix (contribution point).
+ * Consumer: the admin, which applies authentication, CSRF and permission checks.
+ */
+export const ADMIN_ROUTES: CapabilityKey<AdminRouteRegistration> = capabilityKey("admin.routes");

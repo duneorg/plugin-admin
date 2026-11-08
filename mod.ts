@@ -37,7 +37,8 @@ import { getDuneAdminIslands, mountAdminPanel } from "./src/admin/mount.ts";
 import * as corePlugins from "@dune/core/plugins";
 import denoJson from "./deno.json" with { type: "json" };
 import { adminSettings } from "./src/admin/settings.ts";
-import { adminBarActions } from "./src/admin/bar-actions.ts";
+import { adminBarActions, BAR_ACTIONS } from "./src/admin/bar-actions.ts";
+import { ADMIN_EDITOR, ADMIN_PAGES, ADMIN_ROUTES } from "./src/admin/contributions.ts";
 import { listenForContentWebhooks } from "./src/admin/webhooks.ts";
 
 // ── Core-instance handshake ──────────────────────────────────────────────────
@@ -54,11 +55,8 @@ const _core = corePlugins as unknown as {
 
 /** The `@dune/core` instance sentinel this package resolved. See core's `plugins/mod.ts`. */
 export const resolvedCoreSentinel: unknown = _core.CORE_INSTANCE;
-/**
- * The admin's extension points. Importing them also teaches TypeScript the keys
- * (`admin.pages`, `admin.routes`, `admin.editor`) this plugin declares on the
- * capability registry.
- */
+/** The admin's extension points: the typed keys (`ADMIN_PAGES`, `ADMIN_ROUTES`, `ADMIN_EDITOR`) and their item types. */
+export { ADMIN_EDITOR, ADMIN_PAGES, ADMIN_ROUTES } from "./src/admin/contributions.ts";
 export type {
   AdminPageRegistration,
   AdminRouteRegistration,
@@ -153,13 +151,10 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
       }));
 
       // The admin's own buttons on the inline-edit bar. `bar.actions` is that
-      // plugin's extension point; contributing without importing its types
-      // keeps it an optional neighbour (a site without it simply never reads
-      // this).
-      (api.capabilities as unknown as { contribute(point: string, item: unknown): void }).contribute(
-        "bar.actions",
-        (ctx: { page: { sourcePath: string } | null }) => adminBarActions(adminCfg.path, ctx),
-      );
+      // plugin's extension point; contributing through a key of the same name
+      // (see bar-actions.ts) keeps it an optional neighbour, not a dependency
+      // (a site without it simply never reads this).
+      api.capabilities.contribute(BAR_ACTIONS, (ctx) => adminBarActions(adminCfg.path, ctx));
     },
 
     async mount({ app, runtime, services, capabilities }: MountApi) {
@@ -305,13 +300,13 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
 
       // ── Default content editor ────────────────────────────────────────────────
       const inlineEdit = capabilities.get("editor.inline");
-      const contentEditor = capabilities.get("admin.editor") ?? createBlockEditorPlugin();
+      const contentEditor = capabilities.get(ADMIN_EDITOR) ?? createBlockEditorPlugin();
 
       // ── Build AdminContext ────────────────────────────────────────────────────
       const metricsEnabled = config.system.metrics?.enabled !== false;
 
-      const pluginPages = capabilities.list("admin.pages");
-      const pluginRoutes = capabilities.list("admin.routes");
+      const pluginPages = capabilities.list(ADMIN_PAGES);
+      const pluginRoutes = capabilities.list(ADMIN_ROUTES);
 
       const adminContext: AdminContext = {
         services,
