@@ -375,10 +375,15 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
  * The plugin loader's entry point: `plugins: [{ src: jsr:@dune/plugin-admin@^4 }]`
  * calls this with the entry's config and `{ root, dev }`.
  */
-export default function adminPluginFactory(
+function adminPluginFactory(
   _pluginConfig: Record<string, unknown>,
   ctx: { root: string; dev: boolean },
 ): DunePlugin {
   return createAdminPlugin({ root: ctx.root, dev: ctx.dev });
 }
 adminPluginFactory.pluginName = "admin";
+
+// A separate default export: declaring it inline (`export default function`)
+// next to the property assignment above is a merged declaration, which JSR's
+// type output rejects (TS2652) and so blocks `deno publish`.
+export default adminPluginFactory;
