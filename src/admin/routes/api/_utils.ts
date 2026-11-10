@@ -6,7 +6,6 @@ import type { FreshContext } from "fresh";
 import type { AdminPermission, AdminState } from "../../types.ts";
 import { highestValidRole } from "../../auth/role-utils.ts";
 import { csrfTokenMatches, resolveCsrfSecret } from "../../auth/csrf.ts";
-import { clientIp } from "@dune/core/security";
 
 // json()/serverError()/typed error classes live in ../../http.ts so the
 // public API (public-api.ts) and admin routes share one implementation.
@@ -29,7 +28,7 @@ function logAuthzDenial(
   void auditLogger.log({
     event,
     actor: actorFromAuth(ctx.state.auth ?? {}),
-    ip: getClientIp(ctx.req),
+    ip: getClientIp(ctx),
     userAgent: ctx.req.headers.get("user-agent") ?? null,
     target: { type: "route", id: ctx.url.pathname },
     detail,
@@ -129,7 +128,7 @@ export function csrfCheck(ctx: FreshContext<AdminState>): Response | null {
  * flat table" dec-auth-storage said should be fully replaced, not coexist
  * with).
  *
- * `admin.authzStore` defaults to `"local"` and `authz` is created whenever
+ * `admin.authz_store` defaults to `"local"` and `authz` is created whenever
  * the admin panel is enabled, regardless of `site.auth`'s mode — see its
  * doc comment in `src/config/admin-config.ts`. `authz` being undefined
  * here means its creation itself failed at startup (already logged loudly
@@ -149,7 +148,7 @@ export async function checkPermission(
   return await authz.check({
     who: { type: "user", id: authResult.user.id },
     canThey: permission as any,
-    onWhat: { type: "app", id: "admin" },
+    onWhat: { type: "app", id: "site" },
   });
 }
 
@@ -183,7 +182,7 @@ export function requireTsxWrite(
 ): Response | null {
   if (!isTsxSource(formatOrPath)) return null;
   const allowedRoles: string[] =
-    ctx.state.adminContext.config.system.content.allowTsxFormat ?? ["admin"];
+    ctx.state.adminContext.config.system.content.allow_tsx_format ?? ["admin"];
   const userRoles = ctx.state.auth?.user?.roles ?? [];
   if (allowedRoles.length === 0 || !userRoles.some((r) => allowedRoles.includes(r))) {
     return json({
@@ -296,8 +295,8 @@ export function validatePagePath(p: string): boolean {
  * attribution. Callers that need the raw claimed IP should read the headers
  * themselves and record them as untrusted metadata.
  */
-export function getClientIp(req: Request): string | null {
-  const ip = clientIp(req, { trustForwardedFor: false });
+export function getClientIp(ctx: FreshContext<AdminState>): string | null {
+  const ip = ctx.state.adminContext.services.security.clientIp(ctx.req, { trustForwardedFor: false });
   return ip === "unknown" ? null : ip;
 }
 
@@ -305,7 +304,7 @@ export function actorFromAuth(
   authResult: {
     user?: { id: string; username?: string; name?: string } | null;
   },
-): import("@dune/core/audit").AuditActor | null {
+): import("../../../audit/mod.ts").AuditActor | null {
   if (!authResult.user) return null;
   const username = authResult.user.username ?? authResult.user.id;
   return {

@@ -1,14 +1,15 @@
 /** @jsxImportSource preact */
 /**
  * Built-in block editor — the default ContentEditorPlugin loaded by bootstrap
- * when no plugin overrides adminServices.contentEditor.
+ * when no plugin provides the `admin.editor` capability.
  *
  * Wraps the PageEditor island in the same way the old hardwired route did, but
  * now as a proper ContentEditorPlugin so it participates in the same slot that
  * third-party editors use.
  */
 
-import type { ContentEditorPlugin } from "@dune/core/hooks";
+import type { ContentEditorPlugin } from "./contributions.ts";
+import type { FreshContext } from "fresh";
 import PageEditor from "./islands/PageEditor.tsx";
 
 function PageEditorRoute(
@@ -28,7 +29,10 @@ function PageEditorRoute(
 
 export function createBlockEditorPlugin(): ContentEditorPlugin {
   return {
-    pageEditorHandler(ctx) {
+    // A full Fresh context (ctx.render): the contract's PluginRouteContext is narrowed here,
+    // which the contract allows because this plugin depends on Fresh itself.
+    // deno-lint-ignore no-explicit-any
+    pageEditorHandler(ctx: FreshContext<any>) {
       const { engine, prefix } = ctx.state.adminContext;
       const pagePath = ctx.url.searchParams.get("path");
       if (!pagePath) {

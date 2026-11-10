@@ -12,6 +12,7 @@
  *    leaving the old value in place.
  */
 
+import { makeServices } from "../helpers/services.ts";
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { handler } from "../../src/admin/routes/api/pages/[...path]/index.ts";
 
@@ -60,9 +61,10 @@ function makeCtx(opts: {
     state: {
       auth: { authenticated: true, user: { id: "1", username: "admin", roles: ["admin"] } },
       adminContext: {
+        services: makeServices(null, { getBlueprints: () => engine.blueprints as never }),
         engine,
         storage: opts.storage,
-        config: { system: { content: { dir: "content" } }, admin: {} },
+        config: { system: { content: { dir: "content" } }, plugins: {} },
         // authz.check() always allows — this test exercises page-edit
         // behavior, not permission logic (ROLE_PERMISSIONS/hasPermission()
         // were removed in 3.0.0; authz.check() is the sole authority now).

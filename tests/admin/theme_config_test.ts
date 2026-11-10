@@ -7,6 +7,7 @@
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { handler } from "../../src/admin/routes/api/config/theme-config.ts";
+import { makeServices } from "../helpers/services.ts";
 
 // deno-lint-ignore no-explicit-any
 function makeStorage(initial: Record<string, string> = {}): any {
@@ -48,9 +49,10 @@ function makeCtx(opts: {
     state: {
       auth: { authenticated: true, user: { id: "1", username: "admin" } },
       adminContext: {
+        services: makeServices(opts.storage),
         engine,
         storage: opts.storage,
-        config: { admin: { dataDir: "data" } },
+        config: { plugins: {} },
         // authz.check() always allows — this test exercises theme-config
         // behavior, not permission logic (ROLE_PERMISSIONS/hasPermission()
         // were removed in 3.0.0; authz.check() is the sole authority now).

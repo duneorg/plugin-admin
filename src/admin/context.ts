@@ -17,25 +17,27 @@ import type { Scheduler, ScheduledAction } from "@dune/core/workflow";
 import type { HistoryEngine } from "@dune/core/history";
 import type { SubmissionManager } from "./submissions.ts";
 import type { FlexEngine } from "@dune/core/flex";
-import type { HookRegistry, AdminPageRegistration } from "@dune/core/hooks";
-import type { ContentEditorPlugin } from "@dune/core/hooks";
+import type { HookRegistry } from "@dune/core/hooks";
+import type { AdminPageRegistration, AdminRouteRegistration, ContentEditorPlugin } from "./contributions.ts";
 import type { StagingEngine } from "@dune/core/staging";
 import type { CommentManager } from "./comments.ts";
 import type { CollabManager } from "../collab/mod.ts";
 import type { InlineEditManager } from "@dune/core/inline-edit";
-import type { ImageCache } from "@dune/core/images";
-import type { AuditLogger } from "@dune/core/audit";
+import type { AuditLogger } from "../audit/mod.ts";
 import type { MetricsCollector } from "@dune/core/metrics";
-import type { MachineTranslator } from "@dune/core/mt";
+import type { MachineTranslator } from "../mt/mod.ts";
 import type { RateLimitStore } from "@dune/core/security";
+import type { PluginServices } from "@dune/core/plugin-api";
 import type { DuneAuthSystem } from "@dune/core/auth/authz";
 import type { SearchManager } from "@dune/core/search";
 import type { SectionRegistry } from "@dune/core/sections";
 
-export type { AdminPageRegistration };
+export type { AdminPageRegistration, AdminRouteRegistration };
 
 /** All services available to admin route handlers via `FreshContext.state.adminContext`. */
 export interface AdminContext {
+  /** Services core hands plugins (security policy, sessions, passwords, ...). */
+  services: PluginServices;
   engine: DuneEngine;
   search: SearchManager;
   storage: StorageAdapter;
@@ -64,11 +66,10 @@ export interface AdminContext {
   staging?: StagingEngine;
   comments?: CommentManager;
   collab?: CollabManager;
-  /** Inline editing manager, provided by a plugin via adminServices (v0.16+). */
+  /** Inline editing manager, provided by a plugin as the `editor.inline` capability. */
   inlineEdit?: InlineEditManager;
-  /** Custom page editor, provided by a plugin via adminServices (v0.24+). Replaces the built-in block editor. */
+  /** Custom page editor, provided by a plugin as the `admin.editor` capability. Replaces the built-in block editor. */
   contentEditor?: ContentEditorPlugin;
-  imageCache?: ImageCache;
   auditLogger?: AuditLogger;
   metrics?: MetricsCollector;
   mt?: MachineTranslator | null;
@@ -105,6 +106,11 @@ export interface AdminContext {
    * The Fresh app registers these as programmatic routes after fsRoutes().
    */
   pluginPages?: AdminPageRegistration[];
+  /**
+   * Plugin-contributed guarded routes (`admin.routes`), collected at mount.
+   * Mounted behind the admin's authentication, CSRF and permission checks.
+   */
+  pluginRoutes?: AdminRouteRegistration[];
   /**
    * HMAC key for session-bound CSRF tokens. Tests inject this; production
    * loads or creates `runtimeDir/csrf-secret` on first use.

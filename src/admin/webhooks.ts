@@ -17,8 +17,13 @@
 
 import { join } from "@std/path";
 import { encodeHex } from "@std/encoding/hex";
-import { safeFetch, SsrfBlockedError } from "@dune/core/security";
-import type { WebhookContentEvent, WebhookEndpointConfig } from "@dune/core/config";
+import { isDuneError } from "@dune/core/plugin-api";
+import type { SecurityService } from "@dune/core/plugin-api";
+import type { HookRegistry } from "@dune/core/hooks";
+
+/** The slice of the security service webhook delivery needs. */
+export type WebhookSecurity = Pick<SecurityService, "safeFetch">;
+import type { WebhookContentEvent, WebhookEndpointConfig } from "./settings.ts";
 
 // === Types ===
 
@@ -149,6 +154,7 @@ async function attemptDelivery(
   endpoint: WebhookEndpointConfig,
   body: string,
   attemptNumber: number,
+  security: WebhookSecurity,
 ): Promise<WebhookDeliveryAttempt> {
   const timestamp = Date.now();
   try {
@@ -170,13 +176,13 @@ async function attemptDelivery(
     // bots — must be explicit). Treat any redirect as a failed attempt.
     let resp: Response;
     try {
-      resp = await safeFetch(
+      resp = await security.safeFetch(
         endpoint.url,
         { method: "POST", headers, body },
         { allowPrivateDestinations: endpoint.allow_private === true },
       );
     } catch (err) {
-      const msg = err instanceof SsrfBlockedError ? err.message : String(err);
+      const msg = isDuneError(err, "ssrf_blocked") ? (err as Error).message : String(err);
       return { attemptNumber, timestamp, errorMessage: `SSRF guard: ${msg}`, success: false };
     }
     if (resp.ok) {
@@ -211,6 +217,7 @@ async function deliverWithRetry(
   event: WebhookContentEvent,
   payload: unknown,
   logDir: string,
+  security: WebhookSecurity,
 ): Promise<void> {
   const id = encodeHex(crypto.getRandomValues(new Uint8Array(8)));
   const body = JSON.stringify({ event, payload, sentAt: new Date().toISOString() });
@@ -228,7 +235,7 @@ async function deliverWithRetry(
   };
 
   for (let i = 0; i < 3; i++) {
-    const attempt = await attemptDelivery(endpoint, body, i + 1);
+    const attempt = await attemptDelivery(endpoint, body, i + 1, security);
     record.attempts.push(attempt);
 
     if (attempt.success) {
@@ -262,13 +269,15 @@ async function deliverWithRetry(
  * @param endpoints - Configured webhook endpoints (from admin.webhooks)
  * @param event     - The content event that occurred
  * @param payload   - Event-specific data included in the POST body
- * @param logDir    - Base directory for delivery logs (admin.runtimeDir)
+ * @param logDir    - Base directory for delivery logs (system.runtime_dir)
+ * @param security  - Core's security service (SSRF-guarded fetch)
  */
 export function fireContentWebhooks(
   endpoints: WebhookEndpointConfig[],
   event: WebhookContentEvent,
   payload: unknown,
   logDir: string,
+  security: WebhookSecurity,
 ): void {
   const active = endpoints.filter(
     (e) => (e.enabled ?? true) && e.events.includes(event),
@@ -278,13 +287,40 @@ export function fireContentWebhooks(
   // Fire all matching endpoints in parallel — do not await
   Promise.all(
     active.map((endpoint) =>
-      deliverWithRetry(endpoint, event, payload, logDir).catch((err) => {
+      deliverWithRetry(endpoint, event, payload, logDir, security).catch((err) => {
         console.error(`[dune] webhook: unexpected error for ${endpoint.url}: ${err}`);
       })
     ),
   ).catch(() => {
     // Belt-and-suspenders: Promise.all itself should not throw, but just in case
   });
+}
+
+/** The content events an endpoint can subscribe to. */
+const CONTENT_EVENTS: WebhookContentEvent[] = [
+  "onPageCreate",
+  "onPageUpdate",
+  "onPageDelete",
+  "onPageMove",
+  "onWorkflowChange",
+];
+
+/**
+ * Deliver content webhooks for every page event that is fired, whoever fires
+ * it. `endpoints` is read per event, so a settings change applies without a
+ * restart. Delivery is fire-and-forget (see {@link fireContentWebhooks}).
+ */
+export function listenForContentWebhooks(opts: {
+  hooks: Pick<HookRegistry, "on">;
+  endpoints: () => WebhookEndpointConfig[];
+  runtimeDir: string;
+  security: WebhookSecurity;
+}): void {
+  for (const event of CONTENT_EVENTS) {
+    opts.hooks.on(event, ({ data }) => {
+      fireContentWebhooks(opts.endpoints(), event, data, opts.runtimeDir, opts.security);
+    });
+  }
 }
 
 export interface ListDeliveryLogsOptions {
@@ -300,7 +336,7 @@ export interface ListDeliveryLogsOptions {
  * Reads logs from the last 7 days of log directories and returns up to `limit`
  * records. Silently returns an empty array if the log directory doesn't exist.
  *
- * @param logDir - Base directory (admin.runtimeDir)
+ * @param logDir - Base directory (system.runtime_dir)
  * @param limitOrOpts  - Maximum records, or `{ limit, sourcePath }`
  */
 export async function listDeliveryLogs(

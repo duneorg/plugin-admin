@@ -39,24 +39,18 @@
  *   deno task check:core-imports   — fail (exit 1) if deno.json is stale
  */
 
-/** Bump at every core minor this package needs. Bare-minor form (e.g. "0.31")
+/** Bump at every core minor this package needs. Bare-minor form (e.g. "0.36")
  * auto-tracks patch releases within that minor — confirmed via `deno cache`:
  * "0.28" resolved to the latest 0.28.x, not just 0.28.0.
  *
- * Floored at 0.35.3: password hashing (`@dune/core/auth/passwords`) and the
- * `DUNE_ADMIN_*` first-admin bootstrap moved into core there, and this package
- * no longer carries its own copy or a default admin. (0.35.2 before that: the
- * public form routes and the submission store moved into core, with
- * `BootstrapResult.submissions`, `registerFormRoutes()` and the `onSystemAction`
- * hook from `@dune/core/forms`.) A bare "0.35" would floor JSR's publish-time check at
- * 0.35.0 (reproduced 2026-08-31 with "0.34":
- * "invalid 'jsr:' dependency subpath: '@dune/core@0.34/auth/authz-schema',
- * resolved to 0.34.0, has no export") and let a site pair this package with a
- * core that cannot serve those routes. Back to a bare minor at the next core
- * minor. This constant and deno.json are only kept in step by
- * `check:core-imports`, so run it before merging any pin change.
+ * "0.36": this package (4.x) is a plugin core lists under `plugins:` and reads
+ * its settings from `config.plugins.admin`, which needs core 0.36.0 (core no
+ * longer loads the admin or has an `admin` config block). The floor is 0.36.0,
+ * so JSR's publish-time check (oldest version satisfying the range) sees every
+ * subpath this package uses. This constant and deno.json are only kept in step
+ * by `check:core-imports`, so run it before merging any pin change.
  */
-const CORE_RANGE = "^0.35.3";
+const CORE_RANGE = "0.36";
 
 const DENO_JSON = "deno.json";
 const SCAN_ROOTS = ["mod.ts", "src", "tests"];

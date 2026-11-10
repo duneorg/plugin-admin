@@ -2,6 +2,7 @@
 
 import type { AdminState } from "../../../types.ts";
 import { json, serverError, csrfCheck, requirePermission, requireTsxWrite, requireOwnedPage, validatePagePath } from "../_utils.ts";
+import { announcePageEvent } from "../../../page-events.ts";
 import type { FreshContext } from "fresh";
 
 function splitFrontmatter(content: string): { fm: string; body: string } {
@@ -95,6 +96,7 @@ export const handler = {
       }
 
       await storage.write(`${contentDir}/${targetPath}`, new TextEncoder().encode(translatedFm + translatedBody));
+      announcePageEvent(ctx, { event: "onPageCreate", payload: { sourcePath: targetPath, title: pageIndex.title ?? "" } });
       engine.rebuild().catch((err: unknown) => console.error("[dune] MT translate-page rebuild error:", err));
 
       return json({ ok: true, targetPath });

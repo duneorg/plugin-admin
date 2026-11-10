@@ -49,7 +49,8 @@ function makeCtx(
     state: {
       adminContext: {
         auditLogger: null,
-        config: { admin: { runtimeDir: opts.runtimeDir ?? ".dune/admin" } },
+        config: {},
+        services: { paths: { runtimeDir: opts.runtimeDir ?? ".dune/admin" } },
         // Distinguishes which specific permission the mock holds — same
         // role this fixture's ROLE_PERMISSIONS-backed hasPermission() used
         // to play, sourced from authz.check() instead (removed in 3.0.0;

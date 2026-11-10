@@ -7,19 +7,19 @@
 
 import type { AuthProvider, AuthCredentials, AuthProviderUser } from "./provider.ts";
 import type { UserManager } from "./users.ts";
-import { verifyPassword, DUMMY_HASH } from "@dune/core/auth/passwords";
+import type { PasswordService } from "@dune/core/plugin-api";
 
 export class LocalAuthProvider implements AuthProvider {
   readonly type = "local" as const;
 
-  constructor(private users: UserManager) {}
+  constructor(private users: UserManager, private passwords: Pick<PasswordService, "verify" | "dummyHash">) {}
 
   async authenticate(creds: AuthCredentials): Promise<AuthProviderUser | null> {
     const user = await this.users.getByUsername(creds.username);
     // Always run verifyPassword even when the user is not found to prevent
     // username enumeration via response-time differences (timing oracle).
-    const hash = user?.passwordHash ?? DUMMY_HASH;
-    const valid = await verifyPassword(creds.password, hash);
+    const hash = user?.passwordHash ?? this.passwords.dummyHash;
+    const valid = await this.passwords.verify(creds.password, hash);
     if (!valid || !user || !user.enabled) return null;
     return {
       externalId: user.id,

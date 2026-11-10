@@ -17,7 +17,6 @@ import type { StorageAdapter } from "@dune/core/storage";
 import type { DuneConfig } from "@dune/core/config";
 import type { HookRegistry } from "@dune/core/hooks";
 import type { WorkflowEngine } from "@dune/core/workflow";
-import { fireContentWebhooks } from "./webhooks.ts";
 
 export interface WorkflowActionContext {
   engine: DuneEngine;
@@ -72,10 +71,8 @@ export async function applyWorkflowTransition(
   await storage.write(filePath, new TextEncoder().encode(updated));
   await engine.rebuild();
 
-  const webhookEndpoints = config.admin?.webhooks ?? [];
-  const runtimeDir = config.admin?.runtimeDir ?? ".dune/admin";
+  // The admin's content webhooks listen to this event (see mount()).
   if (hooks) hooks.fire("onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }).catch(() => {});
-  fireContentWebhooks(webhookEndpoints, "onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }, runtimeDir);
 
   return { from: currentStatus, to: newStatus };
 }

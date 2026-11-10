@@ -24,7 +24,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "config.update");
     if (denied) return denied;
 
-    const { engine, storage, config, hooks } = ctx.state.adminContext;
+    const { engine, storage, hooks } = ctx.state.adminContext;
     try {
       const body = await ctx.req.json() as Record<string, unknown>;
       const manifest = engine.themes.theme.manifest;
@@ -58,7 +58,7 @@ export const handler = {
         }
       }
 
-      const dataDir = config.admin?.dataDir ?? "data";
+      const dataDir = ctx.state.adminContext.services.paths.dataDir;
       const themeConfigPath = `${dataDir}/theme-config.json`;
       const themeName = engine.config.theme.name;
 

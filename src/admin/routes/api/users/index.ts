@@ -3,8 +3,7 @@
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../_utils.ts";
 import { toUserInfo } from "../../../types.ts";
-import { checkPasswordStrength } from "@dune/core/security";
-import { DuplicateEmailError } from "@dune/core/auth/user-store";
+import { isDuneError } from "@dune/core/plugin-api";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -29,7 +28,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "users.create");
     if (denied) return denied;
 
-    const { users, auditLogger } = ctx.state.adminContext;
+    const { users, auditLogger, services } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
     try {
       const body = await ctx.req.json();
@@ -39,7 +38,7 @@ export const handler = {
         return json({ error: "username, password, and role are required" }, 400);
       }
 
-      const strength = checkPasswordStrength(password);
+      const strength = services.security.checkPasswordStrength(password);
       if (!strength.ok) return json({ error: strength.reason }, 400);
 
       const VALID_ROLES = ["admin", "editor", "author"] as const;
@@ -67,7 +66,7 @@ export const handler = {
           name: name ?? username,
         });
       } catch (err) {
-        if (err instanceof DuplicateEmailError) {
+        if (isDuneError(err, "duplicate_email")) {
           return json({ error: "Email already in use" }, 409);
         }
         throw err;
@@ -80,14 +79,14 @@ export const handler = {
         await authz.allow({
           who: { type: "user", id: user.id },
           toBe: role,
-          onWhat: { type: "app", id: "admin" },
+          onWhat: { type: "app", id: "site" },
         }).catch(() => {});
       }
 
       void auditLogger?.log({
         event: "user.create",
         actor: actorFromAuth(authResult),
-        ip: getClientIp(ctx.req),
+        ip: getClientIp(ctx),
         userAgent: ctx.req.headers.get("user-agent") ?? null,
         target: { type: "user", id: user.id },
         detail: {},

@@ -12,6 +12,7 @@
  * into the CSP's script-src/style-src directives.
  */
 
+import { makeServices } from "../helpers/services.ts";
 import { assertEquals, assertMatch } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { handler } from "../../src/admin/routes/_middleware.ts";
 import { createAuthMiddleware } from "../../src/admin/auth/middleware.ts";
@@ -54,9 +55,9 @@ function createMemoryStorage() {
 
 async function buildAdminContext() {
   const storage = createMemoryStorage();
-  const sessions = createSessionManager({ storage, sessionsDir: ".sess", lifetime: 3600 });
-  const users = createUserManager({ storage, usersDir: ".users" });
-  const auth = createAuthMiddleware({ sessions, users });
+  const sessions = await createSessionManager({ services: makeServices(storage), sessionsDir: ".sess", lifetime: 3600 });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
+  const auth = createAuthMiddleware({ sessions, users, security: makeServices(null).security });
 
   const user = await users.create({
     username: "admin",

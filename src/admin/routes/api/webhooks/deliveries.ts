@@ -32,9 +32,8 @@ export const handler = {
       return json({ error: "invalid path" }, 400);
     }
 
-    const { config } = ctx.state.adminContext;
     try {
-      const runtimeDir = config.admin?.runtimeDir ?? ".dune/admin";
+      const runtimeDir = ctx.state.adminContext.services.paths.runtimeDir;
       const logs = await listDeliveryLogs(runtimeDir, { sourcePath: path });
       const items = view === "workflow" ? logs.map(toWorkflowDelivery) : logs;
       return json({ items, total: items.length, view });

@@ -136,7 +136,7 @@ export function toAdminRelative(pathname: string, normalizedPrefix: string): str
  * in the union — it only ever existed on the removed `ROLE_PERMISSIONS`
  * table and has no corresponding action in `@dune/core`'s authz schema
  * (`actionToRelations` never defined it). Panel access is `canThey: "access"`
- * on `{ type: "app", id: "admin" }`, enforced by this middleware's gate.
+ * on `{ type: "app", id: "site" }`, enforced by this middleware's gate.
  */
 const NAV_PERMISSIONS: readonly AdminPermission[] = [
   "pages.create",
@@ -177,7 +177,7 @@ export async function computeNavPermissions(
         who: { type: "user", id: userId },
         // deno-lint-ignore no-explicit-any
         canThey: permission as any,
-        onWhat: { type: "app", id: "admin" },
+        onWhat: { type: "app", id: "site" },
       });
       return allowed ? permission : null;
     }),
@@ -229,7 +229,7 @@ export async function handler(
     const canAccess = await adminCtx.authz.check({
       who: { type: "user", id: authResult.user.id },
       canThey: "access",
-      onWhat: { type: "app", id: "admin" },
+      onWhat: { type: "app", id: "site" },
     });
     if (!canAccess) {
       return withSecurityHeaders(new Response("Forbidden", { status: 403 }), frameable);

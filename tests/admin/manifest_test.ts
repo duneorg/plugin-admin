@@ -64,6 +64,21 @@ Deno.test("staging and workflow status/scheduled routes are wildcard, not single
   }
 });
 
+Deno.test("admin manifest registers a wildcard's longer sub-routes before the bare wildcard", () => {
+  // `/x/:path*` also matches `/x/a/b/publish`, so it has to come after
+  // `/x/:path*/publish` or the sub-route is unreachable.
+  const patterns = adminRoutes.map((r) => r.pattern);
+  const order: Array<[string, string]> = [
+    ["/api/staging/:path*/publish", "/api/staging/:path*"],
+    ["/api/pages/:path*/comments", "/api/pages/:path*"],
+    ["/api/pages/:path*/comments/:id", "/api/pages/:path*/comments"],
+    ["/api/pages/:path*/comments/:id/resolve", "/api/pages/:path*/comments/:id"],
+  ];
+  for (const [first, second] of order) {
+    assertEquals(patterns.indexOf(first) < patterns.indexOf(second), true, `${first} must precede ${second}`);
+  }
+});
+
 Deno.test("admin manifest orders static segments before dynamic ones", () => {
   const patterns = adminRoutes.map((r) => r.pattern);
   // /api/pages/reorder (static) must be registered before /api/pages/:path*

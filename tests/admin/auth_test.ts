@@ -2,6 +2,7 @@
  * Tests for admin auth subsystem: passwords, sessions, users, middleware.
  */
 
+import { makeServices } from "../helpers/services.ts";
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { hashPassword, verifyPassword } from "@dune/core/auth/passwords";
 import { createSessionManager } from "../../src/admin/auth/sessions.ts";
@@ -74,8 +75,8 @@ Deno.test("verifyPassword: invalid hash format returns false", async () => {
 
 Deno.test("SessionManager: create returns session with ID", async () => {
   const storage = createMemoryStorage();
-  const mgr = createSessionManager({
-    storage,
+  const mgr = await createSessionManager({
+    services: makeServices(storage),
     sessionsDir: ".sessions",
     lifetime: 3600,
   });
@@ -88,8 +89,8 @@ Deno.test("SessionManager: create returns session with ID", async () => {
 
 Deno.test("SessionManager: get returns valid session", async () => {
   const storage = createMemoryStorage();
-  const mgr = createSessionManager({
-    storage,
+  const mgr = await createSessionManager({
+    services: makeServices(storage),
     sessionsDir: ".sessions",
     lifetime: 3600,
   });
@@ -103,8 +104,8 @@ Deno.test("SessionManager: get returns valid session", async () => {
 
 Deno.test("SessionManager: get returns null for missing session", async () => {
   const storage = createMemoryStorage();
-  const mgr = createSessionManager({
-    storage,
+  const mgr = await createSessionManager({
+    services: makeServices(storage),
     sessionsDir: ".sessions",
     lifetime: 3600,
   });
@@ -114,8 +115,8 @@ Deno.test("SessionManager: get returns null for missing session", async () => {
 
 Deno.test("SessionManager: revoke deletes session", async () => {
   const storage = createMemoryStorage();
-  const mgr = createSessionManager({
-    storage,
+  const mgr = await createSessionManager({
+    services: makeServices(storage),
     sessionsDir: ".sessions",
     lifetime: 3600,
   });
@@ -128,8 +129,8 @@ Deno.test("SessionManager: revoke deletes session", async () => {
 
 Deno.test("SessionManager: revokeAll removes user sessions", async () => {
   const storage = createMemoryStorage();
-  const mgr = createSessionManager({
-    storage,
+  const mgr = await createSessionManager({
+    services: makeServices(storage),
     sessionsDir: ".sessions",
     lifetime: 3600,
   });
@@ -147,8 +148,8 @@ Deno.test("SessionManager: revokeAll removes user sessions", async () => {
 
 Deno.test("SessionManager: expired session returns null", async () => {
   const storage = createMemoryStorage();
-  const mgr = createSessionManager({
-    storage,
+  const mgr = await createSessionManager({
+    services: makeServices(storage),
     sessionsDir: ".sessions",
     lifetime: 0, // Expire immediately
   });
@@ -163,7 +164,7 @@ Deno.test("SessionManager: expired session returns null", async () => {
 
 Deno.test("UserManager: create stores user", async () => {
   const storage = createMemoryStorage();
-  const mgr = createUserManager({ storage, usersDir: ".users" });
+  const mgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   const user = await mgr.create({
     username: "alice",
@@ -182,7 +183,7 @@ Deno.test("UserManager: create stores user", async () => {
 
 Deno.test("UserManager: getByUsername finds user", async () => {
   const storage = createMemoryStorage();
-  const mgr = createUserManager({ storage, usersDir: ".users" });
+  const mgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   await mgr.create({
     username: "bob",
@@ -199,14 +200,14 @@ Deno.test("UserManager: getByUsername finds user", async () => {
 
 Deno.test("UserManager: getByUsername returns null for missing", async () => {
   const storage = createMemoryStorage();
-  const mgr = createUserManager({ storage, usersDir: ".users" });
+  const mgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   assertEquals(await mgr.getByUsername("nobody"), null);
 });
 
 Deno.test("UserManager: list returns all users", async () => {
   const storage = createMemoryStorage();
-  const mgr = createUserManager({ storage, usersDir: ".users" });
+  const mgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   await mgr.create({ username: "u1", email: "u1@test.com", password: "p", role: "admin", name: "U1" });
   await mgr.create({ username: "u2", email: "u2@test.com", password: "p", role: "editor", name: "U2" });
@@ -217,7 +218,7 @@ Deno.test("UserManager: list returns all users", async () => {
 
 Deno.test("UserManager: update modifies user fields", async () => {
   const storage = createMemoryStorage();
-  const mgr = createUserManager({ storage, usersDir: ".users" });
+  const mgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   const user = await mgr.create({
     username: "charlie",
@@ -236,7 +237,7 @@ Deno.test("UserManager: update modifies user fields", async () => {
 
 Deno.test("UserManager: changePassword works", async () => {
   const storage = createMemoryStorage();
-  const mgr = createUserManager({ storage, usersDir: ".users" });
+  const mgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   const user = await mgr.create({
     username: "dave",
@@ -258,7 +259,7 @@ Deno.test("UserManager: changePassword works", async () => {
 
 Deno.test("UserManager: delete removes user", async () => {
   const storage = createMemoryStorage();
-  const mgr = createUserManager({ storage, usersDir: ".users" });
+  const mgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   const user = await mgr.create({
     username: "ephemeral",
@@ -274,7 +275,7 @@ Deno.test("UserManager: delete removes user", async () => {
 
 Deno.test("UserManager: has no default-admin bootstrap (no admin is created implicitly)", async () => {
   const storage = createMemoryStorage();
-  const mgr = createUserManager({ storage, usersDir: ".users" });
+  const mgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
   assertEquals("ensureDefaultAdmin" in mgr, false);
   assertEquals(await mgr.list(), []);
@@ -285,9 +286,9 @@ Deno.test("UserManager: has no default-admin bootstrap (no admin is created impl
 
 Deno.test("AuthMiddleware: authenticate fails without cookie", async () => {
   const storage = createMemoryStorage();
-  const sessions = createSessionManager({ storage, sessionsDir: ".sess", lifetime: 3600 });
-  const users = createUserManager({ storage, usersDir: ".users" });
-  const auth = createAuthMiddleware({ sessions, users });
+  const sessions = await createSessionManager({ services: makeServices(storage), sessionsDir: ".sess", lifetime: 3600 });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
+  const auth = createAuthMiddleware({ sessions, users, security: makeServices(null).security });
 
   const req = new Request("http://localhost/admin/");
   const result = await auth.authenticate(req);
@@ -297,9 +298,9 @@ Deno.test("AuthMiddleware: authenticate fails without cookie", async () => {
 
 Deno.test("AuthMiddleware: authenticate succeeds with valid session", async () => {
   const storage = createMemoryStorage();
-  const sessions = createSessionManager({ storage, sessionsDir: ".sess", lifetime: 3600 });
-  const userMgr = createUserManager({ storage, usersDir: ".users" });
-  const auth = createAuthMiddleware({ sessions, users: userMgr });
+  const sessions = await createSessionManager({ services: makeServices(storage), sessionsDir: ".sess", lifetime: 3600 });
+  const userMgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
+  const auth = createAuthMiddleware({ sessions, users: userMgr, security: makeServices(null).security });
 
   const user = await userMgr.create({
     username: "admin",
@@ -322,12 +323,13 @@ Deno.test("AuthMiddleware: authenticate succeeds with valid session", async () =
 
 Deno.test("AuthMiddleware: bound session fails when forwarded IP is omitted", async () => {
   const storage = createMemoryStorage();
-  const sessions = createSessionManager({ storage, sessionsDir: ".sess", lifetime: 3600 });
-  const userMgr = createUserManager({ storage, usersDir: ".users" });
+  const sessions = await createSessionManager({ services: makeServices(storage), sessionsDir: ".sess", lifetime: 3600 });
+  const userMgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
   const auth = createAuthMiddleware({
     sessions,
     users: userMgr,
     trustForwardedFor: true,
+    security: makeServices(null).security,
   });
 
   const user = await userMgr.create({
@@ -357,11 +359,11 @@ Deno.test("AuthMiddleware: bound session fails when forwarded IP is omitted", as
   assertEquals(matching.authenticated, true);
 });
 
-Deno.test("AuthMiddleware: createSessionCookie formats correctly", () => {
+Deno.test("AuthMiddleware: createSessionCookie formats correctly", async () => {
   const storage = createMemoryStorage();
-  const sessions = createSessionManager({ storage, sessionsDir: ".sess", lifetime: 3600 });
-  const users = createUserManager({ storage, usersDir: ".users" });
-  const auth = createAuthMiddleware({ sessions, users });
+  const sessions = await createSessionManager({ services: makeServices(storage), sessionsDir: ".sess", lifetime: 3600 });
+  const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
+  const auth = createAuthMiddleware({ sessions, users, security: makeServices(null).security });
 
   const cookie = auth.createSessionCookie("abc123", 86400);
   assertEquals(cookie.includes("dune_session=abc123"), true);

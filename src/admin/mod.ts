@@ -14,19 +14,12 @@ export type { UserManager, UserManagerConfig, CreateUserInput } from "./auth/use
 export { createAuthMiddleware } from "./auth/middleware.ts";
 export type { AuthMiddleware, AuthMiddlewareConfig } from "./auth/middleware.ts";
 
-export { hashPassword, verifyPassword, DUMMY_HASH } from "@dune/core/auth/passwords";
-
 export type {
   AuthProvider,
   AuthProviderUser,
   AuthCredentials,
-  AuthProviderConfig,
-  LdapProviderConfig,
-  SamlProviderConfig,
 } from "./auth/provider.ts";
 export { LocalAuthProvider } from "./auth/local-provider.ts";
-export { LdapAuthProvider } from "./auth/ldap-provider.ts";
-export { SamlAuthProvider } from "./auth/saml-provider.ts";
 export { findOrProvisionUser } from "./auth/provisioner.ts";
 
 export type {
@@ -41,7 +34,6 @@ export type {
 export { toUserInfo } from "./types.ts";
 
 // Submissions
-export { createSubmissionManager } from "./submissions.ts";
 export type {
   Submission,
   SubmissionStatus,

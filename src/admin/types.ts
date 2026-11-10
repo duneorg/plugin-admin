@@ -4,7 +4,7 @@
  * @module
  */
 
-export type { ContentEditorPlugin } from "@dune/core/hooks";
+export type { AdminPageRegistration, AdminRouteRegistration, ContentEditorPlugin } from "./contributions.ts";
 // Session and Role live in core to break circular deps; import for
 // local use AND re-export so callers importing from admin/types get them.
 // Session was formerly AdminSession — renamed in
@@ -66,8 +66,6 @@ export interface AdminConfig {
    * (default: ".dune/admin")
    */
   runtimeDir: string;
-  /** Whether admin panel is enabled (default: true) */
-  enabled: boolean;
 }
 
 /** Result of an auth check */

@@ -3,6 +3,7 @@
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, requireEditorOrAdmin, json, serverError, validatePagePath, csrfCheck } from "../_utils.ts";
 import { dirname, basename } from "@std/path";
+import { announcePageEvent } from "../../../page-events.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -83,6 +84,12 @@ export const handler = {
       }
 
       await engine.rebuild();
+      // Content-relative folders that were renamed; every page below `from` moved below `to`.
+      const rel = (p: string) => p.startsWith(`${contentDir}/`) ? p.slice(contentDir.length + 1) : p;
+      announcePageEvent(ctx, {
+        event: "onPageMove",
+        payload: { moves: renames.map((r) => ({ from: rel(r.oldDir), to: rel(r.newDir) })) },
+      });
       return json({ reordered: true });
     } catch (err) {
       return serverError(err);

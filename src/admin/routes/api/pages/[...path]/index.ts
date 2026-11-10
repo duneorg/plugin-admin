@@ -12,17 +12,16 @@
 import type { AdminState } from "../../../../types.ts";
 import { requirePermission, requireTsxWrite, requirePageOwner, requireOwnedPage, pageOwnerId, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
-import { parseUserYaml as parseYaml } from "@dune/core/security";
-import { resolveBlueprint, validateFrontmatter } from "@dune/core/blueprints";
-import { fireContentWebhooks } from "../../../../../admin/webhooks.ts";
+import { announcePageEvent } from "../../../../page-events.ts";
 import type { PageFrontmatter } from "@dune/core/content/types";
 import type { FreshContext } from "fresh";
+import { adminSettings } from "../../../../settings.ts";
 
 async function maybeGitCommit(
   filePath: string, sourcePath: string, author: string | undefined,
   config: import("../../../../context.ts").AdminContext["config"],
 ): Promise<void> {
-  if (!config.admin?.git_commit) return;
+  if (!adminSettings(config).git_commit) return;
   try {
     const msg = author ? `Admin: update ${sourcePath} (by ${author})` : `Admin: update ${sourcePath}`;
     const add = new Deno.Command("git", { args: ["add", filePath], stderr: "inherit" });
@@ -52,10 +51,7 @@ export const handler = {
       // nothing for every site with blueprints configured. Resolve
       // inheritance (`extends`) the same way PUT's validateFrontmatter()
       // does, rather than sending the raw unresolved definition.
-      const rawBlueprint = engine.blueprints[page.template];
-      const blueprint = rawBlueprint
-        ? resolveBlueprint(page.template, rawBlueprint, engine.blueprints, 0)
-        : null;
+      const blueprint = ctx.state.adminContext.services.blueprints.resolve(page.template);
       return json({
         sourcePath: page.sourcePath, route: page.route, format: page.format,
         template: page.template, frontmatter: page.frontmatter, rawContent: page.rawContent,
@@ -73,7 +69,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "pages.update");
     if (denied) return denied;
 
-    const { engine, storage, config, hooks, auditLogger } = ctx.state.adminContext;
+    const { engine, storage, config, auditLogger, services } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
     const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
@@ -93,7 +89,7 @@ export const handler = {
       let raw = new TextDecoder().decode(existing);
       const existingFmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
       const existingFm = existingFmMatch
-        ? (parseYaml(existingFmMatch[1]) as Record<string, unknown> ?? {})
+        ? (services.security.parseUserYaml(existingFmMatch[1]) as Record<string, unknown> ?? {})
         : {};
       const ownerDenied = requirePageOwner(ctx, pageOwnerId(existingFm));
       if (ownerDenied) return ownerDenied;
@@ -114,8 +110,9 @@ export const handler = {
         else delete mergedFm.createdBy;
 
         const template = (mergedFm.template as string) ?? page.template;
-        if (engine.blueprints[template]) {
-          const errors = validateFrontmatter(mergedFm as PageFrontmatter, template, engine.blueprints);
+        const { blueprints } = ctx.state.adminContext.services;
+        if (blueprints.has(template)) {
+          const errors = blueprints.validate(mergedFm as PageFrontmatter, template);
           if (errors.length > 0) {
             return json({ error: "Blueprint validation failed", validationErrors: errors }, 422);
           }
@@ -133,15 +130,12 @@ export const handler = {
       await engine.rebuild();
       await maybeGitCommit(filePath, pagePath, undefined, config);
 
-      const webhookEndpoints = config.admin?.webhooks ?? [];
-      const runtimeDir = config.admin?.runtimeDir ?? ".dune/admin";
-      if (hooks) hooks.fire("onPageUpdate", { sourcePath: page.sourcePath }).catch(() => {});
-      fireContentWebhooks(webhookEndpoints, "onPageUpdate", { sourcePath: page.sourcePath }, runtimeDir);
+      announcePageEvent(ctx, { event: "onPageUpdate", payload: { sourcePath: page.sourcePath } });
 
       void auditLogger?.log({
         event: "page.update",
         actor: actorFromAuth(authResult),
-        ip: getClientIp(ctx.req),
+        ip: getClientIp(ctx),
         userAgent: ctx.req.headers.get("user-agent") ?? null,
         target: { type: "page", id: pagePath },
         detail: {},
@@ -160,7 +154,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "pages.delete");
     if (denied) return denied;
 
-    const { engine, storage, config, hooks, auditLogger } = ctx.state.adminContext;
+    const { engine, storage, config, auditLogger } = ctx.state.adminContext;
     const authResult = ctx.state.auth;
     const pagePath = decodeURIComponent(ctx.params.path);
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
@@ -175,15 +169,12 @@ export const handler = {
       await storage.delete(`${contentDir}/${page.sourcePath}`);
       await engine.rebuild();
 
-      const webhookEndpoints = config.admin?.webhooks ?? [];
-      const runtimeDir = config.admin?.runtimeDir ?? ".dune/admin";
-      if (hooks) hooks.fire("onPageDelete", { sourcePath: page.sourcePath }).catch(() => {});
-      fireContentWebhooks(webhookEndpoints, "onPageDelete", { sourcePath: page.sourcePath }, runtimeDir);
+      announcePageEvent(ctx, { event: "onPageDelete", payload: { sourcePath: page.sourcePath } });
 
       void auditLogger?.log({
         event: "page.delete",
         actor: actorFromAuth(authResult),
-        ip: getClientIp(ctx.req),
+        ip: getClientIp(ctx),
         userAgent: ctx.req.headers.get("user-agent") ?? null,
         target: { type: "page", id: pagePath },
         detail: {},

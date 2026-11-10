@@ -4,7 +4,7 @@ import type { AdminState } from "../../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../../_utils.ts";
 import { toUserInfo } from "../../../../types.ts";
 import { highestValidRole } from "../../../../auth/role-utils.ts";
-import { DuplicateEmailError } from "@dune/core/auth/user-store";
+import { isDuneError } from "@dune/core/plugin-api";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -69,7 +69,7 @@ export const handler = {
               await authz.disallowAllMatching({
                 who: { type: "user", id: userId },
                 was: existingRole,
-                onWhat: { type: "app", id: "admin" },
+                onWhat: { type: "app", id: "site" },
               }).catch((err) => {
                 console.warn(`[dune/authz] disallowAllMatching failed on role change for user ${userId}:`, err);
               });
@@ -77,7 +77,7 @@ export const handler = {
             await authz.allow({
               who: { type: "user", id: userId },
               toBe: role,
-              onWhat: { type: "app", id: "admin" },
+              onWhat: { type: "app", id: "site" },
             });
           }
           if (enabled !== undefined) {
@@ -96,7 +96,7 @@ export const handler = {
                 await authz.allow({
                   who: { type: "user", id: userId },
                   toBe: effectiveRole,
-                  onWhat: { type: "app", id: "admin" },
+                  onWhat: { type: "app", id: "site" },
                 }).catch((err) => {
                   console.warn(`[dune/authz] allow failed on re-enable for user ${userId}:`, err);
                 });
@@ -110,7 +110,7 @@ export const handler = {
       try {
         updated = await users.update(userId, updates);
       } catch (err) {
-        if (err instanceof DuplicateEmailError) {
+        if (isDuneError(err, "duplicate_email")) {
           return json({ error: "Email already in use" }, 409);
         }
         throw err;
@@ -120,7 +120,7 @@ export const handler = {
       void auditLogger?.log({
         event: "user.update",
         actor: actorFromAuth(authResult),
-        ip: getClientIp(ctx.req),
+        ip: getClientIp(ctx),
         userAgent: ctx.req.headers.get("user-agent") ?? null,
         target: { type: "user", id: userId },
         detail: {},
@@ -176,7 +176,7 @@ export const handler = {
       void auditLogger?.log({
         event: "user.delete",
         actor: actorFromAuth(authResult),
-        ip: getClientIp(ctx.req),
+        ip: getClientIp(ctx),
         userAgent: ctx.req.headers.get("user-agent") ?? null,
         target: { type: "user", id: userId },
         detail: {},

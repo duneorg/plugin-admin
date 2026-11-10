@@ -20,7 +20,6 @@ import type { AdminState } from "../../types.ts";
 import { requirePermission, serverError, csrfCheck } from "./_utils.ts";
 import type { FreshContext } from "fresh";
 import type { DuneEngine } from "@dune/core/engine";
-import { sanitizeHtml } from "@dune/core/security";
 
 const PREVIEW_CSP = "sandbox; script-src 'none'; object-src 'none'";
 
@@ -38,7 +37,11 @@ const PREVIEW_STYLE =
   "body{font-family:system-ui;padding:2rem;max-width:800px;margin:0 auto;line-height:1.6}img{max-width:100%}pre{background:#f5f5f5;padding:1rem;border-radius:4px;overflow-x:auto}code{background:#f0f0f0;padding:0.1em 0.3em;border-radius:2px}blockquote{border-left:3px solid #ccc;padding-left:1rem;color:#666;margin:1rem 0}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:0.5rem}";
 
 /** Render a real page's saved HTML (or a 404-ish fallback) wrapped in preview CSS. */
-async function renderSavedPage(engine: DuneEngine, sourcePath: string): Promise<Response> {
+async function renderSavedPage(
+  engine: DuneEngine,
+  sourcePath: string,
+  sanitizeHtml: (html: string) => string,
+): Promise<Response> {
   // Exact match only — substring lookup is an IDOR (a fragment like "blog"
   // would match an arbitrary page the caller did not intend).
   const pageIndex = engine.pages.find((p) => p.sourcePath === sourcePath);
@@ -58,11 +61,11 @@ export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
     const denied = await requirePermission(ctx, "pages.read");
     if (denied) return denied;
-    const { engine } = ctx.state.adminContext;
+    const { engine, services } = ctx.state.adminContext;
     const sourcePath = ctx.url.searchParams.get("path");
     if (!sourcePath) return htmlResponse(`<!DOCTYPE html><html><body></body></html>`);
     try {
-      return await renderSavedPage(engine, sourcePath);
+      return await renderSavedPage(engine, sourcePath, services.security.sanitizeHtml);
     } catch (err) {
       return serverError(err);
     }
@@ -74,7 +77,7 @@ export const handler = {
     const denied = await requirePermission(ctx, "pages.read");
     if (denied) return denied;
 
-    const { engine } = ctx.state.adminContext;
+    const { engine, services } = ctx.state.adminContext;
     try {
       const body = await ctx.req.json();
       const { sourcePath, content } = body;
@@ -82,11 +85,11 @@ export const handler = {
       if (!sourcePath) {
         // Sanitize caller-supplied content before embedding in a text/html
         // response — even authenticated editors must not inject arbitrary HTML.
-        const safeContent = content ? sanitizeHtml(String(content)) : "";
+        const safeContent = content ? services.security.sanitizeHtml(String(content)) : "";
         return htmlResponse(`<!DOCTYPE html><html><body>${safeContent}</body></html>`);
       }
 
-      return await renderSavedPage(engine, sourcePath);
+      return await renderSavedPage(engine, sourcePath, services.security.sanitizeHtml);
     } catch (err) {
       return serverError(err);
     }
