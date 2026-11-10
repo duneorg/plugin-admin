@@ -39,10 +39,10 @@ import * as r32 from "./routes/api/page-source.ts";
 import * as r33 from "./routes/api/pages/index.ts";
 import * as r34 from "./routes/api/pages/reorder.ts";
 import * as r35 from "./routes/api/pages/translate.ts";
-import * as r36 from "./routes/api/pages/[...path]/index.ts";
-import * as r37 from "./routes/api/pages/[...path]/comments/index.ts";
-import * as r38 from "./routes/api/pages/[...path]/comments/[id]/index.ts";
-import * as r39 from "./routes/api/pages/[...path]/comments/[id]/resolve.ts";
+import * as r36 from "./routes/api/pages/[...path]/comments/[id]/resolve.ts";
+import * as r37 from "./routes/api/pages/[...path]/comments/[id]/index.ts";
+import * as r38 from "./routes/api/pages/[...path]/comments/index.ts";
+import * as r39 from "./routes/api/pages/[...path]/index.ts";
 import * as r40 from "./routes/api/plugins/index.ts";
 import * as r41 from "./routes/api/plugins/install.ts";
 import * as r42 from "./routes/api/plugins/[name]/config.ts";
@@ -53,8 +53,8 @@ import * as r46 from "./routes/api/render-markdown.ts";
 import * as r47 from "./routes/api/search/analytics.ts";
 import * as r48 from "./routes/api/search/engines.ts";
 import * as r49 from "./routes/api/sections.ts";
-import * as r50 from "./routes/api/staging/[...path]/index.ts";
-import * as r51 from "./routes/api/staging/[...path]/publish.ts";
+import * as r50 from "./routes/api/staging/[...path]/publish.ts";
+import * as r51 from "./routes/api/staging/[...path]/index.ts";
 import * as r52 from "./routes/api/theme-preview.ts";
 import * as r53 from "./routes/api/themes/install.ts";
 import * as r54 from "./routes/api/users/index.ts";
@@ -152,10 +152,10 @@ export const adminRoutes: AdminRouteEntry[] = [
   { pattern: "/api/pages", mod: r33 },
   { pattern: "/api/pages/reorder", mod: r34 },
   { pattern: "/api/pages/translate", mod: r35 },
-  { pattern: "/api/pages/:path*", mod: r36 },
-  { pattern: "/api/pages/:path*/comments", mod: r37 },
-  { pattern: "/api/pages/:path*/comments/:id", mod: r38 },
-  { pattern: "/api/pages/:path*/comments/:id/resolve", mod: r39 },
+  { pattern: "/api/pages/:path*/comments/:id/resolve", mod: r36 },
+  { pattern: "/api/pages/:path*/comments/:id", mod: r37 },
+  { pattern: "/api/pages/:path*/comments", mod: r38 },
+  { pattern: "/api/pages/:path*", mod: r39 },
   { pattern: "/api/plugins", mod: r40 },
   { pattern: "/api/plugins/install", mod: r41 },
   { pattern: "/api/plugins/:name/config", mod: r42 },
@@ -166,8 +166,8 @@ export const adminRoutes: AdminRouteEntry[] = [
   { pattern: "/api/search/analytics", mod: r47 },
   { pattern: "/api/search/engines", mod: r48 },
   { pattern: "/api/sections", mod: r49 },
-  { pattern: "/api/staging/:path*", mod: r50 },
-  { pattern: "/api/staging/:path*/publish", mod: r51 },
+  { pattern: "/api/staging/:path*/publish", mod: r50 },
+  { pattern: "/api/staging/:path*", mod: r51 },
   { pattern: "/api/theme-preview", mod: r52 },
   { pattern: "/api/themes/install", mod: r53 },
   { pattern: "/api/users", mod: r54 },
