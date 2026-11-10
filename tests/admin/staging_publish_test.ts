@@ -13,6 +13,7 @@ import { createDuneApp } from "@dune/core/fresh-app";
 import { createStorage } from "@dune/core/storage";
 import { createLocalUserStore } from "@dune/core/auth/user-store";
 import { hashPassword } from "@dune/core/auth/passwords";
+import { createAdminPlugin } from "../../mod.ts";
 
 const PASSWORD = "correct horse battery staple";
 const ORIGIN = "http://localhost:8000";
@@ -41,7 +42,7 @@ Deno.test("a staged draft is published through POST /api/staging/:path*/publish"
       version: "1.0.0",
       hooks: { onPageUpdate: ({ data }: { data: unknown }) => void updates.push(data) } as DunePlugin["hooks"],
     };
-    const ctx = await bootstrap(root, { plugins: [recorder] });
+    const ctx = await bootstrap(root, { plugins: [createAdminPlugin({ root, dev: false }), recorder] });
     const { app } = await createDuneApp(ctx, { root, port: 0, dev: false });
     const handler = app.handler();
     const req = (path: string, init?: RequestInit) => handler(new Request(new URL(path, ORIGIN), init));
@@ -78,7 +79,7 @@ Deno.test("a staged draft is published through POST /api/staging/:path*/publish"
     assertStringIncludes(written, "staged body");
 
     await new Promise((r) => setTimeout(r, 25));
-    assertEquals(updates, [{ sourcePath: "01.alpha/default.md" }]);
+    assertEquals(updates, [{ sourcePath: "01.alpha/default.md", actor: "ed" }]);
 
     // The draft is consumed.
     const after = await call("GET", "/admin/api/staging/01.alpha/default.md");

@@ -5,6 +5,13 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [4.0.0] — 2026-11-10
+
+Pairs with `@dune/core` 0.36 and needs it. The admin is a plugin you list under `plugins:` in `site.yaml`
+(`jsr:@dune/plugin-admin@^4`), and its settings are that entry's `config:`; run `dune migrate:config` on the site
+to move them. It declares its own extension points (typed keys), owns the audit trail and machine translation,
+and no longer carries a default admin or its own copy of what moved into core. The sections below list every
+breaking change.
 
 ### Fixed
 
