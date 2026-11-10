@@ -38,6 +38,7 @@ import denoJson from "./deno.json" with { type: "json" };
 import { adminSettings } from "./src/admin/settings.ts";
 import { adminBarActions, BAR_ACTIONS } from "./src/admin/bar-actions.ts";
 import { reconcileAdminTuples } from "./src/admin/admin-tuples.ts";
+import { listenForPageAudit } from "./src/admin/page-audit.ts";
 import { ADMIN_EDITOR, ADMIN_PAGES, ADMIN_ROUTES } from "./src/admin/contributions.ts";
 import { listenForContentWebhooks } from "./src/admin/webhooks.ts";
 
@@ -297,6 +298,10 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
         runtimeDir,
         security: services.security,
       });
+
+      // Writes that did not come through an admin route (the inline-edit bar, a
+      // plugin) still reach the audit trail, named by the event's `actor`.
+      listenForPageAudit({ hooks: runtime.hooks, audit: () => setupState?.auditLogger });
 
       // ── Default content editor ────────────────────────────────────────────────
       const inlineEdit = capabilities.get("editor.inline");

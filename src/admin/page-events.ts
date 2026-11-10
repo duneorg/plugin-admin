@@ -14,6 +14,7 @@
 
 import type { FreshContext } from "fresh";
 import type { AdminState } from "./types.ts";
+import { FROM_ADMIN_ROUTE } from "./page-audit.ts";
 
 /** Paths are relative to the content directory. */
 export type PageEvent =
@@ -27,7 +28,11 @@ export function announcePageEvent(ctx: FreshContext<AdminState>, e: PageEvent): 
   const { hooks } = ctx.state.adminContext;
   const user = ctx.state.auth?.user;
   const actor = user ? (user.username ?? user.name ?? user.id) : undefined;
-  hooks?.fire(e.event, actor ? { ...e.payload, actor } : e.payload).catch((err: unknown) =>
+  // The route that announces this writes its own audit entry (with IP and user agent);
+  // the mark stops the page-audit listener from adding a second one.
+  const payload = actor ? { ...e.payload, actor } : { ...e.payload };
+  Object.defineProperty(payload, FROM_ADMIN_ROUTE, { value: true, enumerable: false });
+  hooks?.fire(e.event, payload).catch((err: unknown) =>
     console.warn(`[dune] ${e.event} hook failed: ${err instanceof Error ? err.message : err}`)
   );
 }

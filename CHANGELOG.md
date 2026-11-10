@@ -30,6 +30,10 @@ follows [Semantic Versioning](https://semver.org).
   is governed by core's `system.role_grants` like anyone else; the direct tuple an earlier version
   seeded for such an account is revoked at start (logged as `admin.authz.stale_direct_grants_revoked`).
   On the default grants nothing changes for them: their group membership still grants the relation.
+- **Page writes that no admin route announced reach the audit trail (duneorg/dune#127).** The inline-edit bar,
+  a plugin or any other writer fires the page event with the person's name as `actor`; the admin now writes a
+  `page.create` / `page.update` / `page.delete` entry for it (no IP or user agent: the event does not carry
+  them). Events the admin's own routes announce are marked and skipped, so nothing is logged twice.
 - **Content webhooks are a listener on the page events**, not a call in each admin route: a write
   from the inline-edit bar, MCP or the CLI now reaches them too. `announcePageEvent()` names the
   signed-in user as `actor`, which the webhook payload carries.
