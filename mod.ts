@@ -18,7 +18,6 @@ import type { DunePlugin, MountApi } from "@dune/core/hooks";
 import type { DuneConfig } from "@dune/core/config";
 import type { StorageAdapter } from "@dune/core/storage";
 import { createUserManager } from "./src/admin/auth/users.ts";
-import { highestValidRole } from "./src/admin/auth/role-utils.ts";
 import { createSessionManager } from "./src/admin/auth/sessions.ts";
 import { createAuthMiddleware } from "./src/admin/auth/middleware.ts";
 import { LocalAuthProvider } from "./src/admin/auth/local-provider.ts";
@@ -38,6 +37,7 @@ import * as corePlugins from "@dune/core/plugins";
 import denoJson from "./deno.json" with { type: "json" };
 import { adminSettings } from "./src/admin/settings.ts";
 import { adminBarActions, BAR_ACTIONS } from "./src/admin/bar-actions.ts";
+import { reconcileAdminTuples } from "./src/admin/admin-tuples.ts";
 import { ADMIN_EDITOR, ADMIN_PAGES, ADMIN_ROUTES } from "./src/admin/contributions.ts";
 import { listenForContentWebhooks } from "./src/admin/webhooks.ts";
 
@@ -371,16 +371,26 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
       // tuple gets registered too, instead of being locked out on first run.
       if (runtime.authz) {
         try {
-          // users.list() returns every account in the unified store
-          // (data/users/) — not just admin-tier ones once public site
-          // visitors share the same store (Phase 5b). Only bootstrap tuples
-          // for accounts that actually carry an admin-tier role.
-          const allUsers = await users.list();
-          const enabledAdminUsers = allUsers
-            .filter((u) => u.enabled !== false)
-            .map((u) => ({ id: u.id, role: highestValidRole(u.roles) }))
-            .filter((u) => u.role !== undefined) as { id: string; role: string }[];
-          await services.authz.seedAdminTuples(enabledAdminUsers);
+          // users.list() returns every account in the unified store (data/users/),
+          // site visitors included. Only the admin's own accounts, the ones that
+          // can sign in to it, get a direct tuple; the rest are governed by
+          // core's `system.role_grants` (see admin-tuples.ts).
+          const revoked = await reconcileAdminTuples(await users.list(), {
+            seedAdminTuples: (accounts) => services.authz.seedAdminTuples(accounts),
+            revoke: async (userId, relation) => {
+              await runtime.authz!.disallowAllMatching({
+                who: { type: "user", id: userId },
+                was: relation as "admin" | "editor" | "author",
+                onWhat: { type: "app", id: "site" },
+              });
+            },
+          });
+          if (revoked > 0) {
+            logger.info("admin.authz.stale_direct_grants_revoked", {
+              count: revoked,
+              reason: "accounts that cannot sign in to the admin are governed by system.role_grants",
+            });
+          }
         } catch (err) {
           console.warn(
             "[dune/authz] Admin tuple bootstrap failed — authz is up but tuples were not seeded; admin access will deny (403) until bootstrap succeeds:",

@@ -24,6 +24,12 @@ follows [Semantic Versioning](https://semver.org).
   (`/api/inline-edit/content/*`), served for any signed-in editor with or without this plugin. The
   admin contributes "Edit source" (an overlay with its page editor) and "Open in admin" to the bar's
   `bar.actions` point, so the bar needs no knowledge of the admin's URLs.
+- **The admin seeds direct editing tuples only for its own accounts (duneorg/dune#139).** Accounts that can sign
+  in to it (a local password) keep a direct tuple, so the panel works even when a site sets
+  `role_grants: {}`. A site user who holds `editor` or `author` (OAuth, magic link, `external-jwt`)
+  is governed by core's `system.role_grants` like anyone else; the direct tuple an earlier version
+  seeded for such an account is revoked at start (logged as `admin.authz.stale_direct_grants_revoked`).
+  On the default grants nothing changes for them: their group membership still grants the relation.
 - **Content webhooks are a listener on the page events**, not a call in each admin route: a write
   from the inline-edit bar, MCP or the CLI now reaches them too. `announcePageEvent()` names the
   signed-in user as `actor`, which the webhook payload carries.
