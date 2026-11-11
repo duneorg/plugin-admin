@@ -239,7 +239,9 @@ export const handler = {
       }
     }
 
-    await sessions.revokeAll(user.id);
+    // Deliberately no revokeAll here: signing in on a second browser or device
+    // must not end the first. Sessions are revoked on logout, password change
+    // and expiry.
     const session = await sessions.create(user.id, ip === "unknown" ? undefined : ip);
 
     // Successful login resets the per-account failure counter.

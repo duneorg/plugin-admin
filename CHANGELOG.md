@@ -5,6 +5,12 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Signing in no longer ends the account's other admin sessions (#30).** Login revoked every existing session of the
+  user, so using the admin in two browsers or on two devices logged you out of the first one, with no hint why.
+  Sessions now end on logout, password change and expiry only.
+
 ## [4.0.1] — 2026-11-11
 
 ### Fixed
