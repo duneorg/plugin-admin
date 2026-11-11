@@ -103,3 +103,29 @@ Deno.test("_middleware handler: authenticated request with no authz gets 403 (fa
   assertEquals(res.status, 403);
   assertEquals(nextRan, false);
 });
+
+// ── permissions declared by plugin-contributed pages ──
+
+Deno.test("computeNavPermissions: also checks the permissions plugin pages declare", async () => {
+  const authz = makeAuthz(["billing.manage"]);
+  const result = await computeNavPermissions(
+    authz as unknown as DuneAuthSystem,
+    "u1",
+    ["billing.manage", "pages.read", "reports.view"],
+  );
+  assertEquals(result, ["billing.manage"]);
+  // pages.read is both a core and a declared permission: checked once.
+  assertEquals(authz.calls.filter((c) => c === "pages.read").length, 1);
+});
+
+Deno.test("computeNavPermissions: a plugin permission authz cannot evaluate is denied, not fatal", async () => {
+  const authz = {
+    // deno-lint-ignore no-explicit-any
+    check(args: any): Promise<boolean> {
+      if (args.canThey === "weird.action") return Promise.reject(new Error("unknown action"));
+      return Promise.resolve(args.canThey === "pages.read");
+    },
+  };
+  const result = await computeNavPermissions(authz as unknown as DuneAuthSystem, "u1", ["weird.action"]);
+  assertEquals(result, ["pages.read"]);
+});

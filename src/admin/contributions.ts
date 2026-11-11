@@ -35,9 +35,9 @@ export interface AdminPageRegistration<S = any> {
    * Example: `/my-plugin` registers at `/admin/my-plugin`.
    */
   path: string;
-  /** Human-readable nav label shown in the admin sidebar */
+  /** Human-readable nav label shown in the admin sidebar, under "plugins", to users who hold `permission` */
   label: string;
-  /** Optional icon — emoji or inline SVG */
+  /** Optional icon. Accepted but not rendered: the sidebar shows labels only. */
   icon?: string;
   /**
    * Admin permission required to view this page. Required, like

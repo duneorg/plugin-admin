@@ -101,9 +101,11 @@ export interface AdminState {
    * once per request by `routes/_middleware.ts` (`computeNavPermissions()`)
    * and read synchronously by `routes/_layout.tsx` for sidebar nav
    * filtering. Undefined for an unauthenticated request. Replaces the flat
-   * `ROLE_PERMISSIONS[role]` lookup removed in 3.0.0.
+   * `ROLE_PERMISSIONS[role]` lookup removed in 3.0.0. Includes the permissions
+   * that plugin-contributed pages declare, so it is a list of strings, not only
+   * `AdminPermission`s.
    */
-  permissions?: AdminPermission[];
+  permissions?: string[];
 }
 
 /** Convert User to safe API response */

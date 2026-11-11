@@ -74,3 +74,39 @@ Deno.test("_layout: wraps a normal authenticated admin route in the sidebar/topb
   assertStringIncludes(html, "admin-topbar");
   assertStringIncludes(html, 'name="csrf-token"');
 });
+
+function sidebarFor(permissions: string[], roles = ["editor"]) {
+  return render(
+    <AdminLayout
+      Component={Marker}
+      state={{
+        adminContext: {
+          ...baseAdminContext(),
+          csrfSecret: "test-csrf-secret",
+          pluginPages: [
+            { path: "/ausgaben", label: "Ausgaben", permission: "billing.manage", handler: () => new Response("ok") },
+            { path: "/reports", label: "Reports", permission: "reports.view", handler: () => new Response("ok") },
+          ],
+        },
+        auth: { user: { name: "Ed", roles }, session: { id: "s" } },
+        permissions,
+        // deno-lint-ignore no-explicit-any
+      } as any}
+      url={new URL("http://localhost/admin/")}
+    />,
+  );
+}
+
+Deno.test("_layout: a contributed page is listed for a user holding its permission", () => {
+  const html = sidebarFor(["billing.manage"]);
+  assertStringIncludes(html, "Ausgaben");
+  assertStringIncludes(html, 'href="/admin/ausgaben"');
+  assertStringIncludes(html, ">plugins<");
+});
+
+Deno.test("_layout: a contributed page is not listed without its permission, and only the permitted ones show", () => {
+  const html = sidebarFor(["reports.view"]);
+  assertEquals(html.includes("Ausgaben"), false);
+  assertStringIncludes(html, "Reports");
+  assertEquals(sidebarFor([]).includes(">plugins<"), false);
+});

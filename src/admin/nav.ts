@@ -3,8 +3,6 @@
  * Core items are defined here; plugins append via registerNavItem() at bootstrap.
  */
 
-import type { AdminPermission } from "./types.ts";
-
 export interface NavItem {
   label: string;
   /** Path relative to the admin prefix, e.g. "/pages" */
@@ -15,7 +13,7 @@ export interface NavItem {
   /** If true, only admin-role users see this item */
   adminOnly?: boolean;
   /** Required permission to see this item */
-  permission?: AdminPermission;
+  permission?: string;
   /** Display order within the group (lower = higher) */
   order?: number;
 }
