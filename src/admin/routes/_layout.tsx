@@ -6,7 +6,7 @@
 
 import type { h } from "preact";
 import type { AdminState } from "../types.ts";
-import { getNavItems } from "../nav.ts";
+import { getNavItems, type NavItem } from "../nav.ts";
 import { isRtl } from "@dune/core/i18n";
 import { highestValidRole } from "../auth/role-utils.ts";
 import {
@@ -94,7 +94,15 @@ export default function AdminLayout(
   // would actually decide for a route.
   const userPermissions = state.permissions ?? [];
 
-  const allNavItems = getNavItems();
+  // Pages that plugins contributed to `admin.pages`, in their own group after
+  // the core ones. Each is shown to the users who hold its declared permission.
+  const pluginNavItems: NavItem[] = (state.adminContext.pluginPages ?? []).map((page) => ({
+    label: page.label,
+    path: page.path,
+    group: "plugins",
+    permission: page.permission,
+  }));
+  const allNavItems = [...getNavItems(), ...pluginNavItems];
   const navItems = allNavItems.filter((item) => {
     if (item.adminOnly && role !== "admin") return false;
     if (item.permission && !userPermissions.includes(item.permission)) {

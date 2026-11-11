@@ -169,20 +169,35 @@ const NAV_PERMISSIONS: readonly AdminPermission[] = [
 export async function computeNavPermissions(
   authz: DuneAuthSystem | undefined,
   userId: string,
-): Promise<AdminPermission[]> {
+  /**
+   * Permissions that plugin-contributed pages declare (`ADMIN_PAGES`). They are
+   * checked in addition to the core list so the sidebar can show a contributed
+   * page to the users who may open it. A permission name authz cannot evaluate
+   * counts as denied; it must not break the page for everyone.
+   */
+  extraPermissions: readonly string[] = [],
+): Promise<string[]> {
   if (!authz) return [];
+  const all = [...new Set<string>([...NAV_PERMISSIONS, ...extraPermissions])];
+  const coreSet = new Set<string>(NAV_PERMISSIONS);
   const checks = await Promise.all(
-    NAV_PERMISSIONS.map(async (permission) => {
-      const allowed = await authz.check({
-        who: { type: "user", id: userId },
-        // deno-lint-ignore no-explicit-any
-        canThey: permission as any,
-        onWhat: { type: "app", id: "site" },
-      });
-      return allowed ? permission : null;
+    all.map(async (permission) => {
+      try {
+        const allowed = await authz.check({
+          who: { type: "user", id: userId },
+          // deno-lint-ignore no-explicit-any
+          canThey: permission as any,
+          onWhat: { type: "app", id: "site" },
+        });
+        return allowed ? permission : null;
+      } catch (err) {
+        // A core permission failing is a real fault; a plugin's custom one is the plugin's.
+        if (coreSet.has(permission)) throw err;
+        return null;
+      }
     }),
   );
-  return checks.filter((p): p is AdminPermission => p !== null);
+  return checks.filter((p): p is string => p !== null);
 }
 
 export async function handler(
@@ -240,6 +255,7 @@ export async function handler(
     ctx.state.permissions = await computeNavPermissions(
       adminCtx.authz,
       authResult.user.id,
+      (adminCtx.pluginPages ?? []).map((page) => page.permission),
     );
   }
 

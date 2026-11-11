@@ -5,6 +5,15 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Pages contributed to `admin.pages` now appear in the sidebar (#27).** They were mounted as routes but never
+  listed. They show under a "plugins" group to the users who hold the page's `permission`. The request's permission
+  set now also covers the permissions that contributed pages declare, so a custom permission (one that is not a core
+  `pages.*` / `media.*` style action) works too; a permission authz cannot evaluate counts as denied. `icon` is
+  accepted but not rendered, as for core items. `AdminState.permissions` and `NavItem.permission` are now plain
+  strings.
+
 ## [4.0.0] — 2026-11-10
 
 Pairs with `@dune/core` 0.36 and needs it. The admin is a plugin you list under `plugins:` in `site.yaml`
