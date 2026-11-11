@@ -207,7 +207,7 @@ export default function AdminLayout(
                 ☰
               </button>
               <div class="topbar-right">
-                <span class="topbar-user">{userName}</span>
+                <a href={`${prefix}/account`} class="topbar-user" title="Your account and sessions">{userName}</a>
                 <form
                   method="POST"
                   action={`${prefix}/login/logout`}
