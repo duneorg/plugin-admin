@@ -5,6 +5,8 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [4.0.1] — 2026-11-11
+
 ### Fixed
 
 - **Pages contributed to `admin.pages` now appear in the sidebar (#27).** They were mounted as routes but never
