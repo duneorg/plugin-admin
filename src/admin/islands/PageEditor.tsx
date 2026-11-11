@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useRef } from "preact/hooks";
+import { addTerm, taxonomyEditable, taxonomyTerms, withTaxonomyTerms } from "../editor/taxonomy.ts";
 
 interface BpField {
   type: string;
@@ -26,6 +27,8 @@ interface PageData {
   language?: string;
   translations?: Array<{ lang: string; sourcePath: string; exists: boolean }>;
   blueprint?: { title: string; fields: Record<string, BpField> } | null;
+  /** The site's taxonomies → terms already in use (suggestions). */
+  taxonomies?: Record<string, string[]>;
   revisionCount?: number;
 }
 
@@ -49,8 +52,10 @@ const HARDCODED_FIELD_KEYS = ["title", "template", "slug", "published", "date", 
 export function unmanagedFrontmatterKeys(
   fm: Record<string, unknown>,
   blueprintFields?: Record<string, BpField>,
+  /** Further keys that have a built-in control (e.g. `taxonomy` when the site declares taxonomies). */
+  managedKeys: string[] = [],
 ): string[] {
-  const known = new Set([...HARDCODED_FIELD_KEYS, ...Object.keys(blueprintFields ?? {})]);
+  const known = new Set([...HARDCODED_FIELD_KEYS, ...Object.keys(blueprintFields ?? {}), ...managedKeys]);
   return Object.keys(fm).filter((k) => !known.has(k));
 }
 
@@ -101,6 +106,62 @@ export function formatRawFrontmatter(fm: Record<string, unknown>): string {
  */
 function pagePathUrlSegment(pagePath: string): string {
   return pagePath.split("/").map(encodeURIComponent).join("/");
+}
+
+/** Add/remove terms of one taxonomy; writes `taxonomy.<name>` through `onChange`. */
+function TaxonomyField(
+  { name, terms, suggestions, onChange }: {
+    name: string;
+    terms: string[] | null;
+    suggestions: string[];
+    onChange: (terms: string[]) => void;
+  },
+) {
+  const [draft, setDraft] = useState("");
+  const listId = `tax-suggest-${name}`;
+  if (terms === null) {
+    return (
+      <div class="form-group">
+        <label>{name}</label>
+        <div class="tax-note">This page stores {name} in a form the editor does not change (not a plain list). Edit the file to change it.</div>
+      </div>
+    );
+  }
+  function commit() {
+    const next = addTerm(terms!, draft);
+    if (next !== terms) onChange(next);
+    setDraft("");
+  }
+  return (
+    <div class="form-group">
+      <label>{name}</label>
+      <div class="tax-terms">
+        {terms.map((t) => (
+          <span class="tax-chip" key={t}>
+            {t}
+            <button type="button" aria-label={`Remove ${t}`} onClick={() => onChange(terms.filter((x) => x !== t))}>×</button>
+          </span>
+        ))}
+      </div>
+      <input
+        type="text"
+        list={listId}
+        value={draft}
+        placeholder={`Add ${name}…`}
+        onInput={(e) => setDraft((e.target as HTMLInputElement).value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === ",") {
+            e.preventDefault();
+            commit();
+          }
+        }}
+        onBlur={commit}
+      />
+      <datalist id={listId}>
+        {suggestions.filter((s) => !terms.includes(s)).map((s) => <option key={s} value={s} />)}
+      </datalist>
+    </div>
+  );
 }
 
 export default function PageEditor({ pagePath, prefix, embedded = false }: Props) {
@@ -189,7 +250,13 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
     return <div class="s-d36754cf">{error || "Page not found."}</div>;
   }
 
-  const unmanagedKeys = unmanagedFrontmatterKeys(fm, page.blueprint?.fields);
+  // Built-in taxonomy control: one per site taxonomy, unless the blueprint
+  // declares its own `taxonomy` field (blueprint fields win), and only while
+  // `taxonomy` is something it can edit.
+  const taxonomyNames = Object.keys(page.taxonomies ?? {});
+  const showTaxonomy = taxonomyNames.length > 0 && !(page.blueprint && "taxonomy" in page.blueprint.fields) &&
+    taxonomyEditable(fm);
+  const unmanagedKeys = unmanagedFrontmatterKeys(fm, page.blueprint?.fields, showTaxonomy ? ["taxonomy"] : []);
 
   return (
     <div class="editor-layout">
@@ -282,6 +349,16 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
               onInput={(e) => setFmField("date", (e.target as HTMLInputElement).value)}
             />
           </div>
+
+          {showTaxonomy && taxonomyNames.map((name) => (
+            <TaxonomyField
+              key={name}
+              name={name}
+              terms={taxonomyTerms(fm, name)}
+              suggestions={page.taxonomies?.[name] ?? []}
+              onChange={(terms) => setFmField("taxonomy", withTaxonomyTerms(fm, name, terms))}
+            />
+          ))}
 
           {/* Blueprint extra fields */}
           {page.blueprint && Object.entries(page.blueprint.fields).map(([key, field]) => (

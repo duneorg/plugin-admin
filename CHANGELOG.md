@@ -5,6 +5,15 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Added
+
+- **The page editor can edit taxonomy terms (#31).** For each taxonomy the site defines (`site.taxonomies`), the
+  sidebar shows the page's terms as removable chips with an input to add more (Enter, comma or leaving the field), and
+  offers the terms already used on the site as suggestions. It writes `taxonomy.<name>` in the frontmatter, works without
+  a blueprint, and a blueprint that declares its own `taxonomy` field still wins. Values it does not understand (a bare
+  string, an object, numbers) are shown as not editable and left untouched. `GET /admin/api/pages/:path` now also
+  returns `taxonomies` (name → terms in use, most used first).
+
 ### Fixed
 
 - **Signing in no longer ends the account's other admin sessions (#30).** Login revoked every existing session of the

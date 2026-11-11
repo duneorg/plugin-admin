@@ -108,6 +108,11 @@ export function adminCss(rtl: boolean): string {
 
     /* Badges */
     .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+    .tax-terms { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+    .tax-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 8px; border-radius: 4px; font-size: 12px; background: var(--bg); border: 1px solid var(--border); }
+    .tax-chip button { border: 0; background: none; cursor: pointer; padding: 0 4px; color: var(--text-muted); font-size: 14px; line-height: 1; }
+    .tax-chip button:hover { color: var(--text); }
+    .tax-note { font-size: 12px; color: var(--text-muted); }
     .badge-md { background: #ebf8ff; color: #2b6cb0; }
     .badge-mdx { background: #f0fff4; color: #276749; }
     .badge-tsx { background: #faf5ff; color: #6b46c1; }
