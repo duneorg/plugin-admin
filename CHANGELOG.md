@@ -5,6 +5,8 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [4.1.0] — 2026-11-12
+
 ### Added
 
 - **The page editor can edit taxonomy terms (#31).** For each taxonomy the site defines (`site.taxonomies`), the
