@@ -57,6 +57,17 @@ export const handler = {
         template: page.template, frontmatter: page.frontmatter, rawContent: page.rawContent,
         media: page.media.map((m) => ({ name: m.name, url: m.url, type: m.type, size: m.size })),
         blueprint,
+        // The site's taxonomies and the terms already in use, for the
+        // editor's taxonomy control (most-used first).
+        taxonomies: Object.fromEntries(
+          (ctx.state.adminContext.config.site.taxonomies ?? []).map((name) => [
+            name,
+            Object.entries(engine.taxonomyMap[name] ?? {})
+              .sort((x, y) => y[1].length - x[1].length || x[0].localeCompare(y[0]))
+              .slice(0, 500)
+              .map(([term]) => term),
+          ]),
+        ),
       });
     } catch (err) {
       return serverError(err);
