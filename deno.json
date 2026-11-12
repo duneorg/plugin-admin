@@ -6,6 +6,7 @@
     "age": "P1D",
     "exclude": [
       "jsr:@dune/core",
+      "jsr:@dune/plugin-api",
       "jsr:@dune/testing"
     ]
   },
