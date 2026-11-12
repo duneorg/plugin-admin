@@ -5,7 +5,7 @@
  */
 
 import { join } from "@std/path";
-import type { DuneConfig } from "@dune/core/config";
+import type { DuneConfig } from "@dune/plugin-api";
 import { AuditLogger } from "./logger.ts";
 import { adminSettings } from "../admin/settings.ts";
 

@@ -10,9 +10,8 @@ export type { AdminPageRegistration, AdminRouteRegistration, ContentEditorPlugin
 // Session was formerly AdminSession — renamed in
 // decisions/dec-identity-unification.md's Phase 5c, which unified admin
 // and public-site sessions onto one SessionStore/SessionManager mechanism.
-import type { Session } from "@dune/core/session";
+import type { Session, Role, User } from "@dune/plugin-api";
 export type { Session };
-import type { Role } from "@dune/core/config";
 export type { Role };
 
 /**
@@ -25,7 +24,6 @@ export type { Role };
  * "author" are just conventional values inside `roles`, interpreted by
  * ./auth/role-utils.ts's `highestValidRole()`/`VALID_ROLES`/`ROLE_RANK`.
  */
-import type { User } from "@dune/core/auth/types";
 export type { User };
 
 /**

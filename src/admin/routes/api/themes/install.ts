@@ -2,8 +2,7 @@
 
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
-import type { SecurityService } from "@dune/core/plugin-api";
-import type { StorageAdapter } from "@dune/core/storage";
+import type { SecurityService, StorageAdapter } from "@dune/plugin-api";
 import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
 import { fetchThemeRegistrySafe, isThemeSha256, type RegistryTheme } from "../../../theme-registry.ts";
 import type { FreshContext } from "fresh";

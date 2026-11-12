@@ -35,7 +35,7 @@
 
 // deno-lint-ignore no-explicit-any
 import type { App, FreshContext, Middleware } from "fresh";
-import type { BootstrapResult } from "@dune/core/bootstrap";
+import type { DuneConfig } from "@dune/plugin-api";
 import { checkPermission, type GuardedHandler, withGuards } from "./routes/api/_utils.ts";
 import { getAdminContext } from "./context.ts";
 import type { AdminPermission, AdminState } from "./types.ts";
@@ -215,7 +215,7 @@ function currentAdminContextOrNull(): import("./context.ts").AdminContext | null
 export async function mountDuneAdmin(
   // deno-lint-ignore no-explicit-any
   app: App<any>,
-  ctx: BootstrapResult,
+  ctx: { config: DuneConfig },
   /**
    * The AdminContext built by @dune/plugin-admin's `mount()`. When omitted
    * (headless-mode callers), falls back to the single-site context `mount()`
@@ -239,7 +239,7 @@ export async function mountDuneAdmin(
 export function mountAdminPanel(
   // deno-lint-ignore no-explicit-any
   app: App<any>,
-  site: { config: import("@dune/core/config").DuneConfig },
+  site: { config: import("@dune/plugin-api").DuneConfig },
   adminContext: import("./context.ts").AdminContext | null,
 ): void {
   const { config } = site;

@@ -6,7 +6,7 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { ADMIN_ROLE_RANK } from "@dune/core/auth/authz-schema";
+import { ADMIN_ROLE_RANK } from "jsr:@dune/core@0.37/auth/authz-schema";
 import {
   highestValidRole,
   ROLE_RANK,

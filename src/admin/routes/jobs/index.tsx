@@ -4,8 +4,7 @@
 import type { AdminState } from "../../types.ts";
 import { checkPermission } from "../api/_utils.ts";
 import type { FreshContext } from "fresh";
-import type { JobState } from "@dune/core/jobs";
-import type { JobScheduler } from "@dune/core/jobs";
+import type { JobState, JobScheduler } from "@dune/plugin-api";
 
 interface PageData {
   jobs: JobState[];

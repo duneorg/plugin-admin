@@ -13,7 +13,7 @@ import type { AdminState } from "../../../../types.ts";
 import { requirePermission, requireTsxWrite, requirePageOwner, requireOwnedPage, pageOwnerId, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import { announcePageEvent } from "../../../../page-events.ts";
-import type { PageFrontmatter } from "@dune/core/content/types";
+import type { PageFrontmatter } from "@dune/plugin-api";
 import type { FreshContext } from "fresh";
 import { adminSettings } from "../../../../settings.ts";
 

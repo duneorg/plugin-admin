@@ -33,7 +33,7 @@
  *
  * @example
  * ```ts
- * import type { DunePlugin } from "@dune/core/hooks";
+ * import type { DunePlugin } from "@dune/plugin-api";
  * import { withGuards } from "@dune/plugin-admin/admin/guards";
  *
  * export default {

@@ -17,7 +17,7 @@
  */
 
 import type { Role } from "../types.ts";
-import { ADMIN_ROLE_RANK, highestAdminRole } from "@dune/core/auth/authz-schema";
+import { ADMIN_ROLE_RANK, highestAdminRole } from "@dune/plugin-api";
 
 export const VALID_ROLES: ReadonlySet<Role> = new Set<Role>([
   "admin",

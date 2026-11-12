@@ -15,10 +15,8 @@
  * DUNE_ADMIN_EMAIL / DUNE_ADMIN_PASSWORD at boot (both in @dune/core).
  */
 
-import type { StorageAdapter } from "@dune/core/storage";
-import type { UserStore } from "@dune/core/auth/user-store";
+import type { StorageAdapter, UserStore, PluginServices } from "@dune/plugin-api";
 import type { User, Role } from "../types.ts";
-import type { PluginServices } from "@dune/core/plugin-api";
 import { withRole } from "./role-utils.ts";
 
 /** Options for {@link createUserManager}. */

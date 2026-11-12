@@ -12,12 +12,12 @@
  */
 
 import { assertEquals, assertRejects } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import type { PageIndex } from "@dune/core/content/types";
-import type { DuneConfig } from "@dune/core/config";
-import { MemoryStorageAdapter } from "@dune/core/storage";
-import { createWorkflowEngine } from "@dune/core/workflow";
-import { createScheduler } from "@dune/core/workflow";
-import type { ScheduledAction } from "@dune/core/workflow";
+import type { PageIndex } from "jsr:@dune/core@0.37/content/types";
+import type { DuneConfig } from "@dune/plugin-api";
+import { MemoryStorageAdapter } from "jsr:@dune/core@0.37/storage";
+import { createWorkflowEngine } from "jsr:@dune/core@0.37/workflow";
+import { createScheduler } from "jsr:@dune/core@0.37/workflow";
+import type { ScheduledAction } from "jsr:@dune/core@0.37/workflow";
 import { applyWorkflowTransition, SCHEDULED_ACTION_STATUS } from "../../src/admin/workflow-actions.ts";
 
 function makePageIndex(overrides: Partial<PageIndex> = {}): PageIndex {

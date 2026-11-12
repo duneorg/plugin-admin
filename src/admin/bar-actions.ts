@@ -13,7 +13,7 @@
  * @module
  */
 
-import { type CapabilityKey, capabilityKey } from "@dune/core/plugin-api";
+import { type CapabilityKey, capabilityKey } from "@dune/plugin-api";
 
 /** A bar button, as `@dune/plugin-inline-edit` renders it. */
 export interface AdminBarAction {

@@ -1,5 +1,5 @@
 import { assertEquals, assertExists } from "@std/assert";
-import type { DuneConfig } from "@dune/core/config";
+import type { DuneConfig } from "@dune/plugin-api";
 import { createAuditTrail } from "../src/audit/mod.ts";
 
 const config = (admin?: Record<string, unknown>) => ({ system: {}, site: {}, plugins: { admin } } as unknown as DuneConfig);

@@ -7,7 +7,7 @@
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { computeNavPermissions, handler } from "../../src/admin/routes/_middleware.ts";
-import type { DuneAuthSystem } from "@dune/core/auth/authz";
+import type { DuneAuthSystem } from "jsr:@dune/core@0.37/auth/authz";
 
 function makeAuthz(allowedPermissions: string[]) {
   const calls: string[] = [];

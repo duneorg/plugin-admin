@@ -6,7 +6,7 @@
 
 import { assertEquals } from "@std/assert";
 import type { FreshContext } from "fresh";
-import { createCapabilityRegistry } from "@dune/core/plugin-api";
+import { createCapabilityRegistry } from "jsr:@dune/core@0.37/plugin-api";
 import {
   ADMIN_EDITOR,
   ADMIN_PAGES,

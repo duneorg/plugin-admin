@@ -19,7 +19,7 @@
 import type { AdminState } from "../../types.ts";
 import { requirePermission, serverError, csrfCheck } from "./_utils.ts";
 import type { FreshContext } from "fresh";
-import type { DuneEngine } from "@dune/core/engine";
+import type { PluginEngine } from "@dune/plugin-api";
 
 const PREVIEW_CSP = "sandbox; script-src 'none'; object-src 'none'";
 
@@ -38,7 +38,7 @@ const PREVIEW_STYLE =
 
 /** Render a real page's saved HTML (or a 404-ish fallback) wrapped in preview CSS. */
 async function renderSavedPage(
-  engine: DuneEngine,
+  engine: PluginEngine,
   sourcePath: string,
   sanitizeHtml: (html: string) => string,
 ): Promise<Response> {

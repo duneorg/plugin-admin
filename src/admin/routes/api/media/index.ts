@@ -3,7 +3,7 @@
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, requireOwnedPage, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../_utils.ts";
 import { dirname } from "@std/path";
-import { isMediaFile } from "@dune/core/content/path-utils";
+import { isMediaFile } from "@dune/plugin-api";
 import type { FreshContext } from "fresh";
 
 function mimeToCategory(mimeType: string): string {

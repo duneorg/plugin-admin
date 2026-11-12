@@ -4,7 +4,7 @@
 
 import { makeServices } from "../helpers/services.ts";
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { hashPassword, verifyPassword } from "@dune/core/auth/passwords";
+import { hashPassword, verifyPassword } from "jsr:@dune/core@0.37/auth/passwords";
 import { createSessionManager } from "../../src/admin/auth/sessions.ts";
 import { createUserManager } from "../../src/admin/auth/users.ts";
 import { createAuthMiddleware } from "../../src/admin/auth/middleware.ts";

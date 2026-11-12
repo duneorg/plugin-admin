@@ -3,7 +3,7 @@
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, requireTsxWrite, requireOwnedPage, json, serverError, csrfCheck, validatePagePath } from "../_utils.ts";
 import { dirname, basename } from "@std/path";
-import { parseContentFilename } from "@dune/core/content/path-utils";
+import { parseContentFilename } from "@dune/plugin-api";
 import { announcePageEvent } from "../../../page-events.ts";
 import type { FreshContext } from "fresh";
 

@@ -5,6 +5,20 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [5.0.0]
+
+Needs `@dune/plugin-api` 1.2 and a core that implements it (0.36 and later; 0.37 for the removed subpaths below to matter). It no longer imports `@dune/core`, so a core release does not force a new version of this plugin.
+
+### Changed — BREAKING
+
+- **The package root no longer exports `resolvedCoreSentinel` and `resolvedCoreVersion`.** They carried the two-copies-of-core handshake, which only exists when a plugin imports core. Core ignores a plugin module without them.
+- **`SubmissionManagerConfig` is no longer re-exported** from `@dune/plugin-admin` (`admin/submissions`). There is no factory to pass it to; the manager is `PluginRuntime.submissions`.
+- **`GET /admin/api/introspect` reports `pluginApiVersion` `"1.2"`** (the `@dune/plugin-api` contract version) instead of core's old `"0.7"` constant.
+
+### Changed
+
+- **Imports come from `@dune/plugin-api`, not `@dune/core`.** The engine is `PluginEngine`, search is `PluginSearch`, authz is `PluginAuthz`; the content helpers (`parseContentFilename`, `dirPathToRoute`, `isMediaFile`, `getMimeType`, `buildPageTitle`, `isRtl`) and the role ladder (`ADMIN_ROLE_RANK`, `highestAdminRole`, `Role`) are the package's. `mountDuneAdmin(app, ctx)` takes `{ config: DuneConfig }`, so a `BootstrapResult` still works and nothing else does need to. A `src/` import of `@dune/core` now fails the tests; the tests themselves still use core and `@dune/testing`.
+
 ## [4.1.0] — 2026-11-12
 
 ### Added

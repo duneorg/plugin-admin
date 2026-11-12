@@ -10,7 +10,7 @@
  */
 
 import type { Session } from "../types.ts";
-import type { PluginServices } from "@dune/core/plugin-api";
+import type { PluginServices } from "@dune/plugin-api";
 
 /** Options for {@link createSessionManager}. */
 export interface SessionManagerConfig {

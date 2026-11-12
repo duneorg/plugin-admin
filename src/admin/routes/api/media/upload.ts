@@ -3,9 +3,7 @@
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, requireOwnedPage, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../_utils.ts";
 import { dirname } from "@std/path";
-import { isMediaFile, dirPathToRoute } from "@dune/core/content/path-utils";
-import { getMimeType } from "@dune/core/content/page-loader";
-import { isDuneError } from "@dune/core/plugin-api";
+import { isMediaFile, dirPathToRoute, getMimeType, isDuneError } from "@dune/plugin-api";
 import type { FreshContext } from "fresh";
 import { adminSettings } from "../../../settings.ts";
 

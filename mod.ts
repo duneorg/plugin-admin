@@ -14,15 +14,18 @@
  * @since 0.24.0
  */
 
-import type { DunePlugin, MountApi } from "@dune/core/hooks";
-import type { DuneConfig } from "@dune/core/config";
-import type { StorageAdapter } from "@dune/core/storage";
+import type {
+  DunePlugin,
+  MountApi,
+  DuneConfig,
+  StorageAdapter,
+  ScheduledAction,
+} from "@dune/plugin-api";
 import { createUserManager } from "./src/admin/auth/users.ts";
 import { createSessionManager } from "./src/admin/auth/sessions.ts";
 import { createAuthMiddleware } from "./src/admin/auth/middleware.ts";
 import { LocalAuthProvider } from "./src/admin/auth/local-provider.ts";
 import type { AuthProvider } from "./src/admin/auth/provider.ts";
-import type { ScheduledAction } from "@dune/core/workflow";
 import { applyWorkflowTransition, SCHEDULED_ACTION_STATUS } from "./src/admin/workflow-actions.ts";
 import { createCommentManager } from "./src/admin/comments.ts";
 import { createCollabManager } from "./src/collab/mod.ts";
@@ -33,7 +36,6 @@ import type { AdminContext } from "./src/admin/context.ts";
 import { createBlockEditorPlugin } from "./src/admin/block-editor-plugin.tsx";
 import type { App } from "fresh";
 import { getDuneAdminIslands, mountAdminPanel } from "./src/admin/mount.ts";
-import * as corePlugins from "@dune/core/plugins";
 import denoJson from "./deno.json" with { type: "json" };
 import { adminSettings } from "./src/admin/settings.ts";
 import { adminBarActions, BAR_ACTIONS } from "./src/admin/bar-actions.ts";
@@ -42,20 +44,6 @@ import { listenForPageAudit } from "./src/admin/page-audit.ts";
 import { ADMIN_EDITOR, ADMIN_PAGES, ADMIN_ROUTES } from "./src/admin/contributions.ts";
 import { listenForContentWebhooks } from "./src/admin/webhooks.ts";
 
-// ── Core-instance handshake ──────────────────────────────────────────────────
-// Re-export the CORE_INSTANCE sentinel and CORE_VERSION that THIS package's
-// @dune/core dependency resolved to. Core's bootstrap() (≥0.31) compares the
-// sentinel by reference against its own to detect two core copies loaded into
-// one process. Accessed via the namespace object, not named imports — named
-// imports of exports that don't exist yet would fail module linking against
-// cores ≤0.30.
-const _core = corePlugins as unknown as {
-  CORE_INSTANCE?: unknown;
-  CORE_VERSION?: string;
-};
-
-/** The `@dune/core` instance sentinel this package resolved. See core's `plugins/mod.ts`. */
-export const resolvedCoreSentinel: unknown = _core.CORE_INSTANCE;
 /** The admin's extension points: the typed keys (`ADMIN_PAGES`, `ADMIN_ROUTES`, `ADMIN_EDITOR`) and their item types. */
 export { ADMIN_EDITOR, ADMIN_PAGES, ADMIN_ROUTES } from "./src/admin/contributions.ts";
 export type {
@@ -63,9 +51,6 @@ export type {
   AdminRouteRegistration,
   ContentEditorPlugin,
 } from "./src/admin/contributions.ts";
-
-/** The `@dune/core` version this package resolved. Undefined on cores ≤0.30. */
-export const resolvedCoreVersion: string | undefined = _core.CORE_VERSION;
 
 /** Options for the admin plugin factory. */
 export interface AdminPluginOptions {

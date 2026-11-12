@@ -7,7 +7,7 @@
 import type { h } from "preact";
 import type { AdminState } from "../types.ts";
 import { getNavItems, type NavItem } from "../nav.ts";
-import { isRtl } from "@dune/core/i18n";
+import { isRtl } from "@dune/plugin-api";
 import { highestValidRole } from "../auth/role-utils.ts";
 import {
   normalizePrefix,
