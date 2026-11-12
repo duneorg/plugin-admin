@@ -35,7 +35,7 @@ export interface AuditTarget {
 /** All audit event types */
 export type AuditEventType =
   // Auth
-  | "auth.login" | "auth.logout" | "auth.login_failed"
+  | "auth.login" | "auth.logout" | "auth.login_failed" | "auth.sessions_revoked"
   | "auth.csrf_denied" | "auth.permission_denied"
   // Pages
   | "page.create" | "page.update" | "page.delete" | "page.publish" | "page.workflow"

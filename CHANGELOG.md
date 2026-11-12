@@ -15,12 +15,19 @@ follows [Semantic Versioning](https://semver.org).
   returns `taxonomies` (name → terms in use, most used first). Terms are case-sensitive in core, so the control
   matches what you type case-insensitively against the page's terms and the site's existing ones and reuses the
   existing spelling instead of creating "Foo" next to "foo"; a pasted "a, b" becomes two terms.
-- **Save no longer misses a click that follows typing in the editor.** The "Unsaved" badge now keeps its place in the
-  toolbar, so the blur that makes the page dirty cannot move Save out from under the click, and Save always sends the
-  latest frontmatter.
+- **Account page with session management (duneorg/dune#155).** `/admin/account` (the user name in the top bar links to it) lists
+  your signed-in sessions with when and from where, marks the current one, and lets you sign out any other session or
+  all of them at once. It only ever touches your own sessions and logs `auth.sessions_revoked` to the audit log. Session
+  ids never appear in the page: it uses a short derived handle. Needs a core with session listing
+  (`SessionManager.listForUser`/`revokeOthers`, plugin-api 1.1); on an older core the page says so instead of listing.
+  Since signing in no longer ends other sessions (#30), "sign out other sessions" here is how you end a session you
+  suspect is stolen or left open on another device.
 
 ### Fixed
 
+- **Save no longer misses a click that follows typing in the editor.** The "Unsaved" badge now keeps its place in the
+  toolbar, so the blur that makes the page dirty cannot move Save out from under the click, and Save always sends the
+  latest frontmatter.
 - **Signing in no longer ends the account's other admin sessions (#30).** Login revoked every existing session of the
   user, so using the admin in two browsers or on two devices logged you out of the first one, with no hint why.
   Sessions now end on logout, password change and expiry only.
