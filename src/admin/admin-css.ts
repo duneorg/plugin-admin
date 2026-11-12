@@ -153,6 +153,7 @@ export function adminCss(rtl: boolean): string {
       font-size: 12px; color: #b45309; background: #fffbeb;
       border: 1px solid #fde68a; border-radius: 4px; padding: 2px 8px;
     }
+    .toolbar-dirty-idle { visibility: hidden; }
     .editor-body { display: flex; flex: 1; min-height: 0; }
     .editor-sidebar {
       width: 260px; flex-shrink: 0; overflow-y: auto;

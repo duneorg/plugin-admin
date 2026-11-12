@@ -128,7 +128,8 @@ function TaxonomyField(
     );
   }
   function commit() {
-    const next = addTerm(terms!, draft);
+    // A pasted "a, b" or text typed past a comma becomes several terms.
+    const next = draft.split(",").reduce((acc, part) => addTerm(acc, part, suggestions), terms!);
     if (next !== terms) onChange(next);
     setDraft("");
   }
@@ -170,7 +171,17 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState<PageData | null>(null);
   const [rawContent, setRawContent] = useState("");
-  const [fm, setFm] = useState<Record<string, unknown>>({});
+  const [fm, setFmState] = useState<Record<string, unknown>>({});
+  // Latest frontmatter, updated synchronously. save() reads this rather than
+  // the `fm` of the render it was created in: a click on Save that follows
+  // directly on the blur that committed a typed taxonomy term can run before
+  // Preact has re-rendered, and would otherwise save the stale value.
+  const fmRef = useRef<Record<string, unknown>>({});
+  function setFm(next: Record<string, unknown> | ((prev: Record<string, unknown>) => Record<string, unknown>)) {
+    const value = typeof next === "function" ? next(fmRef.current) : next;
+    fmRef.current = value;
+    setFmState(value);
+  }
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -211,7 +222,7 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
         headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
         body: JSON.stringify({
           content: rawContent,
-          frontmatter: { ...fm, title: fm.title ?? page.title },
+          frontmatter: { ...fmRef.current, title: fmRef.current.title ?? page.title },
         }),
       });
       if (!res.ok) {
@@ -295,7 +306,11 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
           >
             History{page.revisionCount ? ` (${page.revisionCount})` : ""}
           </a>
-          {dirty && <span class="toolbar-dirty">Unsaved</span>}
+          {/* Always rendered (hidden when clean): inserting it on the first change
+              re-wraps the toolbar and moves Save out from under a click that
+              started with the blur that made the page dirty (e.g. typing a
+              taxonomy term, then clicking Save without pressing Enter). */}
+          <span class={dirty ? "toolbar-dirty" : "toolbar-dirty toolbar-dirty-idle"} aria-hidden={dirty ? undefined : "true"}>Unsaved</span>
           <button type="button" class="btn btn-sm btn-primary" onClick={save} disabled={saving}>
             {saving ? "Saving…" : "Save"}
           </button>
@@ -356,7 +371,7 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
               name={name}
               terms={taxonomyTerms(fm, name)}
               suggestions={page.taxonomies?.[name] ?? []}
-              onChange={(terms) => setFmField("taxonomy", withTaxonomyTerms(fm, name, terms))}
+              onChange={(terms) => setFmField("taxonomy", withTaxonomyTerms(fmRef.current, name, terms))}
             />
           ))}
 

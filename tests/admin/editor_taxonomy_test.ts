@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { addTerm, normalizeTerm, taxonomyEditable, taxonomyTerms, withTaxonomyTerms } from "../../src/admin/editor/taxonomy.ts";
 import { unmanagedFrontmatterKeys } from "../../src/admin/islands/PageEditor.tsx";
 
@@ -46,4 +46,17 @@ Deno.test("unmanagedFrontmatterKeys: taxonomy is managed only when the control i
   const fm = { title: "x", taxonomy: { tag: ["a"] }, extra: 1 };
   assertEquals(unmanagedFrontmatterKeys(fm), ["taxonomy", "extra"]);
   assertEquals(unmanagedFrontmatterKeys(fm, undefined, ["taxonomy"]), ["extra"]);
+});
+
+Deno.test("addTerm: matches case-insensitively and reuses the existing spelling", () => {
+  // already on the page: no change, same list instance
+  const on = ["Foo"];
+  assertEquals(addTerm(on, "foo") === on, true);
+  // known elsewhere on the site: reuse that spelling
+  assertEquals(addTerm([], "foo", ["Foo", "bar"]), ["Foo"]);
+  assertEquals(addTerm(["x"], " BAR ", ["bar"]), ["x", "bar"]);
+  // exact match wins over a case variant
+  assertEquals(addTerm([], "foo", ["Foo", "foo"]), ["foo"]);
+  // unknown: kept as typed
+  assertEquals(addTerm([], "Baz", ["foo"]), ["Baz"]);
 });

@@ -55,9 +55,19 @@ export function normalizeTerm(raw: string): string | null {
   return t === "" ? null : t;
 }
 
-/** `terms` plus `raw` when it is a new non-empty term, else the same list. */
-export function addTerm(terms: string[], raw: string): string[] {
+/**
+ * `terms` plus `raw` when it is a new non-empty term, else the same list.
+ *
+ * Core keys terms by the raw string, case-sensitively, so "Foo" and "foo" would
+ * be two separate terms. To avoid accidental duplicates the match is
+ * case-insensitive: a term already on the page is a no-op, and a hit in
+ * `known` (terms used elsewhere on the site) reuses that spelling.
+ */
+export function addTerm(terms: string[], raw: string, known: string[] = []): string[] {
   const t = normalizeTerm(raw);
-  if (t === null || terms.includes(t)) return terms;
-  return [...terms, t];
+  if (t === null) return terms;
+  const lower = t.toLowerCase();
+  if (terms.some((x) => x.toLowerCase() === lower)) return terms;
+  const existing = known.find((x) => x === t) ?? known.find((x) => x.toLowerCase() === lower);
+  return [...terms, existing ?? t];
 }
