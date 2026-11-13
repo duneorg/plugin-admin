@@ -8,8 +8,7 @@
 import type { FreshContext } from "fresh";
 import type { AdminState } from "../types.ts";
 import { findOrProvisionUser } from "../auth/provisioner.ts";
-import type { PluginServices } from "@dune/core/plugin-api";
-import type { RateLimiter } from "@dune/core/security";
+import type { PluginServices, RateLimiter } from "@dune/plugin-api";
 import { actorFromAuth, csrfCheck } from "./api/_utils.ts";
 import { adminSettings } from "../settings.ts";
 

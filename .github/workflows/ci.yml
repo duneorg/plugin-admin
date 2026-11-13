@@ -20,5 +20,3 @@ jobs:
           deno-version: v2.x
 
       - run: deno task check
-
-      - run: deno task check:core-imports

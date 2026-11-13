@@ -18,3 +18,9 @@ Deno.test("admin plugin version matches deno.json", async () => {
 
   assertEquals(plugin.version, version);
 });
+
+Deno.test("admin plugin declares the core its plugin-api contract needs", async () => {
+  const { MIN_CORE_VERSION } = await import("@dune/plugin-api");
+  const plugin = createAdminPlugin({ root: "/tmp", dev: true });
+  assertEquals(plugin.requiresCore, MIN_CORE_VERSION);
+});

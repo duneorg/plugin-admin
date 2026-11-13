@@ -7,12 +7,12 @@
 import { join } from "@std/path";
 import { runAdminConformance } from "@dune/testing/conformance";
 import type { ConformanceApp } from "@dune/testing/conformance";
-import { bootstrap } from "@dune/core/bootstrap";
+import { bootstrap } from "jsr:@dune/core@0.37/bootstrap";
 import { createAdminPlugin } from "../../mod.ts";
-import { createDuneApp } from "@dune/core/fresh-app";
-import { createStorage } from "@dune/core/storage";
-import { createLocalUserStore } from "@dune/core/auth/user-store";
-import { hashPassword } from "@dune/core/auth/passwords";
+import { createDuneApp } from "jsr:@dune/core@0.37/fresh-app";
+import { createStorage } from "jsr:@dune/core@0.37/storage";
+import { createLocalUserStore } from "jsr:@dune/core@0.37/auth/user-store";
+import { hashPassword } from "jsr:@dune/core@0.37/auth/passwords";
 
 const PASSWORD = "correct horse battery staple";
 const ORIGIN = "http://localhost:8000";

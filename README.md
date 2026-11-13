@@ -141,7 +141,7 @@ The admin panel uses a three-tier role system:
 Third-party plugins that need to add routes to the admin panel can use the same hook:
 
 ```ts
-import type { DunePlugin, MountApi } from "@dune/core/hooks";
+import type { DunePlugin, MountApi } from "@dune/plugin-api";
 
 const myPlugin: DunePlugin = {
   name: "my-plugin",

@@ -39,7 +39,6 @@ export type {
   SubmissionStatus,
   SubmissionMeta,
   SubmissionManager,
-  SubmissionManagerConfig,
 } from "./submissions.ts";
 
 // Editor

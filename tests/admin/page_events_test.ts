@@ -8,12 +8,12 @@
 
 import { assertEquals } from "@std/assert";
 import { join } from "@std/path";
-import type { DunePlugin } from "@dune/core/hooks";
-import { bootstrap } from "@dune/core/bootstrap";
-import { createDuneApp } from "@dune/core/fresh-app";
-import { createStorage } from "@dune/core/storage";
-import { createLocalUserStore } from "@dune/core/auth/user-store";
-import { hashPassword } from "@dune/core/auth/passwords";
+import type { DunePlugin } from "@dune/plugin-api";
+import { bootstrap } from "jsr:@dune/core@0.37/bootstrap";
+import { createDuneApp } from "jsr:@dune/core@0.37/fresh-app";
+import { createStorage } from "jsr:@dune/core@0.37/storage";
+import { createLocalUserStore } from "jsr:@dune/core@0.37/auth/user-store";
+import { hashPassword } from "jsr:@dune/core@0.37/auth/passwords";
 import { createAdminPlugin } from "../../mod.ts";
 
 const PASSWORD = "correct horse battery staple";

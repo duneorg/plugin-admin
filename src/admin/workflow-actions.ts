@@ -12,14 +12,16 @@
  * @module
  */
 
-import type { DuneEngine } from "@dune/core/engine";
-import type { StorageAdapter } from "@dune/core/storage";
-import type { DuneConfig } from "@dune/core/config";
-import type { HookRegistry } from "@dune/core/hooks";
-import type { WorkflowEngine } from "@dune/core/workflow";
+import type {
+  PluginEngine,
+  StorageAdapter,
+  DuneConfig,
+  HookRegistry,
+  WorkflowEngine,
+} from "@dune/plugin-api";
 
 export interface WorkflowActionContext {
-  engine: DuneEngine;
+  engine: PluginEngine;
   storage: StorageAdapter;
   config: DuneConfig;
   hooks?: HookRegistry;

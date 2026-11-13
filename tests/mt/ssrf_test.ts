@@ -1,8 +1,8 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { createMachineTranslator, LibreTranslateTranslator } from "../../src/mt/mod.ts";
-import { createPluginServices } from "@dune/core/plugin-api";
-import type { DuneConfig } from "@dune/core/config";
-import { MemoryStorageAdapter } from "@dune/core/storage";
+import { createPluginServices } from "jsr:@dune/core@0.37/plugin-api";
+import type { DuneConfig } from "jsr:@dune/core@0.37";
+import { MemoryStorageAdapter } from "jsr:@dune/core@0.37/storage";
 
 // The translators fetch through whatever they are given: the admin passes
 // services.security.safeFetch, so core's SSRF policy applies.

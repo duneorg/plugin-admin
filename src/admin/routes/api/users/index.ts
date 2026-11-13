@@ -3,7 +3,7 @@
 import type { AdminState } from "../../../types.ts";
 import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../_utils.ts";
 import { toUserInfo } from "../../../types.ts";
-import { isDuneError } from "@dune/core/plugin-api";
+import { isDuneError } from "@dune/plugin-api";
 import type { FreshContext } from "fresh";
 
 export const handler = {

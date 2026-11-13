@@ -10,7 +10,7 @@ export const handler = {
     if (denied) return denied;
 
     const { jobScheduler } = ctx.state.adminContext as typeof ctx.state.adminContext & {
-      jobScheduler?: import("@dune/core/jobs").JobScheduler;
+      jobScheduler?: import("@dune/plugin-api").JobScheduler;
     };
 
     if (!jobScheduler) {

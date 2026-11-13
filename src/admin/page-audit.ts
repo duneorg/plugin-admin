@@ -12,7 +12,7 @@
  * @module
  */
 
-import type { HookRegistry } from "@dune/core/hooks";
+import type { HookRegistry } from "@dune/plugin-api";
 import type { AuditEventType, AuditLogger } from "../audit/mod.ts";
 
 /**

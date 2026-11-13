@@ -3,7 +3,7 @@
 import type { AdminState } from "../../../types.ts";
 import { json } from "../_utils.ts";
 import type { FreshContext } from "fresh";
-import type { DunePlugin } from "@dune/core/hooks";
+import type { DunePlugin } from "@dune/plugin-api";
 
 export const handler = {
   GET(ctx: FreshContext<AdminState>) {

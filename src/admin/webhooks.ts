@@ -17,9 +17,7 @@
 
 import { join } from "@std/path";
 import { encodeHex } from "@std/encoding/hex";
-import { isDuneError } from "@dune/core/plugin-api";
-import type { SecurityService } from "@dune/core/plugin-api";
-import type { HookRegistry } from "@dune/core/hooks";
+import { isDuneError, type SecurityService, type HookRegistry } from "@dune/plugin-api";
 
 /** The slice of the security service webhook delivery needs. */
 export type WebhookSecurity = Pick<SecurityService, "safeFetch">;

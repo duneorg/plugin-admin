@@ -1,7 +1,7 @@
-import { createPluginServices } from "@dune/core/plugin-api";
-import type { PluginServices, PluginServicesOptions } from "@dune/core/plugin-api";
-import type { DuneConfig } from "@dune/core/config";
-import type { StorageAdapter } from "@dune/core/storage";
+import { createPluginServices } from "jsr:@dune/core@0.37/plugin-api";
+import type { PluginServices, PluginServicesOptions } from "jsr:@dune/core@0.37/plugin-api";
+import type { DuneConfig } from "jsr:@dune/core@0.37";
+import type { StorageAdapter } from "jsr:@dune/core@0.37/storage";
 
 /** Core's plugin services over a test storage (default config: local sessions). */
 export function makeServices(storage: unknown, extra: Partial<PluginServicesOptions> = {}): PluginServices {

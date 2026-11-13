@@ -11,7 +11,6 @@ export type {
   Submission,
   SubmissionFile,
   SubmissionManager,
-  SubmissionManagerConfig,
   SubmissionMeta,
   SubmissionStatus,
-} from "@dune/core/forms";
+} from "@dune/plugin-api";

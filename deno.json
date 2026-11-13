@@ -1,6 +1,6 @@
 {
   "name": "@dune/plugin-admin",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "license": "MIT",
   "minimumDependencyAge": {
     "age": "P1D",
@@ -23,8 +23,8 @@
     "./mt": "./src/mt/mod.ts"
   },
   "imports": {
-    "@dune/core": "jsr:@dune/core@0.36",
-    "@dune/testing": "jsr:@dune/testing@^2",
+    "@dune/plugin-api": "jsr:@dune/plugin-api@^1.3.0",
+    "@dune/testing": "jsr:@dune/testing@^3",
     "fresh": "jsr:@fresh/core@^2",
     "preact": "npm:preact@^10",
     "preact/hooks": "npm:preact@^10/hooks",
@@ -53,9 +53,7 @@
     "check": "deno lint src/ && deno check mod.ts src/**/*.ts src/**/*.tsx",
     "test:e2e": "deno run --allow-all --unstable-kv npm:playwright test --config playwright.config.ts",
     "test:e2e:install": "deno run --allow-all npm:playwright install chromium",
-    "gen:admin-manifest": "deno run --allow-read --allow-write scripts/generate-admin-manifest.ts",
-    "gen:core-imports": "deno run --allow-read --allow-write scripts/generate-core-imports.ts",
-    "check:core-imports": "deno run --allow-read scripts/generate-core-imports.ts --check"
+    "gen:admin-manifest": "deno run --allow-read --allow-write scripts/generate-admin-manifest.ts"
   },
   "compilerOptions": {
     "jsx": "react-jsx",

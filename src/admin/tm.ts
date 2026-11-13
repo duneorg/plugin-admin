@@ -12,7 +12,7 @@
  * Segment matching is exact (case-sensitive) — no fuzzy matching.
  */
 
-import type { StorageAdapter } from "@dune/core/storage";
+import type { StorageAdapter } from "@dune/plugin-api";
 
 /** Sub-directory inside contentDir where TM files are stored. */
 const TM_DIR = "_tm";

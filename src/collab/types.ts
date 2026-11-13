@@ -6,9 +6,7 @@
  * Collaboration operates on the page body only (content after frontmatter).
  */
 
-import type { StorageAdapter } from "@dune/core/storage";
-import type { DuneEngine } from "@dune/core/engine";
-import type { HistoryEngine } from "@dune/core/history";
+import type { StorageAdapter, PluginEngine, HistoryEngine } from "@dune/plugin-api";
 import type { User } from "../admin/types.ts";
 
 // ── Operations (Quill Delta format) ──────────────────────────────────────────
@@ -104,17 +102,17 @@ export interface CollabSessionState {
 
 export interface CollabManagerOptions {
   storage: StorageAdapter;
-  engine: DuneEngine;
+  engine: PluginEngine;
   history?: HistoryEngine;
   /** Value of config.system.content.dir — used to build storage paths. */
   contentDir: string;
   /** Core's security service (safe YAML parsing of frontmatter). */
-  security: Pick<import("@dune/core/plugin-api").SecurityService, "parseUserYaml">;
+  security: Pick<import("@dune/plugin-api").SecurityService, "parseUserYaml">;
   /**
    * Hook registry. An auto-save that changes the file fires `onPageUpdate`
    * (the save is already debounced, so this is not per keystroke).
    */
-  hooks?: Pick<import("@dune/core/hooks").HookRegistry, "fire">;
+  hooks?: Pick<import("@dune/plugin-api").HookRegistry, "fire">;
 }
 
 /** The CollabManager public interface exposed to the admin server. */

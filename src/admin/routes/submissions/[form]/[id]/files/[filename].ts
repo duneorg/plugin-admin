@@ -3,7 +3,7 @@
 import type { AdminState } from "../../../../../types.ts";
 import type { FreshContext } from "fresh";
 import { requirePermission } from "../../../../api/_utils.ts";
-import { getMimeType } from "@dune/core/content/page-loader";
+import { getMimeType } from "@dune/plugin-api";
 
 const SAFE_SEGMENT_RE = /^[A-Za-z0-9_.-]{1,128}$/;
 

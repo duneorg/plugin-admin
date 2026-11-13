@@ -6,9 +6,9 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { join } from "@std/path";
-import { bootstrap } from "@dune/core/bootstrap";
-import { createDuneApp } from "@dune/core/fresh-app";
-import type { DunePlugin } from "@dune/core/hooks";
+import { bootstrap } from "jsr:@dune/core@0.37/bootstrap";
+import { createDuneApp } from "jsr:@dune/core@0.37/fresh-app";
+import type { DunePlugin } from "@dune/plugin-api";
 import { ADMIN_EDITOR, ADMIN_PAGES, ADMIN_ROUTES, createAdminPlugin } from "../../mod.ts";
 
 async function withSite(

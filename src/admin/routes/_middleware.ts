@@ -9,7 +9,7 @@
 import type { FreshContext, Middleware } from "fresh";
 import { csp } from "fresh";
 import type { AdminPermission, AdminState } from "../types.ts";
-import type { DuneAuthSystem } from "@dune/core/auth/authz";
+import type { PluginAuthz } from "@dune/plugin-api";
 
 export const PUBLIC_PATHS = new Set(["/login", "/login/logout"]);
 
@@ -167,7 +167,7 @@ const NAV_PERMISSIONS: readonly AdminPermission[] = [
  * read synchronously from `state` by the layout.
  */
 export async function computeNavPermissions(
-  authz: DuneAuthSystem | undefined,
+  authz: PluginAuthz | undefined,
   userId: string,
   /**
    * Permissions that plugin-contributed pages declare (`ADMIN_PAGES`). They are

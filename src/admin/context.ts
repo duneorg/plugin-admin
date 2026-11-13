@@ -5,32 +5,35 @@
  * @module
  */
 
-import type { DuneEngine } from "@dune/core/engine";
-import type { StorageAdapter } from "@dune/core/storage";
-import type { DuneConfig } from "@dune/core/config";
+import type {
+  PluginEngine,
+  StorageAdapter,
+  DuneConfig,
+  WorkflowEngine,
+  Scheduler,
+  ScheduledAction,
+  HistoryEngine,
+  FlexEngine,
+  HookRegistry,
+  StagingEngine,
+  InlineEditManager,
+  MetricsCollector,
+  RateLimitStore,
+  PluginServices,
+  PluginSearch,
+  SectionRegistry,
+} from "@dune/plugin-api";
 import type { AuthMiddleware } from "./auth/middleware.ts";
 import type { UserManager } from "./auth/users.ts";
 import type { SessionManager } from "./auth/sessions.ts";
 import type { AuthProvider } from "./auth/provider.ts";
-import type { WorkflowEngine } from "@dune/core/workflow";
-import type { Scheduler, ScheduledAction } from "@dune/core/workflow";
-import type { HistoryEngine } from "@dune/core/history";
 import type { SubmissionManager } from "./submissions.ts";
-import type { FlexEngine } from "@dune/core/flex";
-import type { HookRegistry } from "@dune/core/hooks";
 import type { AdminPageRegistration, AdminRouteRegistration, ContentEditorPlugin } from "./contributions.ts";
-import type { StagingEngine } from "@dune/core/staging";
 import type { CommentManager } from "./comments.ts";
 import type { CollabManager } from "../collab/mod.ts";
-import type { InlineEditManager } from "@dune/core/inline-edit";
 import type { AuditLogger } from "../audit/mod.ts";
-import type { MetricsCollector } from "@dune/core/metrics";
 import type { MachineTranslator } from "../mt/mod.ts";
-import type { RateLimitStore } from "@dune/core/security";
-import type { PluginServices } from "@dune/core/plugin-api";
-import type { DuneAuthSystem } from "@dune/core/auth/authz";
-import type { SearchManager } from "@dune/core/search";
-import type { SectionRegistry } from "@dune/core/sections";
+import type { PluginAuthz } from "@dune/plugin-api";
 
 export type { AdminPageRegistration, AdminRouteRegistration };
 
@@ -38,8 +41,8 @@ export type { AdminPageRegistration, AdminRouteRegistration };
 export interface AdminContext {
   /** Services core hands plugins (security policy, sessions, passwords, ...). */
   services: PluginServices;
-  engine: DuneEngine;
-  search: SearchManager;
+  engine: PluginEngine;
+  search: PluginSearch;
   storage: StorageAdapter;
   config: DuneConfig;
   auth: AuthMiddleware;
@@ -81,7 +84,7 @@ export interface AdminContext {
    * unification Phase 5c/6 — the ROLE_PERMISSIONS fallback this used to
    * describe was removed in 3.0.0).
    */
-  authz?: DuneAuthSystem;
+  authz?: PluginAuthz;
   /**
    * Rate-limit store for IP-based throttling and per-account lockout.
    * When present, login.tsx uses this store instead of its module-level
@@ -93,7 +96,7 @@ export interface AdminContext {
    * Background job scheduler — present when one or more jobs/*.ts files exist.
    * Exposes listStatus(), getStatus(), and run() for the admin API and UI.
    */
-  jobScheduler?: import("@dune/core/jobs").JobScheduler;
+  jobScheduler?: import("@dune/plugin-api").JobScheduler;
   /**
    * Section registry for the Visual Page Builder — the host site's registry
    * instance, handed through BootstrapResult (core ≥0.31). Route handlers

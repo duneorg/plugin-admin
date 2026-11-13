@@ -15,7 +15,7 @@
  * @module
  */
 
-import { type CapabilityKey, capabilityKey, type PluginRouteContext } from "@dune/core/plugin-api";
+import { type CapabilityKey, capabilityKey, type PluginRouteContext } from "@dune/plugin-api";
 
 /**
  * A custom admin page contributed by a plugin.

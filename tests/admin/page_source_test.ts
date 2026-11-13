@@ -9,7 +9,7 @@ import {
   assertExists,
   assertStringIncludes,
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import type { PageIndex } from "@dune/core/content/types";
+import type { PageIndex } from "jsr:@dune/core@0.37/content/types";
 
 // ---------------------------------------------------------------------------
 // Helpers

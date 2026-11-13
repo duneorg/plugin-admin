@@ -5,6 +5,25 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [5.0.0]
+
+Needs `@dune/plugin-api` 1.3 and a core that implements it (0.36 and later; 0.37 for the removed subpaths below to matter). It no longer imports `@dune/core`, so a core release does not force a new version of this plugin.
+
+### Added
+
+- **Sets `requiresCore` from `@dune/plugin-api`'s `MIN_CORE_VERSION` (`^1.3`).** On a core older than the contract this admin was built against (0.37 and later), core 0.37.1+ skips the admin and logs `plugins.load.core_too_old` instead of letting it fail at runtime. Earlier cores ignore the field.
+
+### Changed — BREAKING
+
+- **The package root no longer exports `resolvedCoreSentinel` and `resolvedCoreVersion`.** They carried the two-copies-of-core handshake, which only exists when a plugin imports core. Core ignores a plugin module without them.
+- **`SubmissionManagerConfig` is no longer re-exported** from `@dune/plugin-admin` (`admin/submissions`). There is no factory to pass it to; the manager is `PluginRuntime.submissions`.
+- **`GET /admin/api/introspect` reports `pluginApiVersion` `"1.3"`** (the `@dune/plugin-api` contract version) instead of core's old `"0.7"` constant.
+
+### Changed
+
+- **The core-pin tooling is gone.** `scripts/generate-core-imports.ts` and the `gen:core-imports` / `check:core-imports` tasks (and their CI step) existed to force a `@dune/core` pin bump at every core minor. The plugin has no core pin any more.
+- **Imports come from `@dune/plugin-api`, not `@dune/core`.** The engine is `PluginEngine`, search is `PluginSearch`, authz is `PluginAuthz`; the content helpers (`parseContentFilename`, `dirPathToRoute`, `isMediaFile`, `getMimeType`, `buildPageTitle`, `isRtl`) and the role ladder (`ADMIN_ROLE_RANK`, `highestAdminRole`, `Role`) are the package's. `mountDuneAdmin(app, ctx)` takes `{ config: DuneConfig }`, so a `BootstrapResult` still works and nothing else does need to. A `src/` import of `@dune/core` now fails the tests; the tests themselves still use core and `@dune/testing`.
+
 ## [4.1.0] — 2026-11-12
 
 ### Added

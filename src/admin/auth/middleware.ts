@@ -7,7 +7,7 @@
 import type { SessionManager } from "./sessions.ts";
 import type { UserManager } from "./users.ts";
 import type { AuthResult } from "../types.ts";
-import type { SecurityService } from "@dune/core/plugin-api";
+import type { SecurityService } from "@dune/plugin-api";
 
 /** Options for {@link createAuthMiddleware}. */
 export interface AuthMiddlewareConfig {
