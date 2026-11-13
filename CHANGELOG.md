@@ -5,21 +5,19 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
-## [5.1.0]
+## [5.0.0]
+
+Needs `@dune/plugin-api` 1.3 and a core that implements it (0.36 and later; 0.37 for the removed subpaths below to matter). It no longer imports `@dune/core`, so a core release does not force a new version of this plugin.
 
 ### Added
 
 - **Sets `requiresCore` from `@dune/plugin-api`'s `MIN_CORE_VERSION` (`^1.3`).** On a core older than the contract this admin was built against (0.37 and later), core 0.37.1+ skips the admin and logs `plugins.load.core_too_old` instead of letting it fail at runtime. Earlier cores ignore the field.
 
-## [5.0.0]
-
-Needs `@dune/plugin-api` 1.2 and a core that implements it (0.36 and later; 0.37 for the removed subpaths below to matter). It no longer imports `@dune/core`, so a core release does not force a new version of this plugin.
-
 ### Changed — BREAKING
 
 - **The package root no longer exports `resolvedCoreSentinel` and `resolvedCoreVersion`.** They carried the two-copies-of-core handshake, which only exists when a plugin imports core. Core ignores a plugin module without them.
 - **`SubmissionManagerConfig` is no longer re-exported** from `@dune/plugin-admin` (`admin/submissions`). There is no factory to pass it to; the manager is `PluginRuntime.submissions`.
-- **`GET /admin/api/introspect` reports `pluginApiVersion` `"1.2"`** (the `@dune/plugin-api` contract version) instead of core's old `"0.7"` constant.
+- **`GET /admin/api/introspect` reports `pluginApiVersion` `"1.3"`** (the `@dune/plugin-api` contract version) instead of core's old `"0.7"` constant.
 
 ### Changed
 
