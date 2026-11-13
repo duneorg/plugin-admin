@@ -17,6 +17,7 @@ Needs `@dune/plugin-api` 1.2 and a core that implements it (0.36 and later; 0.37
 
 ### Changed
 
+- **The core-pin tooling is gone.** `scripts/generate-core-imports.ts` and the `gen:core-imports` / `check:core-imports` tasks (and their CI step) existed to force a `@dune/core` pin bump at every core minor. The plugin has no core pin any more.
 - **Imports come from `@dune/plugin-api`, not `@dune/core`.** The engine is `PluginEngine`, search is `PluginSearch`, authz is `PluginAuthz`; the content helpers (`parseContentFilename`, `dirPathToRoute`, `isMediaFile`, `getMimeType`, `buildPageTitle`, `isRtl`) and the role ladder (`ADMIN_ROLE_RANK`, `highestAdminRole`, `Role`) are the package's. `mountDuneAdmin(app, ctx)` takes `{ config: DuneConfig }`, so a `BootstrapResult` still works and nothing else does need to. A `src/` import of `@dune/core` now fails the tests; the tests themselves still use core and `@dune/testing`.
 
 ## [4.1.0] — 2026-11-12
