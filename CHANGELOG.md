@@ -5,6 +5,12 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [5.1.0]
+
+### Added
+
+- **Sets `requiresCore` from `@dune/plugin-api`'s `MIN_CORE_VERSION` (`^1.3`).** On a core older than the contract this admin was built against (0.37 and later), core 0.37.1+ skips the admin and logs `plugins.load.core_too_old` instead of letting it fail at runtime. Earlier cores ignore the field.
+
 ## [5.0.0]
 
 Needs `@dune/plugin-api` 1.2 and a core that implements it (0.36 and later; 0.37 for the removed subpaths below to matter). It no longer imports `@dune/core`, so a core release does not force a new version of this plugin.

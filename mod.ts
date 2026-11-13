@@ -14,12 +14,13 @@
  * @since 0.24.0
  */
 
-import type {
-  DunePlugin,
-  MountApi,
-  DuneConfig,
-  StorageAdapter,
-  ScheduledAction,
+import {
+  type DunePlugin,
+  type MountApi,
+  type DuneConfig,
+  type StorageAdapter,
+  type ScheduledAction,
+  MIN_CORE_VERSION,
 } from "@dune/plugin-api";
 import { createUserManager } from "./src/admin/auth/users.ts";
 import { createSessionManager } from "./src/admin/auth/sessions.ts";
@@ -96,6 +97,9 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
   return {
     name: "admin",
     version: denoJson.version,
+    // Core skips the admin with a message on a core older than the plugin-api
+    // contract it was built against, instead of failing later at runtime.
+    requiresCore: MIN_CORE_VERSION,
     description: "Built-in Dune admin panel",
     hooks: {},
     islandSpecifiers: getDuneAdminIslands(),
