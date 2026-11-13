@@ -19,7 +19,9 @@ function fakeApp() {
 }
 
 const logs: { event: string; fields?: Record<string, unknown> }[] = [];
-const logger = { warn: (event: string, fields?: Record<string, unknown>) => logs.push({ event, fields }) };
+const logger = {
+  warn: (event: string, fields?: Record<string, unknown>) => logs.push({ event, fields }),
+};
 
 function fc(opts: {
   method: string;
@@ -77,7 +79,12 @@ Deno.test("admin.routes: mounted under the admin prefix with the contributed met
 Deno.test("admin.routes: an unauthenticated request gets 401 and the handler does not run", async () => {
   const { routes, ran } = setup();
   const res = await routes.get("POST /admin/api/my-plugin/save")!(
-    fc({ method: "POST", path: "/admin/api/my-plugin/save", headers: SAME_ORIGIN, authenticated: false }),
+    fc({
+      method: "POST",
+      path: "/admin/api/my-plugin/save",
+      headers: SAME_ORIGIN,
+      authenticated: false,
+    }),
   );
   assertEquals(res.status, 401);
   assertEquals(ran(), 0);
@@ -86,7 +93,11 @@ Deno.test("admin.routes: an unauthenticated request gets 401 and the handler doe
 Deno.test("admin.routes: a cross-origin POST is refused by the CSRF check", async () => {
   const { routes, ran } = setup();
   const res = await routes.get("POST /admin/api/my-plugin/save")!(
-    fc({ method: "POST", path: "/admin/api/my-plugin/save", headers: { origin: "https://evil.example" } }),
+    fc({
+      method: "POST",
+      path: "/admin/api/my-plugin/save",
+      headers: { origin: "https://evil.example" },
+    }),
   );
   assertEquals(res.status, 403);
   assertEquals(ran(), 0);
@@ -180,7 +191,10 @@ Deno.test("admin.pages: an anonymous request is sent to the login page and the h
 Deno.test("admin.pages: the permission is enforced, and the handler runs when it is held", async () => {
   const { routes, ran } = setupPages();
   const handler = routes.get("GET /admin/my-plugin")!;
-  assertEquals((await handler(fc({ method: "GET", path: "/admin/my-plugin", allow: false }))).status, 403);
+  assertEquals(
+    (await handler(fc({ method: "GET", path: "/admin/my-plugin", allow: false }))).status,
+    403,
+  );
   assertEquals(ran(), 0);
   assertEquals((await handler(fc({ method: "GET", path: "/admin/my-plugin" }))).status, 200);
   assertEquals(ran(), 1);

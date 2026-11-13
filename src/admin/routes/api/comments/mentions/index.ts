@@ -1,7 +1,7 @@
 /** GET /admin/api/comments/mentions */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, json } from "../../_utils.ts";
+import { json, requirePermission } from "../../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {

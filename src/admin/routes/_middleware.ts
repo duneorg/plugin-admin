@@ -64,7 +64,10 @@ const adminCspFrameable = buildAdminCsp("'self'");
  * gets its CSP from `adminCsp` above (see `withSecurityHeaders`'s
  * has-check, which skips a header already present).
  */
-function buildSecurityHeaders(frameAncestors: string, xFrameOptions: string): Record<string, string> {
+function buildSecurityHeaders(
+  frameAncestors: string,
+  xFrameOptions: string,
+): Record<string, string> {
   return {
     "Content-Security-Policy": [
       "default-src 'self'",

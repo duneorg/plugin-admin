@@ -1,7 +1,14 @@
 /** PUT + DELETE /admin/api/users/:id */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../../_utils.ts";
+import {
+  actorFromAuth,
+  csrfCheck,
+  getClientIp,
+  json,
+  requirePermission,
+  serverError,
+} from "../../_utils.ts";
 import { toUserInfo } from "../../../../types.ts";
 import { highestValidRole } from "../../../../auth/role-utils.ts";
 import { isDuneError } from "@dune/plugin-api";
@@ -33,7 +40,9 @@ export const handler = {
         if (!VALID_ROLES.includes(role)) return json({ error: "Invalid role" }, 400);
       }
 
-      const updates: Partial<{ name: string; email: string; role: "admin" | "editor" | "author"; enabled: boolean }> = {};
+      const updates: Partial<
+        { name: string; email: string; role: "admin" | "editor" | "author"; enabled: boolean }
+      > = {};
       if (name !== undefined) updates.name = String(name);
       if (email !== undefined) updates.email = String(email);
       if (role !== undefined) updates.role = role;
@@ -71,7 +80,10 @@ export const handler = {
                 was: existingRole,
                 onWhat: { type: "app", id: "site" },
               }).catch((err) => {
-                console.warn(`[dune/authz] disallowAllMatching failed on role change for user ${userId}:`, err);
+                console.warn(
+                  `[dune/authz] disallowAllMatching failed on role change for user ${userId}:`,
+                  err,
+                );
               });
             }
             await authz.allow({
@@ -87,7 +99,10 @@ export const handler = {
               await authz.disallowAllMatching({
                 who: { type: "user", id: userId },
               }).catch((err) => {
-                console.warn(`[dune/authz] disallowAllMatching failed on disable for user ${userId}:`, err);
+                console.warn(
+                  `[dune/authz] disallowAllMatching failed on disable for user ${userId}:`,
+                  err,
+                );
               });
             } else if (enabled && !existing.enabled) {
               // Re-enabling: restore the tuple for their current (or newly set) role.
@@ -167,7 +182,10 @@ export const handler = {
         await authz.disallowAllMatching({
           who: { type: "user", id: userId },
         }).catch((err) => {
-          console.warn(`[dune/authz] disallowAllMatching failed on delete for user ${userId}:`, err);
+          console.warn(
+            `[dune/authz] disallowAllMatching failed on delete for user ${userId}:`,
+            err,
+          );
         });
       }
       const deleted = await users.delete(userId);

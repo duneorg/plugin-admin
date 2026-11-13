@@ -22,11 +22,24 @@ function ctxWith(searchAnalytics: any): any {
 Deno.test("search analytics route: disabled reports enabled:false and an empty summary", async () => {
   const res = await handler.GET(ctxWith(null));
   assertEquals(res.status, 200);
-  assertEquals(await res.json(), { enabled: false, totalSearches: 0, since: null, topQueries: [], zeroResultQueries: [] });
+  assertEquals(await res.json(), {
+    enabled: false,
+    totalSearches: 0,
+    since: null,
+    topQueries: [],
+    zeroResultQueries: [],
+  });
 });
 
 Deno.test("search analytics route: enabled returns core's summary", async () => {
-  const summary = { totalSearches: 3, since: 1, topQueries: [{ query: "deno", count: 3, avgResults: 2 }], zeroResultQueries: [] };
-  const res = await handler.GET(ctxWith({ record: () => Promise.resolve(), summarize: () => Promise.resolve(summary) }));
+  const summary = {
+    totalSearches: 3,
+    since: 1,
+    topQueries: [{ query: "deno", count: 3, avgResults: 2 }],
+    zeroResultQueries: [],
+  };
+  const res = await handler.GET(
+    ctxWith({ record: () => Promise.resolve(), summarize: () => Promise.resolve(summary) }),
+  );
   assertEquals(await res.json(), { enabled: true, ...summary });
 });

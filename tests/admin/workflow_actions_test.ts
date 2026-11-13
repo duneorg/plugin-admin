@@ -18,7 +18,10 @@ import { MemoryStorageAdapter } from "jsr:@dune/core@0.37/storage";
 import { createWorkflowEngine } from "jsr:@dune/core@0.37/workflow";
 import { createScheduler } from "jsr:@dune/core@0.37/workflow";
 import type { ScheduledAction } from "jsr:@dune/core@0.37/workflow";
-import { applyWorkflowTransition, SCHEDULED_ACTION_STATUS } from "../../src/admin/workflow-actions.ts";
+import {
+  applyWorkflowTransition,
+  SCHEDULED_ACTION_STATUS,
+} from "../../src/admin/workflow-actions.ts";
 
 function makePageIndex(overrides: Partial<PageIndex> = {}): PageIndex {
   return {

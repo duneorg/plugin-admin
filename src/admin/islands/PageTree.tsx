@@ -2,7 +2,7 @@
 /** Island: page tree with search, create dialog, drag-reorder */
 
 import type { h } from "preact";
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 interface PageItem {
   route: string;
@@ -146,10 +146,10 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
 
   const filtered = query
     ? pages.filter(
-        (p) =>
-          p.title.toLowerCase().includes(query.toLowerCase()) ||
-          p.route.toLowerCase().includes(query.toLowerCase()),
-      )
+      (p) =>
+        p.title.toLowerCase().includes(query.toLowerCase()) ||
+        p.route.toLowerCase().includes(query.toLowerCase()),
+    )
     : null;
 
   const tree = filtered ? null : buildTree(pages);
@@ -229,7 +229,12 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
           <span class="tree-route">{page.route}</span>
           <span class="tree-actions">
             <a href={editUrl} class="btn btn-xs btn-outline">Edit</a>
-            <a href={`${prefix}/history?path=${encodeURIComponent(page.sourcePath)}`} class="btn btn-xs btn-outline">History</a>
+            <a
+              href={`${prefix}/history?path=${encodeURIComponent(page.sourcePath)}`}
+              class="btn btn-xs btn-outline"
+            >
+              History
+            </a>
           </span>
         </div>
         {hasChildren && !isCollapsed && (
@@ -261,55 +266,64 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
       {/* Search results */}
       {filtered && (
         <div class="page-search-results">
-          {filtered.length === 0 ? (
-            <p class="s-e3d4adcf">No pages match "{query}"</p>
-          ) : (
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Route</th>
-                  <th>Format</th>
-                  <th>Status</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((p) => {
-                  const searchEditors = presence.get(p.sourcePath) ?? [];
-                  return (
-                    <tr key={p.route}>
-                      <td>
-                        <a href={`${prefix}/edit?path=${encodeURIComponent(p.sourcePath)}`}>{p.title || "(untitled)"}</a>
-                        {searchEditors.length > 0 && (
-                          <span class="s-da472840">
-                            <PresenceBadge editors={searchEditors} />
-                          </span>
-                        )}
-                      </td>
-                      <td><code>{p.route}</code></td>
-                      <td>{p.format}</td>
-                      <td>{p.published ? "published" : "draft"}</td>
-                      <td>
-                        <a href={`${prefix}/edit?path=${encodeURIComponent(p.sourcePath)}`} class="btn btn-xs btn-outline">Edit</a>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
+          {filtered.length === 0
+            ? <p class="s-e3d4adcf">No pages match "{query}"</p>
+            : (
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Route</th>
+                    <th>Format</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((p) => {
+                    const searchEditors = presence.get(p.sourcePath) ?? [];
+                    return (
+                      <tr key={p.route}>
+                        <td>
+                          <a href={`${prefix}/edit?path=${encodeURIComponent(p.sourcePath)}`}>
+                            {p.title || "(untitled)"}
+                          </a>
+                          {searchEditors.length > 0 && (
+                            <span class="s-da472840">
+                              <PresenceBadge editors={searchEditors} />
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <code>{p.route}</code>
+                        </td>
+                        <td>{p.format}</td>
+                        <td>{p.published ? "published" : "draft"}</td>
+                        <td>
+                          <a
+                            href={`${prefix}/edit?path=${encodeURIComponent(p.sourcePath)}`}
+                            class="btn btn-xs btn-outline"
+                          >
+                            Edit
+                          </a>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
         </div>
       )}
 
       {/* Tree view */}
       {!filtered && tree && (
         <div class="page-tree" id="page-tree">
-          {tree.length === 0 ? (
-            <p class="s-17a730ae">No pages yet. Create your first page above.</p>
-          ) : (
-            tree.map((node) => renderNode(node))
-          )}
+          {tree.length === 0
+            ? <p class="s-17a730ae">No pages yet. Create your first page above.</p>
+            : (
+              tree.map((node) => renderNode(node))
+            )}
         </div>
       )}
 
@@ -347,9 +361,7 @@ export default function PageTree({ pages, initialQuery, prefix }: Props) {
                   onChange={(e) => setCreateParent((e.target as HTMLSelectElement).value)}
                 >
                   <option value="">— Top level —</option>
-                  {pages.map((p) => (
-                    <option key={p.route} value={p.route}>{p.route}</option>
-                  ))}
+                  {pages.map((p) => <option key={p.route} value={p.route}>{p.route}</option>)}
                 </select>
               </div>
               {createError && <p class="form-error">{createError}</p>}

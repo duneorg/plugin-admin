@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/media — media library */
 
-
 import type { AdminState } from "../../types.ts";
 import MediaLibrary from "../../islands/MediaLibrary.tsx";
 import type { FreshContext } from "fresh";
@@ -15,7 +14,9 @@ export const handler = {
 export default function MediaRoute({ data }: { data: { prefix: string } }) {
   return (
     <div>
-      <div class="section-header"><h2>Media Library</h2></div>
+      <div class="section-header">
+        <h2>Media Library</h2>
+      </div>
       <MediaLibrary prefix={data.prefix} />
     </div>
   );

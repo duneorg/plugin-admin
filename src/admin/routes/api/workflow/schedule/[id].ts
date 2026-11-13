@@ -1,7 +1,7 @@
 /** DELETE /admin/api/workflow/schedule/:id */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, requireOwnedPage, json, serverError, csrfCheck } from "../../_utils.ts";
+import { csrfCheck, json, requireOwnedPage, requirePermission, serverError } from "../../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {

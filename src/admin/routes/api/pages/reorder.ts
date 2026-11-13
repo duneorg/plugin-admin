@@ -1,8 +1,15 @@
 /** POST /admin/api/pages/reorder */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, requireEditorOrAdmin, json, serverError, validatePagePath, csrfCheck } from "../_utils.ts";
-import { dirname, basename } from "@std/path";
+import {
+  csrfCheck,
+  json,
+  requireEditorOrAdmin,
+  requirePermission,
+  serverError,
+  validatePagePath,
+} from "../_utils.ts";
+import { basename, dirname } from "@std/path";
 import { announcePageEvent } from "../../../page-events.ts";
 import type { FreshContext } from "fresh";
 
@@ -18,18 +25,24 @@ export const handler = {
     const { engine, storage, config } = ctx.state.adminContext;
     try {
       const body = await ctx.req.json() as {
-        sourcePath: string; targetPath: string | null; position?: "before" | "after";
+        sourcePath: string;
+        targetPath: string | null;
+        position?: "before" | "after";
       };
       const { sourcePath, targetPath } = body;
       const position = body.position ?? "before";
 
       if (!sourcePath) return json({ error: "sourcePath required" }, 400);
       if (!validatePagePath(sourcePath)) return json({ error: "Invalid sourcePath" }, 400);
-      if (targetPath && !validatePagePath(targetPath)) return json({ error: "Invalid targetPath" }, 400);
+      if (targetPath && !validatePagePath(targetPath)) {
+        return json({ error: "Invalid targetPath" }, 400);
+      }
 
       const source = engine.pages.find((p) => p.sourcePath === sourcePath);
       if (!source) return json({ error: "Source page not found" }, 404);
-      if (source.order === 0) return json({ error: "Source page has no numeric prefix and cannot be reordered" }, 400);
+      if (source.order === 0) {
+        return json({ error: "Source page has no numeric prefix and cannot be reordered" }, 400);
+      }
 
       const target = targetPath ? engine.pages.find((p) => p.sourcePath === targetPath) : null;
       if (targetPath && !target) return json({ error: "Target page not found" }, 404);
@@ -38,7 +51,9 @@ export const handler = {
       }
 
       const siblings = engine.pages
-        .filter((p) => p.parentPath === source.parentPath && p.depth === source.depth && p.order > 0)
+        .filter((p) =>
+          p.parentPath === source.parentPath && p.depth === source.depth && p.order > 0
+        )
         .sort((a, b) => a.order - b.order);
 
       const newOrder = siblings.filter((p) => p.sourcePath !== sourcePath);
@@ -85,7 +100,8 @@ export const handler = {
 
       await engine.rebuild();
       // Content-relative folders that were renamed; every page below `from` moved below `to`.
-      const rel = (p: string) => p.startsWith(`${contentDir}/`) ? p.slice(contentDir.length + 1) : p;
+      const rel = (p: string) =>
+        p.startsWith(`${contentDir}/`) ? p.slice(contentDir.length + 1) : p;
       announcePageEvent(ctx, {
         event: "onPageMove",
         payload: { moves: renames.map((r) => ({ from: rel(r.oldDir), to: rel(r.newDir) })) },

@@ -23,7 +23,9 @@ Deno.test({
       const script = join(dir, "create.ts");
       await Deno.writeTextFile(
         script,
-        `import { createCollabManager } from ${JSON.stringify(toFileUrl(join(REPO, "src", "collab", "mod.ts")).href)};\n` +
+        `import { createCollabManager } from ${
+          JSON.stringify(toFileUrl(join(REPO, "src", "collab", "mod.ts")).href)
+        };\n` +
           `// Stubs are fine: nothing touches them until a client connects.\n` +
           `createCollabManager({ storage: {} as never, engine: {} as never, history: {} as never, contentDir: "content" });\n` +
           `console.log("created");\n`,
@@ -47,8 +49,16 @@ Deno.test({
 
       const stdout = new TextDecoder().decode(out.stdout);
       assertEquals(stdout.includes("created"), true, new TextDecoder().decode(out.stderr));
-      assertEquals(out.success, true, "process should exit on its own once main finishes; a ref'd interval keeps it alive");
-      assertEquals(out.signal, null, "process was killed by the test's timeout, meaning it never exited on its own");
+      assertEquals(
+        out.success,
+        true,
+        "process should exit on its own once main finishes; a ref'd interval keeps it alive",
+      );
+      assertEquals(
+        out.signal,
+        null,
+        "process was killed by the test's timeout, meaning it never exited on its own",
+      );
     } finally {
       await Deno.remove(dir, { recursive: true }).catch(() => {});
     }

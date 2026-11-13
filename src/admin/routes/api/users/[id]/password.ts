@@ -1,7 +1,14 @@
 /** POST /admin/api/users/:id/password */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, json, serverError, actorFromAuth, getClientIp, csrfCheck } from "../../_utils.ts";
+import {
+  actorFromAuth,
+  csrfCheck,
+  getClientIp,
+  json,
+  requirePermission,
+  serverError,
+} from "../../_utils.ts";
 import type { FreshContext } from "fresh";
 import { adminSettings } from "../../../../settings.ts";
 

@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/themes — installed themes, active theme switcher, and theme settings */
 
-
 import type { AdminState } from "../../types.ts";
 import ThemeSwitcher from "../../islands/ThemeSwitcher.tsx";
 import ThemeConfigEditor from "../../islands/ThemeConfigEditor.tsx";
@@ -11,7 +10,9 @@ export const handler = {
   GET(ctx: FreshContext<AdminState>) {
     const { config, prefix } = ctx.state.adminContext;
     const previewSlug = ctx.url.searchParams.get("preview") ?? undefined;
-    return ctx.render(<ThemesRoute data={{ activeTheme: config.theme.name, prefix, previewSlug }} />);
+    return ctx.render(
+      <ThemesRoute data={{ activeTheme: config.theme.name, prefix, previewSlug }} />,
+    );
   },
 };
 
@@ -26,7 +27,11 @@ export default function ThemesRoute(
       </div>
 
       <div class="cfg-section">
-        <ThemeSwitcher prefix={data.prefix} activeTheme={data.activeTheme} previewSlug={data.previewSlug} />
+        <ThemeSwitcher
+          prefix={data.prefix}
+          activeTheme={data.activeTheme}
+          previewSlug={data.previewSlug}
+        />
       </div>
 
       <div class="cfg-section">

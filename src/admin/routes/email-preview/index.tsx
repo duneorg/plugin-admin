@@ -30,7 +30,9 @@ export default function EmailPreviewPage({ data }: { data: PageData }) {
   if (!isDev) {
     return (
       <div>
-        <div class="section-header"><h2>Email Preview</h2></div>
+        <div class="section-header">
+          <h2>Email Preview</h2>
+        </div>
         <p class="s-17a730ae">
           Email preview is only available in development mode (DUNE_ENV=dev).
         </p>

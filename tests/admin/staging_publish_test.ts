@@ -22,11 +22,17 @@ Deno.test("a staged draft is published through POST /api/staging/:path*/publish"
   const root = await Deno.makeTempDir({ prefix: "dune_admin_staging_" });
   try {
     await Deno.mkdir(join(root, "config"), { recursive: true });
-    await Deno.writeTextFile(join(root, "config", "site.yaml"), 'title: "Staging"\nurl: "http://localhost:8000"\n');
+    await Deno.writeTextFile(
+      join(root, "config", "site.yaml"),
+      'title: "Staging"\nurl: "http://localhost:8000"\n',
+    );
     const pageFile = join(root, "content", "01.alpha", "default.md");
     await Deno.mkdir(join(root, "content", "01.alpha"), { recursive: true });
     await Deno.writeTextFile(pageFile, "---\ntitle: Live\n---\n\nlive body\n");
-    const users = createLocalUserStore({ storage: createStorage({ rootDir: root }), usersDir: "data/users" });
+    const users = createLocalUserStore({
+      storage: createStorage({ rootDir: root }),
+      usersDir: "data/users",
+    });
     await users.create({
       email: "ed@example.test",
       username: "ed",
@@ -40,12 +46,17 @@ Deno.test("a staged draft is published through POST /api/staging/:path*/publish"
     const recorder: DunePlugin = {
       name: "recorder",
       version: "1.0.0",
-      hooks: { onPageUpdate: ({ data }: { data: unknown }) => void updates.push(data) } as DunePlugin["hooks"],
+      hooks: {
+        onPageUpdate: ({ data }: { data: unknown }) => void updates.push(data),
+      } as DunePlugin["hooks"],
     };
-    const ctx = await bootstrap(root, { plugins: [createAdminPlugin({ root, dev: false }), recorder] });
+    const ctx = await bootstrap(root, {
+      plugins: [createAdminPlugin({ root, dev: false }), recorder],
+    });
     const { app } = await createDuneApp(ctx, { root, port: 0, dev: false });
     const handler = app.handler();
-    const req = (path: string, init?: RequestInit) => handler(new Request(new URL(path, ORIGIN), init));
+    const req = (path: string, init?: RequestInit) =>
+      handler(new Request(new URL(path, ORIGIN), init));
 
     const login = await req("/admin/login", {
       method: "POST",

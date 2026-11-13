@@ -10,7 +10,7 @@
  */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, json, validatePagePath } from "../../_utils.ts";
+import { json, requirePermission, validatePagePath } from "../../_utils.ts";
 import { highestValidRole } from "../../../../auth/role-utils.ts";
 import type { FreshContext } from "fresh";
 

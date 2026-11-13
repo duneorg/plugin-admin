@@ -55,7 +55,11 @@ function createMemoryStorage() {
 
 async function buildAdminContext() {
   const storage = createMemoryStorage();
-  const sessions = await createSessionManager({ services: makeServices(storage), sessionsDir: ".sess", lifetime: 3600 });
+  const sessions = await createSessionManager({
+    services: makeServices(storage),
+    sessionsDir: ".sess",
+    lifetime: 3600,
+  });
   const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
   const auth = createAuthMiddleware({ sessions, users, security: makeServices(null).security });
 
@@ -76,8 +80,7 @@ async function buildAdminContext() {
       // behavior, not permission logic. Without an authz the top-level
       // admin access gate fails closed (403) and the render never happens.
       authz: { check: () => Promise.resolve(true) },
-    } as unknown as
-      import("../../src/admin/context.ts").AdminContext,
+    } as unknown as import("../../src/admin/context.ts").AdminContext,
     sessionCookie: `dune_session=${session.id}`,
   };
 }
@@ -118,7 +121,10 @@ Deno.test("_middleware: unauthenticated request gets redirected with a static fa
   assertEquals(res.headers.get("Location"), "/admin/login?next=%2Fadmin%2Fconfig");
   // Synthetic redirect never renders — no nonce to embed, so the static
   // fallback CSP applies.
-  assertMatch(res.headers.get("Content-Security-Policy") ?? "", /script-src 'self' 'wasm-unsafe-eval'/);
+  assertMatch(
+    res.headers.get("Content-Security-Policy") ?? "",
+    /script-src 'self' 'wasm-unsafe-eval'/,
+  );
 });
 
 Deno.test("_middleware: authenticated render gets a nonce-based CSP matching Fresh's rendered nonce", async () => {

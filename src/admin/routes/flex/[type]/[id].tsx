@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/flex/:type/:id — flex record editor (also handles "new") */
 
-
 import type { AdminState } from "../../../types.ts";
 import FlexEditor from "../../../islands/FlexEditor.tsx";
 import type { FreshContext } from "fresh";
@@ -20,7 +19,9 @@ export const handler = {
 };
 
 export default function FlexEditorRoute(
-  { data }: { data: { type: string; id: string; schema: unknown; record: unknown; prefix: string } },
+  { data }: {
+    data: { type: string; id: string; schema: unknown; record: unknown; prefix: string };
+  },
 ) {
   return (
     <div>

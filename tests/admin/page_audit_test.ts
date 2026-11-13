@@ -10,10 +10,18 @@ function setup() {
   const logged: Array<Record<string, unknown>> = [];
   listenForPageAudit({
     // deno-lint-ignore no-explicit-any
-    hooks: { on: (event: string, h: Handler) => handlers.set(event, [...(handlers.get(event) ?? []), h]) } as any,
-    audit: () => ({ log: (entry: Record<string, unknown>) => (logged.push(entry), Promise.resolve()) }) as never,
+    hooks: {
+      on: (event: string, h: Handler) => handlers.set(event, [...(handlers.get(event) ?? []), h]),
+    } as any,
+    audit: () =>
+      ({
+        log: (entry: Record<string, unknown>) => (logged.push(entry), Promise.resolve()),
+      }) as never,
   });
-  return { logged, fire: (event: string, data: unknown) => (handlers.get(event) ?? []).forEach((h) => h({ data })) };
+  return {
+    logged,
+    fire: (event: string, data: unknown) => (handlers.get(event) ?? []).forEach((h) => h({ data })),
+  };
 }
 
 Deno.test("an update by the inline-edit bar is audited under the editor's name", () => {

@@ -1,7 +1,7 @@
 /** POST /admin/api/jobs/:name/run — manually trigger a job */
 
 import type { AdminState } from "../../../../types.ts";
-import { json, requirePermission, csrfCheck } from "../../_utils.ts";
+import { csrfCheck, json, requirePermission } from "../../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {

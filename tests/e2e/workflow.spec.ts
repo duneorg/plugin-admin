@@ -7,7 +7,7 @@
  * picker even without a full workflow engine).
  */
 
-import { test, expect } from "npm:@playwright/test@^1.45";
+import { expect, test } from "npm:@playwright/test@^1.45";
 import { ADMIN_URL, login } from "./support/helpers.ts";
 
 test.describe("Page workflow", () => {

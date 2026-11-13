@@ -15,12 +15,12 @@
  */
 
 import {
-  type DunePlugin,
-  type MountApi,
   type DuneConfig,
-  type StorageAdapter,
-  type ScheduledAction,
+  type DunePlugin,
   MIN_CORE_VERSION,
+  type MountApi,
+  type ScheduledAction,
+  type StorageAdapter,
 } from "@dune/plugin-api";
 import { createUserManager } from "./src/admin/auth/users.ts";
 import { createSessionManager } from "./src/admin/auth/sessions.ts";
@@ -111,9 +111,15 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
 
       // The audit trail and the machine translator are the admin's own. Translator
       // requests go through core's SSRF-checked fetch.
-      const auditLogger = createAuditTrail({ config, root: opts.root, runtimeDir: api.services.paths.runtimeDir });
+      const auditLogger = createAuditTrail({
+        config,
+        root: opts.root,
+        runtimeDir: api.services.paths.runtimeDir,
+      });
       const mtConfig = adminCfg.machine_translation;
-      const mt = mtConfig ? createMachineTranslator(mtConfig, api.services.security.safeFetch) : null;
+      const mt = mtConfig
+        ? createMachineTranslator(mtConfig, api.services.security.safeFetch)
+        : null;
 
       setupState = { config, storage, opts, auditLogger, mt };
 
@@ -175,7 +181,8 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
             logger.warn("admin.users.legacy-location", {
               legacyDir: legacyUsersDir,
               newDir: `${dataDir}/users`,
-              message: "Move the user files to the new directory, or those accounts will not be found",
+              message:
+                "Move the user files to the new directory, or those accounts will not be found",
             });
           }
         } catch { /* ignore */ }
@@ -199,7 +206,9 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
           authProvider = new LocalAuthProvider(users, services.passwords);
         } else {
           throw new Error(
-            `[dune] auth_provider.type "${(provCfg as { type?: string }).type ?? "<missing>"}" is not supported. ` +
+            `[dune] auth_provider.type "${
+              (provCfg as { type?: string }).type ?? "<missing>"
+            }" is not supported. ` +
               `Only "local" is built in; inject your own provider with the \`authProvider\` plugin option.`,
           );
         }
@@ -227,11 +236,18 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
       const executeScheduledAction = async (action: ScheduledAction): Promise<void> => {
         const newStatus = SCHEDULED_ACTION_STATUS[action.action];
         if (!newStatus) {
-          logger.warn("scheduler.unknown-action", { action: action.action, sourcePath: action.sourcePath });
+          logger.warn("scheduler.unknown-action", {
+            action: action.action,
+            sourcePath: action.sourcePath,
+          });
           return;
         }
         try {
-          await applyWorkflowTransition({ engine: runtime.engine, storage, config, hooks: runtime.hooks, workflow }, action.sourcePath, newStatus);
+          await applyWorkflowTransition(
+            { engine: runtime.engine, storage, config, hooks: runtime.hooks, workflow },
+            action.sourcePath,
+            newStatus,
+          );
         } catch (err) {
           logger.error("scheduler.action-failed", {
             actionId: action.id,
@@ -382,7 +398,8 @@ export function createAdminPlugin(opts: AdminPluginOptions): DunePlugin {
           if (revoked > 0) {
             logger.info("admin.authz.stale_direct_grants_revoked", {
               count: revoked,
-              reason: "accounts that cannot sign in to the admin are governed by system.role_grants",
+              reason:
+                "accounts that cannot sign in to the admin are governed by system.role_grants",
             });
           }
         } catch (err) {

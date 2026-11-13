@@ -26,9 +26,7 @@ function ctx(
     url: new URL("https://cms.example.com/admin/api/x"),
     state: {
       adminContext: { auditLogger: null, csrfSecret: opts.csrfSecret ?? SECRET },
-      auth: opts.sessionId
-        ? { authenticated: true, session: { id: opts.sessionId } }
-        : {},
+      auth: opts.sessionId ? { authenticated: true, session: { id: opts.sessionId } } : {},
     },
   };
 }

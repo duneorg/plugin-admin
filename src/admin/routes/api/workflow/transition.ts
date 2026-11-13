@@ -1,7 +1,7 @@
 /** POST /admin/api/workflow/transition */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, requireOwnedPage, json, serverError, csrfCheck } from "../_utils.ts";
+import { csrfCheck, json, requireOwnedPage, requirePermission, serverError } from "../_utils.ts";
 import { applyWorkflowTransition } from "../../../workflow-actions.ts";
 import { highestValidRole } from "../../../auth/role-utils.ts";
 import type { FreshContext } from "fresh";

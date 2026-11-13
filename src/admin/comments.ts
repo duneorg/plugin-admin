@@ -15,7 +15,7 @@
  * All public methods are async to allow future storage adapter swapping.
  */
 
-import { join, dirname } from "@std/path";
+import { dirname, join } from "@std/path";
 import { encodeHex } from "@std/encoding/hex";
 import type { User } from "./types.ts";
 

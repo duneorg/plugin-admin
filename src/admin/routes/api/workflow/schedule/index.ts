@@ -1,7 +1,14 @@
 /** POST /admin/api/workflow/schedule */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, requireOwnedPage, json, serverError, csrfCheck, validatePagePath } from "../../_utils.ts";
+import {
+  csrfCheck,
+  json,
+  requireOwnedPage,
+  requirePermission,
+  serverError,
+  validatePagePath,
+} from "../../_utils.ts";
 import type { FreshContext } from "fresh";
 
 const VALID_ACTIONS = ["publish", "unpublish", "archive"] as const;
@@ -44,7 +51,9 @@ export const handler = {
       }
 
       const scheduled = await scheduler.schedule({
-        sourcePath, action, scheduledAt,
+        sourcePath,
+        action,
+        scheduledAt,
         createdBy: authResult.user?.username,
       });
       return json({ scheduled: true, action: scheduled }, 201);

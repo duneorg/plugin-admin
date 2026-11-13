@@ -17,7 +17,7 @@
 
 import { join } from "@std/path";
 import { encodeHex } from "@std/encoding/hex";
-import { isDuneError, type SecurityService, type HookRegistry } from "@dune/plugin-api";
+import { type HookRegistry, isDuneError, type SecurityService } from "@dune/plugin-api";
 
 /** The slice of the security service webhook delivery needs. */
 export type WebhookSecurity = Pick<SecurityService, "safeFetch">;
@@ -251,7 +251,9 @@ async function deliverWithRetry(
   record.finalStatus = "failed";
   const last = record.attempts.at(-1);
   console.warn(
-    `[dune] webhook: delivery failed after 3 attempts to ${endpoint.url} (event: ${event}): ${last?.errorMessage ?? "unknown error"}`,
+    `[dune] webhook: delivery failed after 3 attempts to ${endpoint.url} (event: ${event}): ${
+      last?.errorMessage ?? "unknown error"
+    }`,
   );
   await writelog(logDir, record);
 }

@@ -83,12 +83,14 @@ function blockToMarkdown(block: Block): string {
       if (!block.headers.length) return "";
 
       const headerRow = `| ${block.headers.join(" | ")} |`;
-      const alignRow = `| ${block.headers.map((_, i) => {
-        const a = block.align?.[i];
-        if (a === "center") return ":---:";
-        if (a === "right") return "---:";
-        return "---";
-      }).join(" | ")} |`;
+      const alignRow = `| ${
+        block.headers.map((_, i) => {
+          const a = block.align?.[i];
+          if (a === "center") return ":---:";
+          if (a === "right") return "---:";
+          return "---";
+        }).join(" | ")
+      } |`;
 
       const dataRows = block.rows
         .map((row) => `| ${row.join(" | ")} |`)

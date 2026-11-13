@@ -1,7 +1,7 @@
 /** GET /admin/api/registry/themes */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json } from "../_utils.ts";
+import { json, requirePermission } from "../_utils.ts";
 import { fetchThemeRegistrySafe } from "../../../theme-registry.ts";
 import type { FreshContext } from "fresh";
 

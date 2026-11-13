@@ -75,7 +75,8 @@ export async function createSessionManager(config: SessionManagerConfig): Promis
     canList: typeof extended.listForUser === "function" &&
       typeof extended.revokeOthers === "function",
     listForUser: (userId) => extended.listForUser?.(userId) ?? Promise.resolve([]),
-    revokeOthers: (userId, keepSessionId) => extended.revokeOthers?.(userId, keepSessionId) ?? Promise.resolve(),
+    revokeOthers: (userId, keepSessionId) =>
+      extended.revokeOthers?.(userId, keepSessionId) ?? Promise.resolve(),
     cleanup: core.cleanup,
   };
 }
@@ -87,5 +88,7 @@ export async function createSessionManager(config: SessionManagerConfig): Promis
  */
 export async function sessionHandle(sessionId: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(sessionId));
-  return [...new Uint8Array(digest)].slice(0, 8).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return [...new Uint8Array(digest)].slice(0, 8).map((b) => b.toString(16).padStart(2, "0")).join(
+    "",
+  );
 }

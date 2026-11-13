@@ -43,7 +43,10 @@ export function isAdminAccount(user: StoredAccount): boolean {
  * admin-tier role, and revoke the one an earlier version seeded for an
  * account that cannot sign in to the admin. Returns how many it revoked.
  */
-export async function reconcileAdminTuples(users: StoredAccount[], authz: TupleAuthz): Promise<number> {
+export async function reconcileAdminTuples(
+  users: StoredAccount[],
+  authz: TupleAuthz,
+): Promise<number> {
   const seed: Array<{ id: string; role: string }> = [];
   const stale: Array<{ id: string; role: string }> = [];
   for (const user of users) {

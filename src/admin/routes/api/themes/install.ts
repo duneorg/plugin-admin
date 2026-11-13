@@ -1,10 +1,14 @@
 /** POST /admin/api/themes/install */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
+import { csrfCheck, json, requirePermission, serverError } from "../_utils.ts";
 import type { SecurityService, StorageAdapter } from "@dune/plugin-api";
 import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
-import { fetchThemeRegistrySafe, isThemeSha256, type RegistryTheme } from "../../../theme-registry.ts";
+import {
+  fetchThemeRegistrySafe,
+  isThemeSha256,
+  type RegistryTheme,
+} from "../../../theme-registry.ts";
 import type { FreshContext } from "fresh";
 
 interface ThemePackageEntry {
@@ -41,9 +45,7 @@ async function installJsrTheme(
 ): Promise<{ alreadyInstalled: boolean }> {
   const siteRaw = await storage.readText("config/site.yaml").catch(() => "");
   const site = (parseYaml(siteRaw || "") ?? {}) as Record<string, unknown>;
-  const existing = Array.isArray(site.themes)
-    ? site.themes as ThemePackageEntry[]
-    : [];
+  const existing = Array.isArray(site.themes) ? site.themes as ThemePackageEntry[] : [];
 
   const alreadyInstalled = existing.some((e) => e.name === slug || e.src === jsr);
   if (alreadyInstalled) return { alreadyInstalled: true };
@@ -163,7 +165,9 @@ export const handler = {
           return json({ installed: false, reason: "already installed", slug, jsr: entry.jsr });
         }
 
-        console.log(`[dune/themes] 📦 Registered theme package "${slug}" (${entry.jsr}) in site.yaml`);
+        console.log(
+          `[dune/themes] 📦 Registered theme package "${slug}" (${entry.jsr}) in site.yaml`,
+        );
         return json({
           success: true,
           slug,
@@ -179,7 +183,12 @@ export const handler = {
             error: `Registry entry for "${slug}" is missing a sha256 integrity hash`,
           }, 502);
         }
-        const { filesWritten } = await installZipTheme(storage, services.security.safeFetch, slug, entry);
+        const { filesWritten } = await installZipTheme(
+          storage,
+          services.security.safeFetch,
+          slug,
+          entry,
+        );
         console.log(`[dune/themes] 📦 Installed theme "${slug}" (${filesWritten} files)`);
         return json({ success: true, slug, filesWritten, method: "zip" });
       }

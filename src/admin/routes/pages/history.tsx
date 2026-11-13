@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/pages/history?path=... — revision history */
 
-
 import type { AdminState } from "../../types.ts";
 import RevisionHistory from "../../islands/RevisionHistory.tsx";
 import type { FreshContext } from "fresh";
@@ -24,7 +23,9 @@ export default function PageHistoryRoute(
     <div>
       <div class="section-header">
         <h2>Revision History</h2>
-        <a href={`${data.prefix}/pages/edit?path=${encodeURIComponent(data.pagePath)}`} class="btn">Back to editor</a>
+        <a href={`${data.prefix}/pages/edit?path=${encodeURIComponent(data.pagePath)}`} class="btn">
+          Back to editor
+        </a>
       </div>
       <RevisionHistory pagePath={data.pagePath} prefix={data.prefix} />
     </div>

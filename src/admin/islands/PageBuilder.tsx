@@ -5,7 +5,7 @@
  * Saves via PUT /admin/api/pages/:path (sections stored in frontmatter).
  */
 
-import { useState, useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 interface SectionField {
   type: string;
@@ -133,9 +133,7 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
   }
 
   function updateField(id: string, key: string, value: unknown) {
-    setSections((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, [key]: value } : s))
-    );
+    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, [key]: value } : s)));
     setDirty(true);
   }
 
@@ -160,11 +158,20 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
       <header class="bld-toolbar">
         <div class="bld-toolbar-left">
           <a href={`${prefix}/pages`} class="btn btn-sm btn-outline">← Pages</a>
-          <a href={`${prefix}/pages/edit?path=${encodeURIComponent(pagePath)}`} class="btn btn-sm btn-outline">Classic Editor</a>
+          <a
+            href={`${prefix}/pages/edit?path=${encodeURIComponent(pagePath)}`}
+            class="btn btn-sm btn-outline"
+          >
+            Classic Editor
+          </a>
           <span class="bld-title">{pageTitle}</span>
         </div>
         <div class="bld-toolbar-right">
-          <button type="button" class="btn btn-sm btn-outline" onClick={() => setShowPreview((v) => !v)}>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline"
+            onClick={() => setShowPreview((v) => !v)}
+          >
             {showPreview ? "Hide" : "Preview"}
           </button>
           {dirty && <span class="toolbar-dirty">Unsaved</span>}
@@ -179,7 +186,8 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
         <aside class="bld-palette">
           <h4>Sections</h4>
           {defs.map((def) => (
-            <button type="button"
+            <button
+              type="button"
               key={def.type}
               class="bld-palette-item"
               onClick={() => addSection(def.type)}
@@ -189,144 +197,188 @@ export default function PageBuilder({ pagePath, prefix }: Props) {
               <span>{def.label}</span>
             </button>
           ))}
-          {defs.length === 0 && (
-            <p class="s-df643397">No section types registered.</p>
-          )}
+          {defs.length === 0 && <p class="s-df643397">No section types registered.</p>}
         </aside>
 
         {/* Canvas */}
         <main class="bld-canvas">
-          {sections.length === 0 ? (
-            <div class="bld-canvas-empty">
-              <p>No sections yet. Add sections from the palette on the left.</p>
-            </div>
-          ) : (
-            sections.map((sec, idx) => {
-              const def = defs.find((d) => d.type === sec.type);
-              const isSelected = sec.id === selectedId;
-              return (
-                <div
-                  key={sec.id}
-                  class={`bld-section${isSelected ? " bld-section-selected" : ""}`}
-                  onClick={() => setSelectedId(sec.id)}
-                >
-                  <div class="bld-section-header">
-                    <span class="bld-section-type">{def?.label ?? sec.type}</span>
-                    <div class="bld-section-controls">
-                      <button type="button"
-                        class="btn btn-xs btn-outline"
-                        onClick={(e) => { e.stopPropagation(); moveSection(sec.id, -1); }}
-                        disabled={idx === 0}
-                        title="Move up"
-                      >↑</button>
-                      <button type="button"
-                        class="btn btn-xs btn-outline"
-                        onClick={(e) => { e.stopPropagation(); moveSection(sec.id, 1); }}
-                        disabled={idx === sections.length - 1}
-                        title="Move down"
-                      >↓</button>
-                      <button type="button"
-                        class="btn btn-xs btn-danger"
-                        onClick={(e) => { e.stopPropagation(); removeSection(sec.id); }}
-                        title="Remove"
-                      >×</button>
+          {sections.length === 0
+            ? (
+              <div class="bld-canvas-empty">
+                <p>No sections yet. Add sections from the palette on the left.</p>
+              </div>
+            )
+            : (
+              sections.map((sec, idx) => {
+                const def = defs.find((d) => d.type === sec.type);
+                const isSelected = sec.id === selectedId;
+                return (
+                  <div
+                    key={sec.id}
+                    class={`bld-section${isSelected ? " bld-section-selected" : ""}`}
+                    onClick={() => setSelectedId(sec.id)}
+                  >
+                    <div class="bld-section-header">
+                      <span class="bld-section-type">{def?.label ?? sec.type}</span>
+                      <div class="bld-section-controls">
+                        <button
+                          type="button"
+                          class="btn btn-xs btn-outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            moveSection(sec.id, -1);
+                          }}
+                          disabled={idx === 0}
+                          title="Move up"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-xs btn-outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            moveSection(sec.id, 1);
+                          }}
+                          disabled={idx === sections.length - 1}
+                          title="Move down"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-xs btn-danger"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeSection(sec.id);
+                          }}
+                          title="Remove"
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
+                    {isSelected && def && (
+                      <div class="bld-section-preview">
+                        {Object.entries(def.fields).slice(0, 2).map(([k, f]) => (
+                          <span key={k} class="s-3adba436">
+                            {f.label}: {String(sec[k] ?? "").slice(0, 40)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  {isSelected && def && (
-                    <div class="bld-section-preview">
-                      {Object.entries(def.fields).slice(0, 2).map(([k, f]) => (
-                        <span key={k} class="s-3adba436">
-                          {f.label}: {String(sec[k] ?? "").slice(0, 40)}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
         </main>
 
         {/* Field editor / page settings sidebar */}
         <aside class="bld-settings">
-          {selectedSection && selectedDef ? (
-            <>
-              <h4>{selectedDef.label} settings</h4>
-              {Object.entries(selectedDef.fields).map(([key, field]) => (
-                <div class="form-group" key={key}>
-                  <label>{field.label}</label>
-                  {field.type === "textarea" ? (
-                    <textarea
-                      rows={4}
-                      value={String(selectedSection[key] ?? field.default ?? "")}
-                      onInput={(e) =>
-                        updateField(selectedSection.id, key, (e.target as HTMLTextAreaElement).value)
-                      }
-                    />
-                  ) : field.type === "select" && field.options ? (
-                    <select
-                      value={String(selectedSection[key] ?? field.default ?? "")}
-                      onChange={(e) =>
-                        updateField(selectedSection.id, key, (e.target as HTMLSelectElement).value)
-                      }
-                    >
-                      {Object.entries(field.options).map(([v, l]) => (
-                        <option key={v} value={v}>{l}</option>
-                      ))}
-                    </select>
-                  ) : field.type === "checkbox" ? (
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={Boolean(selectedSection[key] ?? field.default)}
-                        onChange={(e) =>
-                          updateField(selectedSection.id, key, (e.target as HTMLInputElement).checked)
-                        }
-                      />
-                    </label>
-                  ) : (
-                    <input
-                      type="text"
-                      value={String(selectedSection[key] ?? field.default ?? "")}
-                      onInput={(e) =>
-                        updateField(selectedSection.id, key, (e.target as HTMLInputElement).value)
-                      }
-                    />
-                  )}
-                </div>
-              ))}
-            </>
-          ) : (
-            <>
-              <h4>Page settings</h4>
-              <div class="form-group">
-                <label>Title</label>
-                <input
-                  type="text"
-                  value={pageTitle}
-                  onInput={(e) => { setPageTitle((e.target as HTMLInputElement).value); setDirty(true); }}
-                />
-              </div>
-              <div class="form-group">
-                <label>
+          {selectedSection && selectedDef
+            ? (
+              <>
+                <h4>{selectedDef.label} settings</h4>
+                {Object.entries(selectedDef.fields).map(([key, field]) => (
+                  <div class="form-group" key={key}>
+                    <label>{field.label}</label>
+                    {field.type === "textarea"
+                      ? (
+                        <textarea
+                          rows={4}
+                          value={String(selectedSection[key] ?? field.default ?? "")}
+                          onInput={(e) =>
+                            updateField(
+                              selectedSection.id,
+                              key,
+                              (e.target as HTMLTextAreaElement).value,
+                            )}
+                        />
+                      )
+                      : field.type === "select" && field.options
+                      ? (
+                        <select
+                          value={String(selectedSection[key] ?? field.default ?? "")}
+                          onChange={(e) =>
+                            updateField(
+                              selectedSection.id,
+                              key,
+                              (e.target as HTMLSelectElement).value,
+                            )}
+                        >
+                          {Object.entries(field.options).map(([v, l]) => (
+                            <option key={v} value={v}>{l}</option>
+                          ))}
+                        </select>
+                      )
+                      : field.type === "checkbox"
+                      ? (
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(selectedSection[key] ?? field.default)}
+                            onChange={(e) =>
+                              updateField(
+                                selectedSection.id,
+                                key,
+                                (e.target as HTMLInputElement).checked,
+                              )}
+                          />
+                        </label>
+                      )
+                      : (
+                        <input
+                          type="text"
+                          value={String(selectedSection[key] ?? field.default ?? "")}
+                          onInput={(e) =>
+                            updateField(
+                              selectedSection.id,
+                              key,
+                              (e.target as HTMLInputElement).value,
+                            )}
+                        />
+                      )}
+                  </div>
+                ))}
+              </>
+            )
+            : (
+              <>
+                <h4>Page settings</h4>
+                <div class="form-group">
+                  <label>Title</label>
                   <input
-                    type="checkbox"
-                    checked={published}
-                    onChange={(e) => { setPublished((e.target as HTMLInputElement).checked); setDirty(true); }}
-                  />{" "}
-                  Published
-                </label>
-              </div>
-              {showPreview && (
-                <iframe
-                  ref={iframeRef}
-                  src={`${prefix}/api/preview?path=${encodeURIComponent(pagePath)}`}
-                  class="s-b4e83a82"
-                  title="Preview"
-                />
-              )}
-            </>
-          )}
+                    type="text"
+                    value={pageTitle}
+                    onInput={(e) => {
+                      setPageTitle((e.target as HTMLInputElement).value);
+                      setDirty(true);
+                    }}
+                  />
+                </div>
+                <div class="form-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={published}
+                      onChange={(e) => {
+                        setPublished((e.target as HTMLInputElement).checked);
+                        setDirty(true);
+                      }}
+                    />{" "}
+                    Published
+                  </label>
+                </div>
+                {showPreview && (
+                  <iframe
+                    ref={iframeRef}
+                    src={`${prefix}/api/preview?path=${encodeURIComponent(pagePath)}`}
+                    class="s-b4e83a82"
+                    title="Preview"
+                  />
+                )}
+              </>
+            )}
         </aside>
       </div>
 

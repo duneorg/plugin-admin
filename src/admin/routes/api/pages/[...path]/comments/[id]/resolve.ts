@@ -1,7 +1,13 @@
 /** POST /admin/api/pages/:path/comments/:id/resolve */
 
 import type { AdminState } from "../../../../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck, validatePagePath } from "../../../../_utils.ts";
+import {
+  csrfCheck,
+  json,
+  requirePermission,
+  serverError,
+  validatePagePath,
+} from "../../../../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -21,7 +27,11 @@ export const handler = {
     if (!authResult.user) return json({ error: "Unauthorized" }, 401);
 
     try {
-      const resolved = await comments.resolve(pagePath, id, authResult.user.username ?? authResult.user.id);
+      const resolved = await comments.resolve(
+        pagePath,
+        id,
+        authResult.user.username ?? authResult.user.id,
+      );
       if (!resolved) return json({ error: "Comment not found" }, 404);
       return json(resolved);
     } catch (err) {

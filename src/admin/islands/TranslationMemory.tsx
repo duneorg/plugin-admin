@@ -5,7 +5,7 @@
  * Talks to /admin/api/i18n/memory.
  */
 
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 interface TMEntry {
   source: string;
@@ -43,7 +43,9 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${apiBase}/i18n/memory?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+      const res = await fetch(
+        `${apiBase}/i18n/memory?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+      );
       const d = await res.json() as { entries: TMEntry[] };
       setEntries(d.entries ?? []);
     } catch (e) {
@@ -120,7 +122,8 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
       <div class="tm-header s-abcb745b">
         <div class="tm-tabs s-d1e542ea">
           {otherLangs.map((lang) => (
-            <button type="button"
+            <button
+              type="button"
               key={lang}
               class={`btn btn-sm${lang === to ? " btn-primary" : " btn-outline"}`}
               onClick={() => setTo(lang)}
@@ -131,10 +134,18 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
         </div>
         <div class="s-297d7857">
           <span class="s-6a9767ee">{entries.length} entries</span>
-          <button type="button" class="btn btn-sm btn-outline" onClick={() => { setShowAdd(true); setError(""); }}>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline"
+            onClick={() => {
+              setShowAdd(true);
+              setError("");
+            }}
+          >
             + Add Entry
           </button>
-          <button type="button"
+          <button
+            type="button"
             class="btn btn-sm btn-outline"
             onClick={rebuild}
             disabled={rebuilding}
@@ -178,41 +189,58 @@ export default function TranslationMemory({ prefix, supportedLanguages }: Props)
             </div>
           </div>
           <div class="form-actions">
-            <button type="button" class="btn btn-outline btn-sm" onClick={() => setShowAdd(false)}>Cancel</button>
-            <button type="submit" class="btn btn-primary btn-sm" disabled={saving}>{saving ? "Saving…" : "Save entry"}</button>
+            <button type="button" class="btn btn-outline btn-sm" onClick={() => setShowAdd(false)}>
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary btn-sm" disabled={saving}>
+              {saving ? "Saving…" : "Save entry"}
+            </button>
           </div>
         </form>
       )}
 
       {/* Entry table */}
-      {loading ? (
-        <p class="s-4f77c842">Loading entries…</p>
-      ) : entries.length === 0 ? (
-        <p class="s-e3d4adcf">
-          No entries yet — click <strong>Rebuild from Translations</strong> to populate from existing pages.
-        </p>
-      ) : (
-        <table class="admin-table tm-table">
-          <thead>
-            <tr>
-              <th>Source ({from})</th>
-              <th>Target ({to})</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e) => (
-              <tr key={e.source} class="tm-row">
-                <td><pre class="s-51f08752">{e.source}</pre></td>
-                <td><pre class="s-51f08752">{e.target}</pre></td>
-                <td>
-                  <button type="button" class="btn btn-xs btn-danger" onClick={() => deleteEntry(e.source)}>Delete</button>
-                </td>
+      {loading
+        ? <p class="s-4f77c842">Loading entries…</p>
+        : entries.length === 0
+        ? (
+          <p class="s-e3d4adcf">
+            No entries yet — click <strong>Rebuild from Translations</strong>{" "}
+            to populate from existing pages.
+          </p>
+        )
+        : (
+          <table class="admin-table tm-table">
+            <thead>
+              <tr>
+                <th>Source ({from})</th>
+                <th>Target ({to})</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {entries.map((e) => (
+                <tr key={e.source} class="tm-row">
+                  <td>
+                    <pre class="s-51f08752">{e.source}</pre>
+                  </td>
+                  <td>
+                    <pre class="s-51f08752">{e.target}</pre>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-danger"
+                      onClick={() => deleteEntry(e.source)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
     </div>
   );
 }

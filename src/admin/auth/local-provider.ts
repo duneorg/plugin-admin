@@ -5,14 +5,17 @@
  * It verifies credentials against the local JSON user store in data/users/.
  */
 
-import type { AuthProvider, AuthCredentials, AuthProviderUser } from "./provider.ts";
+import type { AuthCredentials, AuthProvider, AuthProviderUser } from "./provider.ts";
 import type { UserManager } from "./users.ts";
 import type { PasswordService } from "@dune/plugin-api";
 
 export class LocalAuthProvider implements AuthProvider {
   readonly type = "local" as const;
 
-  constructor(private users: UserManager, private passwords: Pick<PasswordService, "verify" | "dummyHash">) {}
+  constructor(
+    private users: UserManager,
+    private passwords: Pick<PasswordService, "verify" | "dummyHash">,
+  ) {}
 
   async authenticate(creds: AuthCredentials): Promise<AuthProviderUser | null> {
     const user = await this.users.getByUsername(creds.username);

@@ -1,14 +1,15 @@
 /** @jsxImportSource preact */
 /** GET /admin/flex — flex object types list */
 
-
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
     const { flex, prefix } = ctx.state.adminContext;
-    const schemas = flex ? Object.entries(await flex.loadSchemas()).map(([type, s]) => ({ type, label: s.title })) : [];
+    const schemas = flex
+      ? Object.entries(await flex.loadSchemas()).map(([type, s]) => ({ type, label: s.title }))
+      : [];
     return ctx.render(<FlexRoute data={{ schemas, prefix }} />);
   },
 };
@@ -18,18 +19,30 @@ export default function FlexRoute(
 ) {
   return (
     <div>
-      <div class="section-header"><h2>Flex Objects</h2></div>
+      <div class="section-header">
+        <h2>Flex Objects</h2>
+      </div>
       {data.schemas.length === 0
         ? <p class="s-17a730ae">No flex object types defined.</p>
         : (
           <table class="admin-table">
-            <thead><tr><th>Type</th><th>Label</th><th></th></tr></thead>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Label</th>
+                <th></th>
+              </tr>
+            </thead>
             <tbody>
               {data.schemas.map((s) => (
                 <tr key={s.type}>
-                  <td><code>{s.type}</code></td>
+                  <td>
+                    <code>{s.type}</code>
+                  </td>
                   <td>{s.label ?? s.type}</td>
-                  <td><a href={`${data.prefix}/flex/${s.type}`} class="btn btn-sm">View records</a></td>
+                  <td>
+                    <a href={`${data.prefix}/flex/${s.type}`} class="btn btn-sm">View records</a>
+                  </td>
                 </tr>
               ))}
             </tbody>

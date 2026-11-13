@@ -13,10 +13,10 @@
  */
 
 import type {
-  PluginEngine,
-  StorageAdapter,
   DuneConfig,
   HookRegistry,
+  PluginEngine,
+  StorageAdapter,
   WorkflowEngine,
 } from "@dune/plugin-api";
 
@@ -74,7 +74,11 @@ export async function applyWorkflowTransition(
   await engine.rebuild();
 
   // The admin's content webhooks listen to this event (see mount()).
-  if (hooks) hooks.fire("onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }).catch(() => {});
+  if (hooks) {
+    hooks.fire("onWorkflowChange", { sourcePath, from: currentStatus, to: newStatus }).catch(
+      () => {},
+    );
+  }
 
   return { from: currentStatus, to: newStatus };
 }

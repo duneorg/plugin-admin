@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/pages — page tree with search */
 
-
 import type { AdminState } from "../../types.ts";
 import PageTree from "../../islands/PageTree.tsx";
 import type { FreshContext } from "fresh";
@@ -9,7 +8,10 @@ import type { FreshContext } from "fresh";
 export const handler = {
   GET(ctx: FreshContext<AdminState>) {
     if (!ctx.state.auth.authenticated) {
-      return new Response(null, { status: 302, headers: { Location: `${ctx.state.adminContext.prefix}/login` } });
+      return new Response(null, {
+        status: 302,
+        headers: { Location: `${ctx.state.adminContext.prefix}/login` },
+      });
     }
     const { engine, prefix } = ctx.state.adminContext;
     const q = ctx.url.searchParams.get("q") ?? "";
@@ -27,7 +29,13 @@ export const handler = {
 };
 
 interface PageItem {
-  route: string; sourcePath: string; title: string; format: string; published: boolean; date?: string; language?: string;
+  route: string;
+  sourcePath: string;
+  title: string;
+  format: string;
+  published: boolean;
+  date?: string;
+  language?: string;
 }
 
 export default function PagesIndex(

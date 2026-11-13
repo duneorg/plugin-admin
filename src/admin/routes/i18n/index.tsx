@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/i18n — translation status overview */
 
-
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";
 
@@ -21,15 +20,33 @@ export const handler = {
     const rows = langs.map((lang) => ({
       lang,
       count: byLang.get(lang) ?? 0,
-      pct: engine.pages.length > 0 ? Math.round(((byLang.get(lang) ?? 0) / engine.pages.length) * 100) : 0,
+      pct: engine.pages.length > 0
+        ? Math.round(((byLang.get(lang) ?? 0) / engine.pages.length) * 100)
+        : 0,
     }));
 
-    return ctx.render(<I18nRoute data={{ rows, defaultLang, total: engine.pages.length, prefix: ctx.state.adminContext.prefix }} />);
+    return ctx.render(
+      <I18nRoute
+        data={{
+          rows,
+          defaultLang,
+          total: engine.pages.length,
+          prefix: ctx.state.adminContext.prefix,
+        }}
+      />,
+    );
   },
 };
 
 export default function I18nRoute(
-  { data }: { data: { rows: Array<{ lang: string; count: number; pct: number }>; defaultLang: string; total: number; prefix: string } },
+  { data }: {
+    data: {
+      rows: Array<{ lang: string; count: number; pct: number }>;
+      defaultLang: string;
+      total: number;
+      prefix: string;
+    };
+  },
 ) {
   return (
     <div>
@@ -38,7 +55,13 @@ export default function I18nRoute(
         <a href={`${data.prefix}/i18n/memory`} class="btn">Translation Memory</a>
       </div>
       <table class="admin-table">
-        <thead><tr><th>Language</th><th>Pages</th><th>Coverage</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Language</th>
+            <th>Pages</th>
+            <th>Coverage</th>
+          </tr>
+        </thead>
         <tbody>
           {data.rows.map((row) => (
             <tr key={row.lang}>
@@ -47,7 +70,9 @@ export default function I18nRoute(
               <td>
                 <div class="s-2a9780cb">
                   <div style={`height:8px;width:120px;background:#e2e8f0;border-radius:4px`}>
-                    <div style={`height:8px;width:${row.pct}%;background:#4f46e5;border-radius:4px`} />
+                    <div
+                      style={`height:8px;width:${row.pct}%;background:#4f46e5;border-radius:4px`}
+                    />
                   </div>
                   <span>{row.pct}%</span>
                 </div>

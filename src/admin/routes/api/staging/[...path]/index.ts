@@ -10,7 +10,15 @@
  */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, requireTsxWrite, requireOwnedPage, json, serverError, csrfCheck, validatePagePath } from "../../_utils.ts";
+import {
+  csrfCheck,
+  json,
+  requireOwnedPage,
+  requirePermission,
+  requireTsxWrite,
+  serverError,
+  validatePagePath,
+} from "../../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -54,7 +62,10 @@ export const handler = {
     if (ownerDenied) return ownerDenied;
     const authResult = ctx.state.auth;
     try {
-      const body = await ctx.req.json() as { content?: string; frontmatter?: Record<string, unknown> };
+      const body = await ctx.req.json() as {
+        content?: string;
+        frontmatter?: Record<string, unknown>;
+      };
       const draft = await staging.upsert({
         sourcePath: pagePath,
         content: body.content ?? "",

@@ -8,14 +8,8 @@
  *   - a map of connected clients with their presence info
  */
 
-import type {
-  Delta,
-  ClientState,
-  CollabSessionState,
-  PresenceInfo,
-  ServerMsg,
-} from "./types.ts";
-import { transform, apply } from "./ot.ts";
+import type { ClientState, CollabSessionState, Delta, PresenceInfo, ServerMsg } from "./types.ts";
+import { apply, transform } from "./ot.ts";
 
 /** Maximum number of historical ops kept for OT. Clients more than this many
  *  revisions behind receive a full resync instead of op-by-op catch-up. */

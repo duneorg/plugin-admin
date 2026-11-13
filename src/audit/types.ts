@@ -35,33 +35,48 @@ export interface AuditTarget {
 /** All audit event types */
 export type AuditEventType =
   // Auth
-  | "auth.login" | "auth.logout" | "auth.login_failed" | "auth.sessions_revoked"
-  | "auth.csrf_denied" | "auth.permission_denied"
+  | "auth.login"
+  | "auth.logout"
+  | "auth.login_failed"
+  | "auth.sessions_revoked"
+  | "auth.csrf_denied"
+  | "auth.permission_denied"
   // Pages
-  | "page.create" | "page.update" | "page.delete" | "page.publish" | "page.workflow"
+  | "page.create"
+  | "page.update"
+  | "page.delete"
+  | "page.publish"
+  | "page.workflow"
   // Config
   | "config.update"
   // Users
-  | "user.create" | "user.update" | "user.delete" | "user.password"
+  | "user.create"
+  | "user.update"
+  | "user.delete"
+  | "user.password"
   // Media
-  | "media.upload" | "media.delete"
+  | "media.upload"
+  | "media.delete"
   // Plugins
   | "plugin.config_update"
   // Flex
-  | "flex.create" | "flex.update" | "flex.delete"
+  | "flex.create"
+  | "flex.update"
+  | "flex.delete"
   // System
-  | "system.rebuild" | "system.cache_purge";
+  | "system.rebuild"
+  | "system.cache_purge";
 
 /** A single audit log entry */
 export interface AuditEntry {
-  id: string;             // crypto.randomUUID()
-  ts: string;             // ISO 8601
+  id: string; // crypto.randomUUID()
+  ts: string; // ISO 8601
   event: AuditEventType;
-  actor: AuditActor | null;   // null for system/unauthenticated actions
+  actor: AuditActor | null; // null for system/unauthenticated actions
   ip: string | null;
   userAgent: string | null;
   target: AuditTarget | null;
-  detail: Record<string, unknown>;  // event-specific extra info
+  detail: Record<string, unknown>; // event-specific extra info
   outcome: "success" | "failure";
 }
 
@@ -79,8 +94,8 @@ export interface AuditQuery {
   offset?: number;
   event?: AuditEventType;
   actorId?: string;
-  from?: string;    // ISO date string
-  to?: string;      // ISO date string
+  from?: string; // ISO date string
+  to?: string; // ISO date string
   outcome?: "success" | "failure";
 }
 

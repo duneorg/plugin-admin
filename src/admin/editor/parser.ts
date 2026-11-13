@@ -9,10 +9,10 @@ import { Marked } from "marked";
 import type {
   Block,
   BlockDocument,
-  HeadingBlock,
-  ListBlock,
   CodeBlock,
+  HeadingBlock,
   ImageBlock,
+  ListBlock,
   TableBlock,
 } from "./types.ts";
 import { generateBlockId } from "./types.ts";
@@ -110,9 +110,7 @@ function tokenToBlock(token: any): Block | null {
 
     case "table": {
       const headers = (token.header ?? []).map((h: any) => h.text ?? "");
-      const rows = (token.rows ?? []).map((row: any[]) =>
-        row.map((cell: any) => cell.text ?? ""),
-      );
+      const rows = (token.rows ?? []).map((row: any[]) => row.map((cell: any) => cell.text ?? ""));
       const align = (token.align ?? []) as TableBlock["align"];
       return {
         id: generateBlockId(),

@@ -112,7 +112,9 @@ export const handler = {
       },
       pageCacheEnabled: config.system.page_cache?.enabled ?? false,
       debugMode: config.system.debug ?? false,
-      authMode: ((config as unknown as Record<string, unknown>).auth as Record<string, unknown> | undefined)?.mode ?? null,
+      authMode:
+        ((config as unknown as Record<string, unknown>).auth as Record<string, unknown> | undefined)
+          ?.mode ?? null,
       feedEnabled: config.site.feed?.enabled !== false,
       workflowEnabled: !!config.site.workflow,
       auditEnabled: adminSettings(config).audit?.enabled !== false,

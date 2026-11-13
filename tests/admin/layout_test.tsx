@@ -84,8 +84,18 @@ function sidebarFor(permissions: string[], roles = ["editor"]) {
           ...baseAdminContext(),
           csrfSecret: "test-csrf-secret",
           pluginPages: [
-            { path: "/ausgaben", label: "Ausgaben", permission: "billing.manage", handler: () => new Response("ok") },
-            { path: "/reports", label: "Reports", permission: "reports.view", handler: () => new Response("ok") },
+            {
+              path: "/ausgaben",
+              label: "Ausgaben",
+              permission: "billing.manage",
+              handler: () => new Response("ok"),
+            },
+            {
+              path: "/reports",
+              label: "Reports",
+              permission: "reports.view",
+              handler: () => new Response("ok"),
+            },
           ],
         },
         auth: { user: { name: "Ed", roles }, session: { id: "s" } },

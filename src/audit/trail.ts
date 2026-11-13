@@ -26,7 +26,9 @@ export function createAuditTrail(opts: AuditTrailOptions): AuditLogger | null {
   const { config, root, runtimeDir } = opts;
   const audit = adminSettings(config).audit;
   if (audit?.enabled === false || !root) return null;
-  const logFile = audit?.log_file ? join(root, audit.log_file) : join(root, runtimeDir, "audit.log");
+  const logFile = audit?.log_file
+    ? join(root, audit.log_file)
+    : join(root, runtimeDir, "audit.log");
   const containmentRoot = root.endsWith("/") || root.endsWith("\\") ? root : root + "/";
   if (!logFile.startsWith(containmentRoot)) {
     throw new Error(

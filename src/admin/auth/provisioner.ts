@@ -74,9 +74,7 @@ export async function findOrProvisionUser(
   // Even then we cap new users at defaultRole (so a misconfigured provider
   // can't auto-create an admin user on first login).
   const requestedRole = sanitizeRole(highestValidRole(providerUser.roles), defaultRole);
-  const newRole = ROLE_RANK[requestedRole] <= ROLE_RANK[defaultRole]
-    ? requestedRole
-    : defaultRole;
+  const newRole = ROLE_RANK[requestedRole] <= ROLE_RANK[defaultRole] ? requestedRole : defaultRole;
 
   const created = await users.create({
     username: providerUser.username,

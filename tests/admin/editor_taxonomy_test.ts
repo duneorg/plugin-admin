@@ -1,5 +1,11 @@
 import { assertEquals } from "@std/assert";
-import { addTerm, normalizeTerm, taxonomyEditable, taxonomyTerms, withTaxonomyTerms } from "../../src/admin/editor/taxonomy.ts";
+import {
+  addTerm,
+  normalizeTerm,
+  taxonomyEditable,
+  taxonomyTerms,
+  withTaxonomyTerms,
+} from "../../src/admin/editor/taxonomy.ts";
 import { unmanagedFrontmatterKeys } from "../../src/admin/islands/PageEditor.tsx";
 
 Deno.test("taxonomyTerms: list, absent and non-list values", () => {
@@ -24,7 +30,11 @@ Deno.test("taxonomyEditable: absent or object only", () => {
 
 Deno.test("withTaxonomyTerms: keeps other taxonomies and unknown values", () => {
   const fm = { taxonomy: { tag: ["a"], category: "keep-as-is", other: [1] } };
-  assertEquals(withTaxonomyTerms(fm, "tag", ["a", "b"]), { tag: ["a", "b"], category: "keep-as-is", other: [1] });
+  assertEquals(withTaxonomyTerms(fm, "tag", ["a", "b"]), {
+    tag: ["a", "b"],
+    category: "keep-as-is",
+    other: [1],
+  });
   assertEquals(withTaxonomyTerms(fm, "tag", []), { category: "keep-as-is", other: [1] });
 });
 

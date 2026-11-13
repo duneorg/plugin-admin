@@ -4,7 +4,7 @@
  * Talks to /admin/api/config/themes and /admin/api/config/theme.
  */
 
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 interface ThemeInfo {
   available: string[];
@@ -37,7 +37,9 @@ export default function ThemeSwitcher({ prefix, activeTheme, previewSlug }: Prop
       .then((r) => r.json())
       .then((thm: ThemeInfo) => {
         setThemes(thm);
-        setSelectedTheme(previewSlug && thm.available.includes(previewSlug) ? previewSlug : thm.current);
+        setSelectedTheme(
+          previewSlug && thm.available.includes(previewSlug) ? previewSlug : thm.current,
+        );
         if (previewSlug && thm.available.includes(previewSlug)) setPreviewOpen(true);
       })
       .catch((e) => setError(String(e)))
@@ -72,7 +74,9 @@ export default function ThemeSwitcher({ prefix, activeTheme, previewSlug }: Prop
 
   function previewSrc(): string {
     const route = previewRoute || "/";
-    return `${apiBase}/theme-preview?theme=${encodeURIComponent(selectedTheme)}&route=${encodeURIComponent(route)}`;
+    return `${apiBase}/theme-preview?theme=${encodeURIComponent(selectedTheme)}&route=${
+      encodeURIComponent(route)
+    }`;
   }
 
   if (loading) return <div class="s-d89fdddb">Loading themes…</div>;
@@ -94,14 +98,16 @@ export default function ThemeSwitcher({ prefix, activeTheme, previewSlug }: Prop
       </div>
       {msg && <div class="alert alert-success s-9590f79e">{msg}</div>}
       <div class="form-actions">
-        <button type="button"
+        <button
+          type="button"
           class="btn btn-primary"
           onClick={switchTheme}
           disabled={switching || selectedTheme === themes.current}
         >
           {switching ? "Switching…" : "Apply this theme"}
         </button>
-        <button type="button"
+        <button
+          type="button"
           class="btn btn-outline"
           onClick={() => setPreviewOpen(true)}
           disabled={!selectedTheme}
@@ -125,10 +131,17 @@ export default function ThemeSwitcher({ prefix, activeTheme, previewSlug }: Prop
               class="s-dd76ed55"
             />
             <button type="button" class="btn btn-sm" onClick={commitRoute}>Go</button>
-            <button type="button" class="btn btn-sm btn-outline" onClick={() => setRefreshKey((k) => k + 1)}>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline"
+              onClick={() => setRefreshKey((k) => k + 1)}
+            >
               ↻ Refresh
             </button>
-            <button type="button" class="btn btn-sm btn-outline s-83456371" onClick={() => setPreviewOpen(false)}
+            <button
+              type="button"
+              class="btn btn-sm btn-outline s-83456371"
+              onClick={() => setPreviewOpen(false)}
             >
               × Close
             </button>

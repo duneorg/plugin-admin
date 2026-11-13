@@ -16,7 +16,9 @@ export class GoogleTranslator implements MachineTranslator {
   }
 
   async translateBatch(texts: string[], sourceLang: string, targetLang: string): Promise<string[]> {
-    const endpoint = `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(this.apiKey)}`;
+    const endpoint = `https://translation.googleapis.com/language/translate/v2?key=${
+      encodeURIComponent(this.apiKey)
+    }`;
 
     let res: Response;
     try {

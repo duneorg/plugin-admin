@@ -9,11 +9,7 @@ import type { AdminState } from "../types.ts";
 import { getNavItems, type NavItem } from "../nav.ts";
 import { isRtl } from "@dune/plugin-api";
 import { highestValidRole } from "../auth/role-utils.ts";
-import {
-  normalizePrefix,
-  PUBLIC_PATHS,
-  toAdminRelative,
-} from "./_middleware.ts";
+import { normalizePrefix, PUBLIC_PATHS, toAdminRelative } from "./_middleware.ts";
 import { csrfTokenFromState } from "../auth/csrf.ts";
 import { adminCss } from "../admin-css.ts";
 
@@ -112,9 +108,7 @@ export default function AdminLayout(
   });
 
   const pathname = url.pathname;
-  const adminRelative = pathname.startsWith(prefix)
-    ? pathname.slice(prefix.length)
-    : pathname;
+  const adminRelative = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : pathname;
 
   function isActive(path: string): boolean {
     if (path === "/") return adminRelative === "/" || adminRelative === "";
@@ -132,13 +126,13 @@ export default function AdminLayout(
 
   return (
     <html lang={siteLang} dir={dir}>
-        <head>
-          <meta charset="utf-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          {csrfMeta(state)}
-          <title>Dune Admin</title>
-          <style>{adminCss(dir === "rtl")}</style>
-        </head>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {csrfMeta(state)}
+        <title>Dune Admin</title>
+        <style>{adminCss(dir === "rtl")}</style>
+      </head>
       <body>
         <div class="admin-layout">
           <div class="sidebar-overlay" id="sidebar-overlay" />
@@ -165,9 +159,7 @@ export default function AdminLayout(
                       <a
                         key={item.path}
                         href={`${prefix}${item.path}`}
-                        class={`nav-item${
-                          isActive(item.path) ? " active" : ""
-                        }`}
+                        class={`nav-item${isActive(item.path) ? " active" : ""}`}
                       >
                         <span class="nav-label">{item.label}</span>
                       </a>
@@ -185,9 +177,7 @@ export default function AdminLayout(
                       <a
                         key={item.path}
                         href={`${prefix}${item.path}`}
-                        class={`nav-item${
-                          isActive(item.path) ? " active" : ""
-                        }`}
+                        class={`nav-item${isActive(item.path) ? " active" : ""}`}
                       >
                         <span class="nav-label">{item.label}</span>
                       </a>
@@ -207,7 +197,9 @@ export default function AdminLayout(
                 ☰
               </button>
               <div class="topbar-right">
-                <a href={`${prefix}/account`} class="topbar-user" title="Your account and sessions">{userName}</a>
+                <a href={`${prefix}/account`} class="topbar-user" title="Your account and sessions">
+                  {userName}
+                </a>
                 <form
                   method="POST"
                   action={`${prefix}/login/logout`}
@@ -241,4 +233,3 @@ function sidebarScript(): string {
     overlay?.addEventListener('click', closeSidebar);
   `;
 }
-

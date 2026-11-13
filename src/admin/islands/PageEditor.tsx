@@ -4,7 +4,7 @@
  * Fetches page data from /admin/api/pages/:path and saves back via PUT.
  */
 
-import { useState, useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { addTerm, taxonomyEditable, taxonomyTerms, withTaxonomyTerms } from "../editor/taxonomy.ts";
 
 interface BpField {
@@ -55,7 +55,11 @@ export function unmanagedFrontmatterKeys(
   /** Further keys that have a built-in control (e.g. `taxonomy` when the site declares taxonomies). */
   managedKeys: string[] = [],
 ): string[] {
-  const known = new Set([...HARDCODED_FIELD_KEYS, ...Object.keys(blueprintFields ?? {}), ...managedKeys]);
+  const known = new Set([
+    ...HARDCODED_FIELD_KEYS,
+    ...Object.keys(blueprintFields ?? {}),
+    ...managedKeys,
+  ]);
   return Object.keys(fm).filter((k) => !known.has(k));
 }
 
@@ -79,7 +83,9 @@ function formatYamlEntry(key: string, value: unknown, indent: number): string {
   if (typeof value === "object") {
     const entries = Object.entries(value as Record<string, unknown>);
     if (entries.length === 0) return `${pad}${key}: {}`;
-    return `${pad}${key}:\n${entries.map(([k, v]) => formatYamlEntry(k, v, indent + 1)).join("\n")}`;
+    return `${pad}${key}:\n${
+      entries.map(([k, v]) => formatYamlEntry(k, v, indent + 1)).join("\n")
+    }`;
   }
   return `${pad}${key}: ${formatYamlScalar(value)}`;
 }
@@ -123,7 +129,10 @@ function TaxonomyField(
     return (
       <div class="form-group">
         <label>{name}</label>
-        <div class="tax-note">This page stores {name} in a form the editor does not change (not a plain list). Edit the file to change it.</div>
+        <div class="tax-note">
+          This page stores {name}{" "}
+          in a form the editor does not change (not a plain list). Edit the file to change it.
+        </div>
       </div>
     );
   }
@@ -140,7 +149,13 @@ function TaxonomyField(
         {terms.map((t) => (
           <span class="tax-chip" key={t}>
             {t}
-            <button type="button" aria-label={`Remove ${t}`} onClick={() => onChange(terms.filter((x) => x !== t))}>×</button>
+            <button
+              type="button"
+              aria-label={`Remove ${t}`}
+              onClick={() => onChange(terms.filter((x) => x !== t))}
+            >
+              ×
+            </button>
           </span>
         ))}
       </div>
@@ -177,7 +192,9 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
   // directly on the blur that committed a typed taxonomy term can run before
   // Preact has re-rendered, and would otherwise save the stale value.
   const fmRef = useRef<Record<string, unknown>>({});
-  function setFm(next: Record<string, unknown> | ((prev: Record<string, unknown>) => Record<string, unknown>)) {
+  function setFm(
+    next: Record<string, unknown> | ((prev: Record<string, unknown>) => Record<string, unknown>),
+  ) {
     const value = typeof next === "function" ? next(fmRef.current) : next;
     fmRef.current = value;
     setFmState(value);
@@ -265,9 +282,14 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
   // declares its own `taxonomy` field (blueprint fields win), and only while
   // `taxonomy` is something it can edit.
   const taxonomyNames = Object.keys(page.taxonomies ?? {});
-  const showTaxonomy = taxonomyNames.length > 0 && !(page.blueprint && "taxonomy" in page.blueprint.fields) &&
+  const showTaxonomy = taxonomyNames.length > 0 &&
+    !(page.blueprint && "taxonomy" in page.blueprint.fields) &&
     taxonomyEditable(fm);
-  const unmanagedKeys = unmanagedFrontmatterKeys(fm, page.blueprint?.fields, showTaxonomy ? ["taxonomy"] : []);
+  const unmanagedKeys = unmanagedFrontmatterKeys(
+    fm,
+    page.blueprint?.fields,
+    showTaxonomy ? ["taxonomy"] : [],
+  );
 
   return (
     <div class="editor-layout">
@@ -278,13 +300,20 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
           <span class="editor-title">{String(fm.title ?? page.title)}</span>
           <span class={`badge badge-${page.format}`}>{page.format}</span>
           {page.format === "tsx" && (
-            <span class="badge badge-warning s-89c10cfd" title="TSX pages execute server-side Deno code. Only trusted admin-role authors should edit these files.">
+            <span
+              class="badge badge-warning s-89c10cfd"
+              title="TSX pages execute server-side Deno code. Only trusted admin-role authors should edit these files."
+            >
               ⚠ trusted author only
             </span>
           )}
         </div>
         <div class="toolbar-right">
-          <button type="button" class="btn btn-sm btn-outline" onClick={() => setShowPreview((v) => !v)}>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline"
+            onClick={() => setShowPreview((v) => !v)}
+          >
             {showPreview ? "Hide preview" : "Preview"}
           </button>
           <a
@@ -306,11 +335,18 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
           >
             History{page.revisionCount ? ` (${page.revisionCount})` : ""}
           </a>
-          {/* Always rendered (hidden when clean): inserting it on the first change
+          {
+            /* Always rendered (hidden when clean): inserting it on the first change
               re-wraps the toolbar and moves Save out from under a click that
               started with the blur that made the page dirty (e.g. typing a
-              taxonomy term, then clicking Save without pressing Enter). */}
-          <span class={dirty ? "toolbar-dirty" : "toolbar-dirty toolbar-dirty-idle"} aria-hidden={dirty ? undefined : "true"}>Unsaved</span>
+              taxonomy term, then clicking Save without pressing Enter). */
+          }
+          <span
+            class={dirty ? "toolbar-dirty" : "toolbar-dirty toolbar-dirty-idle"}
+            aria-hidden={dirty ? undefined : "true"}
+          >
+            Unsaved
+          </span>
           <button type="button" class="btn btn-sm btn-primary" onClick={save} disabled={saving}>
             {saving ? "Saving…" : "Save"}
           </button>
@@ -371,79 +407,93 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
               name={name}
               terms={taxonomyTerms(fm, name)}
               suggestions={page.taxonomies?.[name] ?? []}
-              onChange={(terms) => setFmField("taxonomy", withTaxonomyTerms(fmRef.current, name, terms))}
+              onChange={(terms) =>
+                setFmField("taxonomy", withTaxonomyTerms(fmRef.current, name, terms))}
             />
           ))}
 
           {/* Blueprint extra fields */}
-          {page.blueprint && Object.entries(page.blueprint.fields).map(([key, field]) => (
-            <div class="form-group" key={key}>
-              <label>{field.label}</label>
-              {field.type === "text" || field.type === "string" ? (
-                <input
-                  type="text"
-                  value={String(fm[key] ?? field.default ?? "")}
-                  onInput={(e) => setFmField(key, (e.target as HTMLInputElement).value)}
-                />
-              ) : field.type === "textarea" ? (
-                <textarea
-                  rows={3}
-                  value={String(fm[key] ?? field.default ?? "")}
-                  onInput={(e) => setFmField(key, (e.target as HTMLTextAreaElement).value)}
-                />
-              ) : field.type === "number" ? (
-                // Stored as a real number (not a string) — blueprint
-                // validation (validateFrontmatter) requires typeof "number"
-                // for this field type, and an empty input clears the key
-                // entirely rather than writing NaN/"" into frontmatter, so
-                // an optional numeric override round-trips as "absent",
-                // not as a stray empty string.
-                <input
-                  type="number"
-                  step="any"
-                  min={field.validate?.min}
-                  max={field.validate?.max}
-                  value={typeof fm[key] === "number" ? String(fm[key]) : ""}
-                  placeholder={field.default != null ? String(field.default) : undefined}
-                  onInput={(e) => {
-                    const raw = (e.target as HTMLInputElement).value;
-                    // null (not undefined) — JSON.stringify drops undefined-
-                    // valued keys entirely, so the server would never see a
-                    // "clear this field" instruction and would keep the old
-                    // saved value after a reload. save()'s PUT handler
-                    // treats an explicit null as "delete this key".
-                    setFmField(key, raw === "" ? null : Number(raw));
-                  }}
-                />
-              ) : field.type === "toggle" || field.type === "checkbox" || field.type === "bool" ? (
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(fm[key] ?? field.default)}
-                    onChange={(e) => setFmField(key, (e.target as HTMLInputElement).checked)}
-                  />
-                </label>
-              ) : field.type === "select" && field.options ? (
-                <select
-                  value={String(fm[key] ?? field.default ?? "")}
-                  onChange={(e) => setFmField(key, (e.target as HTMLSelectElement).value)}
-                >
-                  {Object.entries(field.options).map(([v, l]) => (
-                    <option key={v} value={v}>{l}</option>
-                  ))}
-                </select>
-              ) : null}
-            </div>
-          ))}
+          {page.blueprint &&
+            Object.entries(page.blueprint.fields).map(([key, field]) => (
+              <div class="form-group" key={key}>
+                <label>{field.label}</label>
+                {field.type === "text" || field.type === "string"
+                  ? (
+                    <input
+                      type="text"
+                      value={String(fm[key] ?? field.default ?? "")}
+                      onInput={(e) => setFmField(key, (e.target as HTMLInputElement).value)}
+                    />
+                  )
+                  : field.type === "textarea"
+                  ? (
+                    <textarea
+                      rows={3}
+                      value={String(fm[key] ?? field.default ?? "")}
+                      onInput={(e) => setFmField(key, (e.target as HTMLTextAreaElement).value)}
+                    />
+                  )
+                  : field.type === "number"
+                  ? (
+                    // Stored as a real number (not a string) — blueprint
+                    // validation (validateFrontmatter) requires typeof "number"
+                    // for this field type, and an empty input clears the key
+                    // entirely rather than writing NaN/"" into frontmatter, so
+                    // an optional numeric override round-trips as "absent",
+                    // not as a stray empty string.
+                    <input
+                      type="number"
+                      step="any"
+                      min={field.validate?.min}
+                      max={field.validate?.max}
+                      value={typeof fm[key] === "number" ? String(fm[key]) : ""}
+                      placeholder={field.default != null ? String(field.default) : undefined}
+                      onInput={(e) => {
+                        const raw = (e.target as HTMLInputElement).value;
+                        // null (not undefined) — JSON.stringify drops undefined-
+                        // valued keys entirely, so the server would never see a
+                        // "clear this field" instruction and would keep the old
+                        // saved value after a reload. save()'s PUT handler
+                        // treats an explicit null as "delete this key".
+                        setFmField(key, raw === "" ? null : Number(raw));
+                      }}
+                    />
+                  )
+                  : field.type === "toggle" || field.type === "checkbox" || field.type === "bool"
+                  ? (
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(fm[key] ?? field.default)}
+                        onChange={(e) => setFmField(key, (e.target as HTMLInputElement).checked)}
+                      />
+                    </label>
+                  )
+                  : field.type === "select" && field.options
+                  ? (
+                    <select
+                      value={String(fm[key] ?? field.default ?? "")}
+                      onChange={(e) => setFmField(key, (e.target as HTMLSelectElement).value)}
+                    >
+                      {Object.entries(field.options).map(([v, l]) => (
+                        <option key={v} value={v}>{l}</option>
+                      ))}
+                    </select>
+                  )
+                  : null}
+              </div>
+            ))}
 
-          {/* Raw frontmatter — visibility for any key with no dedicated
+          {
+            /* Raw frontmatter — visibility for any key with no dedicated
               control above (not hardcoded, not blueprint-declared). Always
               derived live from `fm`, so it reflects structured-field edits
               instantly and can't drift out of sync with them. Read-only by
               design: editing arbitrary keys here would bypass blueprint
               validation and risk clobbering keys the structured fields are
               also writing to `fm` — declare a blueprint field instead for
-              anything that needs to be truly editable. */}
+              anything that needs to be truly editable. */
+          }
           <div class="form-group">
             <details class="raw-frontmatter">
               <summary>
@@ -461,8 +511,8 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
               {unmanagedKeys.length > 0 && (
                 <p class="raw-frontmatter-hint">
                   {unmanagedKeys.join(", ")} {unmanagedKeys.length === 1 ? "has" : "have"}{" "}
-                  no field above — declare {unmanagedKeys.length === 1 ? "it" : "them"} as a blueprint field to edit
-                  from this sidebar.
+                  no field above — declare {unmanagedKeys.length === 1 ? "it" : "them"}{" "}
+                  as a blueprint field to edit from this sidebar.
                 </p>
               )}
             </details>
@@ -476,23 +526,26 @@ export default function PageEditor({ pagePath, prefix, embedded = false }: Props
                 {page.translations.map((t) => (
                   <div key={t.lang} class="translation-item">
                     <span class="badge badge-lang">{t.lang}</span>
-                    {t.exists ? (
-                      <a
-                        href={`${prefix}/pages/edit?path=${encodeURIComponent(t.sourcePath)}${
-                          embedded ? "&embedded=1" : ""
-                        }`}
-                        class="btn btn-xs btn-outline"
-                      >
-                        Edit
-                      </a>
-                    ) : (
-                      <button type="button"
-                        class="btn btn-xs btn-outline"
-                        onClick={() => createTranslation(t.lang)}
-                      >
-                        Create
-                      </button>
-                    )}
+                    {t.exists
+                      ? (
+                        <a
+                          href={`${prefix}/pages/edit?path=${encodeURIComponent(t.sourcePath)}${
+                            embedded ? "&embedded=1" : ""
+                          }`}
+                          class="btn btn-xs btn-outline"
+                        >
+                          Edit
+                        </a>
+                      )
+                      : (
+                        <button
+                          type="button"
+                          class="btn btn-xs btn-outline"
+                          onClick={() => createTranslation(t.lang)}
+                        >
+                          Create
+                        </button>
+                      )}
                   </div>
                 ))}
               </div>

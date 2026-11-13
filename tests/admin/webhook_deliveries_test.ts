@@ -57,8 +57,7 @@ function makeCtx(
         // authz.check() is the sole authority now).
         // deno-lint-ignore no-explicit-any
         authz: {
-          check: (args: any) =>
-            Promise.resolve((opts.permissions ?? []).includes(args.canThey)),
+          check: (args: any) => Promise.resolve((opts.permissions ?? []).includes(args.canThey)),
         },
       },
       auth: { authenticated: true, user: { id: "u1" } },
@@ -74,7 +73,10 @@ async function writeLog(runtimeDir: string, log: WebhookDeliveryLog): Promise<vo
 }
 
 Deno.test("sourcePathFromPayload: reads a string path and ignores junk", () => {
-  assertEquals(sourcePathFromPayload({ sourcePath: "blog/hello/default.md" }), "blog/hello/default.md");
+  assertEquals(
+    sourcePathFromPayload({ sourcePath: "blog/hello/default.md" }),
+    "blog/hello/default.md",
+  );
   assertEquals(sourcePathFromPayload({ sourcePath: "" }), undefined);
   assertEquals(sourcePathFromPayload({ title: "x" }), undefined);
   assertEquals(sourcePathFromPayload(null), undefined);

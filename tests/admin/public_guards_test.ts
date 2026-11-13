@@ -63,9 +63,7 @@ function makeCtx(
           ? { authz: { check: () => Promise.resolve(opts.authzAllows) } }
           : {}),
       },
-      auth: authenticated
-        ? { authenticated: true, user: { id: "u1" } }
-        : { authenticated: false },
+      auth: authenticated ? { authenticated: true, user: { id: "u1" } } : { authenticated: false },
     },
   };
 }

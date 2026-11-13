@@ -53,7 +53,9 @@ function makePageIndex(overrides: Partial<PageIndex> = {}): PageIndex {
 
 function makeCtx(route: string | null, pages: PageIndex[], storageContent?: string) {
   const url = new URL(
-    `http://localhost/admin/api/page-source${route !== null ? `?route=${encodeURIComponent(route)}` : ""}`,
+    `http://localhost/admin/api/page-source${
+      route !== null ? `?route=${encodeURIComponent(route)}` : ""
+    }`,
   );
 
   return {
@@ -163,7 +165,7 @@ Deno.test("page-source: returns mtime from page index", async () => {
 
 Deno.test("page-source: returns null body for tsx format", async () => {
   const pages = [makePageIndex({ format: "tsx", sourcePath: "01.page/default.tsx" })];
-  const tsxContent = 'export default function Page() { return <div>Hello</div>; }';
+  const tsxContent = "export default function Page() { return <div>Hello</div>; }";
   const { status, body } = await callPageSource("/blog/hello", pages, tsxContent);
 
   assertEquals(status, 200);

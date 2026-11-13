@@ -7,7 +7,6 @@
  * @module
  */
 
-
 /**
  * User attributes returned by an external auth provider after successful authentication.
  *
@@ -68,4 +67,3 @@ export interface AuthProvider {
    */
   handleCallback?(req: Request): Promise<AuthProviderUser | null>;
 }
-

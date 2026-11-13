@@ -57,15 +57,12 @@ export const handler = {
       // fail loudly here rather than write an unpinned specifier to site.yaml.
       if (typeof entry.jsr !== "string" || !PINNED_JSR_RE.test(entry.jsr)) {
         return json({
-          error:
-            `Registry entry for "${name}" has invalid jsr specifier (must be pinned)`,
+          error: `Registry entry for "${name}" has invalid jsr specifier (must be pinned)`,
         }, 502);
       }
       const jsr = entry.jsr;
 
-      const siteRaw = await storage.readText("config/site.yaml").catch(() =>
-        ""
-      );
+      const siteRaw = await storage.readText("config/site.yaml").catch(() => "");
       const site = (parseYaml(siteRaw || "") ?? {}) as Record<string, unknown>;
       const existingList = Array.isArray(site.plugins)
         ? (site.plugins as Array<Record<string, unknown>>)

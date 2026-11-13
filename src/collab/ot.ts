@@ -155,9 +155,15 @@ function push(result: Op[], op: Op): void {
 }
 
 // Fix: need to reference local named types for push
-interface RetainOp { retain: number }
-interface InsertOp { insert: string }
-interface DeleteOp { delete: number }
+interface RetainOp {
+  retain: number;
+}
+interface InsertOp {
+  insert: string;
+}
+interface DeleteOp {
+  delete: number;
+}
 
 // ── compose ───────────────────────────────────────────────────────────────────
 
@@ -280,10 +286,16 @@ export function transform(a: Delta, b: Delta, priority: "left" | "right"): Delta
     if (ai.done() && bi.done()) break;
 
     // a exhausted; b has retain/delete — nothing left to transform
-    if (ai.done()) { bi.nextAll(); continue; }
+    if (ai.done()) {
+      bi.nextAll();
+      continue;
+    }
 
     // b exhausted; a has retain/delete — pass through unchanged
-    if (bi.done()) { push(result, ai.nextAll()); continue; }
+    if (bi.done()) {
+      push(result, ai.nextAll());
+      continue;
+    }
 
     // Both are retain/delete: process min(aLen, bLen) at once
     const n = Math.min(ai.peekLen(), bi.peekLen());

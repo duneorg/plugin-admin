@@ -168,7 +168,9 @@ export default function Marketplace({ prefix, initialTab }: Props) {
       }
       setInstallMsg(
         body.method === "jsr"
-          ? `Theme "${entry.name}" registered in site.yaml. ${body.lockfileNote ?? "Restart to load."}`
+          ? `Theme "${entry.name}" registered in site.yaml. ${
+            body.lockfileNote ?? "Restart to load."
+          }`
           : `Theme "${entry.name}" installed to themes/${entry.slug}/. It will appear under Installed once the server picks it up.`,
       );
       await loadInstalledThemes();
@@ -232,10 +234,9 @@ export default function Marketplace({ prefix, initialTab }: Props) {
       {/* Tabs + search */}
       <div class="s-db9feeed">
         <div class="s-d1e542ea">
-          <button type="button"
-            class={`btn btn-sm${
-              tab === "plugins" ? " btn-primary" : " btn-outline"
-            }`}
+          <button
+            type="button"
+            class={`btn btn-sm${tab === "plugins" ? " btn-primary" : " btn-outline"}`}
             onClick={() => {
               setTab("plugins");
               setSearch("");
@@ -244,10 +245,9 @@ export default function Marketplace({ prefix, initialTab }: Props) {
           >
             Plugins
           </button>
-          <button type="button"
-            class={`btn btn-sm${
-              tab === "themes" ? " btn-primary" : " btn-outline"
-            }`}
+          <button
+            type="button"
+            class={`btn btn-sm${tab === "themes" ? " btn-primary" : " btn-outline"}`}
             onClick={() => {
               setTab("themes");
               setSearch("");
@@ -271,9 +271,7 @@ export default function Marketplace({ prefix, initialTab }: Props) {
           {installMsg}
         </div>
       )}
-      {error && (
-        <div class="alert alert-error s-9590f79e">{error}</div>
-      )}
+      {error && <div class="alert alert-error s-9590f79e">{error}</div>}
 
       {/* Plugin grid */}
       {tab === "plugins" && (
@@ -282,9 +280,7 @@ export default function Marketplace({ prefix, initialTab }: Props) {
           : filteredPlugins.length === 0
           ? (
             <p class="s-4f77c842">
-              {search
-                ? "No plugins match your search."
-                : "Plugin registry empty."}
+              {search ? "No plugins match your search." : "Plugin registry empty."}
             </p>
           )
           : (
@@ -330,7 +326,8 @@ export default function Marketplace({ prefix, initialTab }: Props) {
                     </div>
                   )}
                   <div class="s-d1e542ea">
-                    <button type="button"
+                    <button
+                      type="button"
                       class="btn btn-sm btn-primary"
                       onClick={() => installPlugin(p)}
                       disabled={installing === p.name}
@@ -373,9 +370,7 @@ export default function Marketplace({ prefix, initialTab }: Props) {
                     <div key={slug} class="marketplace-card s-57925e75">
                       <div class="s-14ae7afe">
                         <div class="s-e634e6da">{entry?.name ?? slug}</div>
-                        {isActive && (
-                          <span class="badge s-83456371">Active</span>
-                        )}
+                        {isActive && <span class="badge s-83456371">Active</span>}
                       </div>
                       {entry && (
                         <div class="s-e6a47de8">
@@ -394,12 +389,17 @@ export default function Marketplace({ prefix, initialTab }: Props) {
                         >
                           Preview
                         </a>
-                        <button type="button"
+                        <button
+                          type="button"
                           class="btn btn-sm btn-primary"
                           onClick={() => setActiveTheme(slug)}
                           disabled={isActive || settingActive === slug}
                         >
-                          {settingActive === slug ? "Switching…" : isActive ? "Active" : "Set Active"}
+                          {settingActive === slug
+                            ? "Switching…"
+                            : isActive
+                            ? "Active"
+                            : "Set Active"}
                         </button>
                       </div>
                     </div>
@@ -452,7 +452,8 @@ export default function Marketplace({ prefix, initialTab }: Props) {
                         {t.description}
                       </p>
                       <div class="s-90bda5a7">
-                        <button type="button"
+                        <button
+                          type="button"
                           class="btn btn-sm btn-primary"
                           onClick={() => installTheme(t)}
                           disabled={installing === t.slug}

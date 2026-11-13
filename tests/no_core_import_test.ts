@@ -28,8 +28,6 @@ Deno.test("deno.json's imports do not map @dune/core", async () => {
   const cfg = JSON.parse(
     await Deno.readTextFile(new URL("../deno.json", import.meta.url)),
   );
-  const mapped = Object.keys(cfg.imports ?? {}).filter((k) =>
-    k.startsWith("@dune/core")
-  );
+  const mapped = Object.keys(cfg.imports ?? {}).filter((k) => k.startsWith("@dune/core"));
   assertEquals(mapped, []);
 });

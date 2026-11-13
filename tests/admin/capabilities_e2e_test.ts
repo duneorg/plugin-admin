@@ -13,13 +13,21 @@ import { ADMIN_EDITOR, ADMIN_PAGES, ADMIN_ROUTES, createAdminPlugin } from "../.
 
 async function withSite(
   plugins: DunePlugin[],
-  fn: (ctx: Awaited<ReturnType<typeof bootstrap>>, handler: (req: Request) => Promise<Response>) => Promise<void>,
+  fn: (
+    ctx: Awaited<ReturnType<typeof bootstrap>>,
+    handler: (req: Request) => Promise<Response>,
+  ) => Promise<void>,
 ): Promise<void> {
   const root = await Deno.makeTempDir({ prefix: "dune_admin_caps_" });
   try {
     await Deno.mkdir(join(root, "content", "01.home"), { recursive: true });
-    await Deno.writeTextFile(join(root, "content", "01.home", "default.md"), "---\ntitle: Home\n---\n\nHello\n");
-    const ctx = await bootstrap(root, { plugins: [createAdminPlugin({ root, dev: false }), ...plugins] });
+    await Deno.writeTextFile(
+      join(root, "content", "01.home", "default.md"),
+      "---\ntitle: Home\n---\n\nHello\n",
+    );
+    const ctx = await bootstrap(root, {
+      plugins: [createAdminPlugin({ root, dev: false }), ...plugins],
+    });
     const { app } = await createDuneApp(ctx, { root, port: 0, dev: false });
     await fn(ctx, app.handler());
   } finally {
@@ -38,7 +46,9 @@ Deno.test(
       const anonymous = await auth.authenticate(new Request("http://localhost/"));
       assertEquals(anonymous.authenticated, false);
       assertEquals(auth.sessionCookies, ["dune_session"]);
-      const providers = Object.fromEntries(ctx.capabilities.providers().map((p) => [p.name, p.provider]));
+      const providers = Object.fromEntries(
+        ctx.capabilities.providers().map((p) => [p.name, p.provider]),
+      );
       assertEquals(providers["editor.session"], "admin");
       assertEquals(providers["scheduler.executor"], "admin");
     });
@@ -51,7 +61,9 @@ Deno.test(
   async () => {
     await withSite([], (ctx) => {
       assertEquals(ctx.capabilities.get("admin.prefix"), { prefix: "/admin" });
-      const providers = Object.fromEntries(ctx.capabilities.providers().map((p) => [p.name, p.provider]));
+      const providers = Object.fromEntries(
+        ctx.capabilities.providers().map((p) => [p.name, p.provider]),
+      );
       assertEquals(providers["admin.prefix"], "admin");
       return Promise.resolve();
     });
@@ -59,7 +71,10 @@ Deno.test(
     const root = await Deno.makeTempDir({ prefix: "dune_admin_prefix_" });
     try {
       await Deno.mkdir(join(root, "content", "01.home"), { recursive: true });
-      await Deno.writeTextFile(join(root, "content", "01.home", "default.md"), "---\ntitle: Home\n---\n");
+      await Deno.writeTextFile(
+        join(root, "content", "01.home", "default.md"),
+        "---\ntitle: Home\n---\n",
+      );
       // The admin's settings are its plugin config: `config:` under its entry in site.yaml.
       const ctx = await bootstrap(root, {
         plugins: [createAdminPlugin({ root, dev: false })],

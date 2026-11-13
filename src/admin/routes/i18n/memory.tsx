@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/i18n/memory — translation memory */
 
-
 import type { AdminState } from "../../types.ts";
 import TranslationMemory from "../../islands/TranslationMemory.tsx";
 import type { FreshContext } from "fresh";

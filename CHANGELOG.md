@@ -5,7 +5,7 @@ follows [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
-## [5.0.0]
+## [5.0.0] — 2026-11-14
 
 Needs `@dune/plugin-api` 1.3 and a core that implements it (0.36 and later; 0.37 for the removed subpaths below to matter). It no longer imports `@dune/core`, so a core release does not force a new version of this plugin.
 

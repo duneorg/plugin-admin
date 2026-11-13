@@ -41,7 +41,11 @@ export function taxonomyEditable(fm: Fm): boolean {
  * taxonomy as it was. An empty list removes the name; an empty result is
  * `null`, which the page PUT handler treats as "delete the key".
  */
-export function withTaxonomyTerms(fm: Fm, name: string, terms: string[]): Record<string, unknown> | null {
+export function withTaxonomyTerms(
+  fm: Fm,
+  name: string,
+  terms: string[],
+): Record<string, unknown> | null {
   const current = asTaxonomyObject(fm);
   const next: Record<string, unknown> = { ...(current ?? {}) };
   if (terms.length === 0) delete next[name];

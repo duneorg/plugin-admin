@@ -2,7 +2,7 @@
  * E2E: Plugin / site settings forms.
  */
 
-import { test, expect } from "npm:@playwright/test@^1.45";
+import { expect, test } from "npm:@playwright/test@^1.45";
 import { ADMIN_URL, login } from "./support/helpers.ts";
 
 test.describe("Settings", () => {

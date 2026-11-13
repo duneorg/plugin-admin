@@ -4,12 +4,12 @@
  * copy URL, and delete. Talks to /admin/api/media.
  */
 
-import { useState, useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 interface MediaFile {
   name: string;
   url: string;
-  type: string;   // "image" | "video" | "audio" | "document" | "other"
+  type: string; // "image" | "video" | "audio" | "document" | "other"
   size: number;
   contentType: string;
   page?: string;
@@ -147,7 +147,11 @@ export default function MediaLibrary({ prefix }: Props) {
       await fetch(`${apiBase}/media/meta`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
-        body: JSON.stringify({ pagePath: selected.page, name: selected.name, focal: [focalX, focalY] }),
+        body: JSON.stringify({
+          pagePath: selected.page,
+          name: selected.name,
+          focal: [focalX, focalY],
+        }),
       });
       setSelected((prev) => prev ? { ...prev, focalX, focalY } : prev);
     } finally {
@@ -182,7 +186,9 @@ export default function MediaLibrary({ prefix }: Props) {
           onChange={(e) => setTypeFilter((e.target as HTMLSelectElement).value as Filter)}
         >
           {TYPE_FILTERS.map((f) => (
-            <option key={f} value={f}>{f === "all" ? "All types" : f.charAt(0).toUpperCase() + f.slice(1)}</option>
+            <option key={f} value={f}>
+              {f === "all" ? "All types" : f.charAt(0).toUpperCase() + f.slice(1)}
+            </option>
           ))}
         </select>
         <span class="media-count">{filtered.length} file{filtered.length !== 1 ? "s" : ""}</span>
@@ -197,7 +203,8 @@ export default function MediaLibrary({ prefix }: Props) {
             <option key={p.sourcePath} value={p.sourcePath}>{p.title || p.route}</option>
           ))}
         </select>
-        <button type="button"
+        <button
+          type="button"
           class="btn btn-sm btn-primary"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading || !destPagePath}
@@ -216,31 +223,31 @@ export default function MediaLibrary({ prefix }: Props) {
       {uploadError && <div class="alert alert-error s-9590f79e">{uploadError}</div>}
 
       {/* Grid */}
-      {loading ? (
-        <p class="s-17a730ae">Loading media files…</p>
-      ) : filtered.length === 0 ? (
-        <p class="s-17a730ae">No files found.</p>
-      ) : (
-        <div class="media-grid">
-          {filtered.map((f) => (
-            <div
-              key={f.url}
-              class={`media-item${selected?.url === f.url ? " media-item-selected" : ""}`}
-              onClick={() => openFile(f)}
-            >
-              {f.type === "image" ? (
-                <img src={f.url} alt={f.name} loading="lazy" />
-              ) : (
-                <div class="media-icon">
-                  {f.type === "video" ? "🎬" : f.type === "audio" ? "🎵" : "📄"}
-                </div>
-              )}
-              <div class="media-name" title={f.name}>{f.name}</div>
-              <div class="media-size">{fmtSize(f.size)}</div>
-            </div>
-          ))}
-        </div>
-      )}
+      {loading
+        ? <p class="s-17a730ae">Loading media files…</p>
+        : filtered.length === 0
+        ? <p class="s-17a730ae">No files found.</p>
+        : (
+          <div class="media-grid">
+            {filtered.map((f) => (
+              <div
+                key={f.url}
+                class={`media-item${selected?.url === f.url ? " media-item-selected" : ""}`}
+                onClick={() => openFile(f)}
+              >
+                {f.type === "image"
+                  ? <img src={f.url} alt={f.name} loading="lazy" />
+                  : (
+                    <div class="media-icon">
+                      {f.type === "video" ? "🎬" : f.type === "audio" ? "🎵" : "📄"}
+                    </div>
+                  )}
+                <div class="media-name" title={f.name}>{f.name}</div>
+                <div class="media-size">{fmtSize(f.size)}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
       {/* Detail modal */}
       {selected && (
@@ -250,28 +257,38 @@ export default function MediaLibrary({ prefix }: Props) {
             <h3 class="s-53896af7">{selected.name}</h3>
             <div class="media-detail">
               <div class="media-detail-preview">
-                {selected.type === "image" ? (
-                  <div class="focal-picker-wrap s-6a1fb824" onClick={handleFocalClick}>
-                    <img
-                      ref={focalImgRef}
-                      src={selected.url}
-                      alt={selected.name}
-                      class="s-48e36cb6"
-                    />
-                    <div
-                      style={`position:absolute;width:12px;height:12px;border-radius:50%;background:rgba(79,70,229,0.8);border:2px solid white;transform:translate(-50%,-50%);top:${focalY}%;left:${focalX}%;pointer-events:none`}
-                    />
-                  </div>
-                ) : (
-                  <div class="media-icon s-37b5834e">
-                    {selected.type === "video" ? "🎬" : selected.type === "audio" ? "🎵" : "📄"}
-                  </div>
-                )}
+                {selected.type === "image"
+                  ? (
+                    <div class="focal-picker-wrap s-6a1fb824" onClick={handleFocalClick}>
+                      <img
+                        ref={focalImgRef}
+                        src={selected.url}
+                        alt={selected.name}
+                        class="s-48e36cb6"
+                      />
+                      <div
+                        style={`position:absolute;width:12px;height:12px;border-radius:50%;background:rgba(79,70,229,0.8);border:2px solid white;transform:translate(-50%,-50%);top:${focalY}%;left:${focalX}%;pointer-events:none`}
+                      />
+                    </div>
+                  )
+                  : (
+                    <div class="media-icon s-37b5834e">
+                      {selected.type === "video" ? "🎬" : selected.type === "audio" ? "🎵" : "📄"}
+                    </div>
+                  )}
               </div>
               <div class="media-detail-info">
-                <p><strong>Type:</strong> {selected.contentType}</p>
-                <p><strong>Size:</strong> {fmtSize(selected.size)}</p>
-                {selected.page && <p><strong>Page:</strong> <code>{selected.page}</code></p>}
+                <p>
+                  <strong>Type:</strong> {selected.contentType}
+                </p>
+                <p>
+                  <strong>Size:</strong> {fmtSize(selected.size)}
+                </p>
+                {selected.page && (
+                  <p>
+                    <strong>Page:</strong> <code>{selected.page}</code>
+                  </p>
+                )}
                 {selected.type === "image" && (
                   <div class="s-9dae1d00">
                     <p class="s-3b2074de">
@@ -279,16 +296,21 @@ export default function MediaLibrary({ prefix }: Props) {
                     </p>
                     <p class="s-04ce2983">Click the image to set the focal point.</p>
                     <div class="s-da92b19d">
-                      <button type="button"
+                      <button
+                        type="button"
                         class="btn btn-sm btn-primary"
                         onClick={saveFocal}
                         disabled={savingFocal}
                       >
                         {savingFocal ? "Saving…" : "Save focal point"}
                       </button>
-                      <button type="button"
+                      <button
+                        type="button"
                         class="btn btn-sm btn-outline"
-                        onClick={() => { setFocalX(50); setFocalY(50); }}
+                        onClick={() => {
+                          setFocalX(50);
+                          setFocalY(50);
+                        }}
                       >
                         Reset
                       </button>
@@ -298,7 +320,9 @@ export default function MediaLibrary({ prefix }: Props) {
               </div>
             </div>
             <div class="form-actions s-b06fb3de">
-              <button type="button" class="btn btn-outline" onClick={() => setSelected(null)}>Close</button>
+              <button type="button" class="btn btn-outline" onClick={() => setSelected(null)}>
+                Close
+              </button>
               <button type="button" class="btn btn-danger" onClick={deleteFile}>Delete</button>
               <button type="button" class="btn btn-primary" onClick={copyUrl}>Copy URL</button>
             </div>

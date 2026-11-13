@@ -4,13 +4,17 @@
  * @module
  */
 
-export type { AdminPageRegistration, AdminRouteRegistration, ContentEditorPlugin } from "./contributions.ts";
+export type {
+  AdminPageRegistration,
+  AdminRouteRegistration,
+  ContentEditorPlugin,
+} from "./contributions.ts";
 // Session and Role live in core to break circular deps; import for
 // local use AND re-export so callers importing from admin/types get them.
 // Session was formerly AdminSession — renamed in
 // decisions/dec-identity-unification.md's Phase 5c, which unified admin
 // and public-site sessions onto one SessionStore/SessionManager mechanism.
-import type { Session, Role, User } from "@dune/plugin-api";
+import type { Role, Session, User } from "@dune/plugin-api";
 export type { Session };
 export type { Role };
 
@@ -38,11 +42,21 @@ export type { User };
  * that doesn't exist on the site's schema just always denies.
  */
 export type AdminPermission =
-  | "pages.create" | "pages.read" | "pages.update" | "pages.delete"
-  | "media.upload" | "media.read" | "media.delete"
-  | "users.create" | "users.read" | "users.update" | "users.delete"
-  | "config.read" | "config.update"
-  | "submissions.read" | "submissions.delete"
+  | "pages.create"
+  | "pages.read"
+  | "pages.update"
+  | "pages.delete"
+  | "media.upload"
+  | "media.read"
+  | "media.delete"
+  | "users.create"
+  | "users.read"
+  | "users.update"
+  | "users.delete"
+  | "config.read"
+  | "config.update"
+  | "submissions.read"
+  | "submissions.delete"
   // deno-lint-ignore ban-types
   | (string & {});
 

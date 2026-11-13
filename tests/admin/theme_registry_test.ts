@@ -16,5 +16,8 @@ Deno.test("isThemeSha256: rejects missing or malformed hashes", () => {
   assertEquals(isThemeSha256(undefined), false);
   assertEquals(isThemeSha256(""), false);
   assertEquals(isThemeSha256("not-a-hash"), false);
-  assertEquals(isThemeSha256("51c85fffb914cd6b92d848cb0104670c07022bc6b09a096b1754caf56e6b190"), false);
+  assertEquals(
+    isThemeSha256("51c85fffb914cd6b92d848cb0104670c07022bc6b09a096b1754caf56e6b190"),
+    false,
+  );
 });

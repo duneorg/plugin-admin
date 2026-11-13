@@ -1,7 +1,16 @@
 /** GET + POST /admin/api/pages */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, requireTsxWrite, json, serverError, actorFromAuth, getClientIp, validatePagePath, csrfCheck } from "../_utils.ts";
+import {
+  actorFromAuth,
+  csrfCheck,
+  getClientIp,
+  json,
+  requirePermission,
+  requireTsxWrite,
+  serverError,
+  validatePagePath,
+} from "../_utils.ts";
 import { announcePageEvent } from "../../../page-events.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import type { FreshContext } from "fresh";
@@ -13,10 +22,17 @@ export const handler = {
     const { engine } = ctx.state.adminContext;
     return json({
       items: engine.pages.map((p) => ({
-        route: p.route, title: p.title, sourcePath: p.sourcePath,
-        format: p.format, template: p.template, published: p.published,
-        date: p.date, order: p.order, depth: p.depth,
-        parentPath: p.parentPath, isModule: p.isModule,
+        route: p.route,
+        title: p.title,
+        sourcePath: p.sourcePath,
+        format: p.format,
+        template: p.template,
+        published: p.published,
+        date: p.date,
+        order: p.order,
+        depth: p.depth,
+        parentPath: p.parentPath,
+        isModule: p.isModule,
       })),
       total: engine.pages.length,
     });
@@ -36,7 +52,10 @@ export const handler = {
 
       if (!pagePath || !title) return json({ error: "path and title are required" }, 400);
       if (!validatePagePath(pagePath)) {
-        return json({ error: "Invalid page path: must not contain '..' or absolute segments" }, 400);
+        return json(
+          { error: "Invalid page path: must not contain '..' or absolute segments" },
+          400,
+        );
       }
 
       const tsxDenied = requireTsxWrite(ctx, format ?? "");
@@ -67,7 +86,10 @@ export const handler = {
       await storage.write(filePath, new TextEncoder().encode(fm + "\n" + defaultContent));
       await engine.rebuild();
 
-      announcePageEvent(ctx, { event: "onPageCreate", payload: { sourcePath: `${pagePath}/default${ext}`, title } });
+      announcePageEvent(ctx, {
+        event: "onPageCreate",
+        payload: { sourcePath: `${pagePath}/default${ext}`, title },
+      });
 
       void auditLogger?.log({
         event: "page.create",

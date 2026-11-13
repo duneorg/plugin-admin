@@ -1,9 +1,6 @@
 /** Regression tests for the 2026-10 CodeQL triage fixes. */
 
-import {
-  assertEquals,
-  assertThrows,
-} from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals, assertThrows } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { setDeepKey } from "../../src/admin/routes/api/dev/apply.ts";
 import { ValidationError } from "../../src/admin/http.ts";
 

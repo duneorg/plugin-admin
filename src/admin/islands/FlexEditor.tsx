@@ -23,7 +23,7 @@ interface Schema {
 
 interface Props {
   type: string;
-  id: string;       // "new" or existing ID
+  id: string; // "new" or existing ID
   schema: unknown;
   record: unknown;
   prefix: string;
@@ -111,9 +111,7 @@ export default function FlexEditor({ type, id, schema, record, prefix }: Props) 
     <form onSubmit={save}>
       {error && <div class="alert alert-error s-9590f79e">{error}</div>}
 
-      {fields.length === 0 ? (
-        <p class="s-4f77c842">This schema has no fields defined.</p>
-      ) : (
+      {fields.length === 0 ? <p class="s-4f77c842">This schema has no fields defined.</p> : (
         fields.map(([key, field]) => (
           <div class="form-group" key={key}>
             <label>
@@ -173,9 +171,7 @@ function renderField(
         >
           {!field.required && <option value="">— select —</option>}
           {field.options &&
-            Object.entries(field.options).map(([v, l]) => (
-              <option key={v} value={v}>{l}</option>
-            ))}
+            Object.entries(field.options).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       );
 

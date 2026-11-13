@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/submissions/:form — submissions list for a form */
 
-
 import type { AdminState } from "../../../types.ts";
 import type { FreshContext } from "fresh";
 import { requirePermission } from "../../api/_utils.ts";
@@ -24,19 +23,38 @@ export default function SubmissionsFormRoute(
 ) {
   return (
     <div>
-      <div class="section-header"><h2>Submissions — {data.form}</h2></div>
+      <div class="section-header">
+        <h2>Submissions — {data.form}</h2>
+      </div>
       {(data.items as Array<Record<string, unknown>>).length === 0
         ? <p class="s-17a730ae">No submissions yet.</p>
         : (
           <table class="admin-table">
-            <thead><tr><th>ID</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
             <tbody>
-              {(data.items as Array<{ id: string; receivedAt: number; status: string }>).map((s) => (
+              {(data.items as Array<{ id: string; receivedAt: number; status: string }>).map((
+                s,
+              ) => (
                 <tr key={s.id}>
-                  <td><code class="s-6b9c179a">{s.id}</code></td>
+                  <td>
+                    <code class="s-6b9c179a">{s.id}</code>
+                  </td>
                   <td class="s-3044b600">{new Date(s.receivedAt).toLocaleString()}</td>
-                  <td><span class="badge">{s.status}</span></td>
-                  <td><a href={`${data.prefix}/submissions/${data.form}/${s.id}`} class="btn btn-sm">View</a></td>
+                  <td>
+                    <span class="badge">{s.status}</span>
+                  </td>
+                  <td>
+                    <a href={`${data.prefix}/submissions/${data.form}/${s.id}`} class="btn btn-sm">
+                      View
+                    </a>
+                  </td>
                 </tr>
               ))}
             </tbody>

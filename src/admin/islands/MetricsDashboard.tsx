@@ -5,7 +5,7 @@
  * Talks to /admin/api/metrics.
  */
 
-import { useState, useEffect, useCallback } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 
 interface LatencyStats {
   count: number;
@@ -28,7 +28,9 @@ interface MetricsSummary {
   };
   topRoutes: Array<{ route: string; requests: number; errors: number; latency: LatencyStats }>;
   memory: { heapUsed: number; heapTotal: number; rss: number };
-  slowQueries: Array<{ ts: string; type: "collection" | "search"; query: string; durationMs: number }>;
+  slowQueries: Array<
+    { ts: string; type: "collection" | "search"; query: string; durationMs: number }
+  >;
 }
 
 interface Props {
@@ -118,16 +120,32 @@ export default function MetricsDashboard({ prefix }: Props) {
         <>
           {/* Summary cards */}
           <div class="metrics-cards s-eda77236">
-            <MetricCard label="Requests" value={String(metrics.requests.total)} sub={`${metrics.requests.errors} errors`} />
+            <MetricCard
+              label="Requests"
+              value={String(metrics.requests.total)}
+              sub={`${metrics.requests.errors} errors`}
+            />
             <MetricCard
               label="Error rate"
               value={`${(metrics.requests.errorRate * 100).toFixed(1)}%`}
               highlight={metrics.requests.errorRate > 0.05}
             />
             <MetricCard label="p50 latency" value={fmtMs(metrics.requests.latency.p50)} />
-            <MetricCard label="p95 latency" value={fmtMs(metrics.requests.latency.p95)} highlight={metrics.requests.latency.p95 > 1000} />
-            <MetricCard label="p99 latency" value={fmtMs(metrics.requests.latency.p99)} highlight={metrics.requests.latency.p99 > 2000} />
-            <MetricCard label="Heap used" value={fmtBytes(metrics.memory.heapUsed)} sub={`of ${fmtBytes(metrics.memory.heapTotal)}`} />
+            <MetricCard
+              label="p95 latency"
+              value={fmtMs(metrics.requests.latency.p95)}
+              highlight={metrics.requests.latency.p95 > 1000}
+            />
+            <MetricCard
+              label="p99 latency"
+              value={fmtMs(metrics.requests.latency.p99)}
+              highlight={metrics.requests.latency.p99 > 2000}
+            />
+            <MetricCard
+              label="Heap used"
+              value={fmtBytes(metrics.memory.heapUsed)}
+              sub={`of ${fmtBytes(metrics.memory.heapTotal)}`}
+            />
             <MetricCard label="RSS" value={fmtBytes(metrics.memory.rss)} />
             <MetricCard label="Uptime" value={fmtUptime(metrics.uptimeSeconds)} />
           </div>
@@ -143,15 +161,21 @@ export default function MetricsDashboard({ prefix }: Props) {
               ].map(({ label, value }) => {
                 const maxMs = Math.max(metrics.requests.latency.p99, 100);
                 const pct = Math.min(100, (value / maxMs) * 100);
-                const bucket = value > 1000 ? "bar-fill-danger" : value > 500 ? "bar-fill-warn" : "bar-fill-ok";
+                const bucket = value > 1000
+                  ? "bar-fill-danger"
+                  : value > 500
+                  ? "bar-fill-warn"
+                  : "bar-fill-ok";
                 return (
                   <div key={label} class="s-f53c0fbe">
                     <span class="s-d8241069">{label}</span>
                     <div class="bar-track">
-                      {/* Genuinely per-render dynamic value — still a raw style
+                      {
+                        /* Genuinely per-render dynamic value — still a raw style
                           attribute, still blocked by the useNonce CSP. Needs a
                           scoped nonce'd <style> element to fix properly; not
-                          addressed here. */}
+                          addressed here. */
+                      }
                       <div class={`bar-fill ${bucket}`} style={{ width: `${pct}%` }} />
                     </div>
                     <span class="s-85a4ef6b">{fmtMs(value)}</span>
@@ -177,8 +201,12 @@ export default function MetricsDashboard({ prefix }: Props) {
                 <tbody>
                   {metrics.topRoutes.map((r) => (
                     <tr key={r.route}>
-                      <td><code>{r.route}</code></td>
-                      <td class={r.latency.p50 > 1000 ? "text-danger" : undefined}>{fmtMs(r.latency.p50)}</td>
+                      <td>
+                        <code>{r.route}</code>
+                      </td>
+                      <td class={r.latency.p50 > 1000 ? "text-danger" : undefined}>
+                        {fmtMs(r.latency.p50)}
+                      </td>
                       <td>{r.requests}</td>
                       <td>{r.errors}</td>
                     </tr>
@@ -205,8 +233,12 @@ export default function MetricsDashboard({ prefix }: Props) {
                   {metrics.slowQueries.map((q, i) => (
                     <tr key={i}>
                       <td>{q.type}</td>
-                      <td><code>{q.query}</code></td>
-                      <td class={q.durationMs > 1000 ? "text-danger" : undefined}>{fmtMs(q.durationMs)}</td>
+                      <td>
+                        <code>{q.query}</code>
+                      </td>
+                      <td class={q.durationMs > 1000 ? "text-danger" : undefined}>
+                        {fmtMs(q.durationMs)}
+                      </td>
                       <td>{new Date(q.ts).toLocaleTimeString()}</td>
                     </tr>
                   ))}
@@ -234,7 +266,9 @@ function MetricCard({
   return (
     <div class={`metric-card${highlight ? " metric-card-highlight" : ""}`}>
       <div class="s-5b4cfbc9">{label}</div>
-      <div class={`metric-card-value${highlight ? " metric-card-value-highlight" : ""}`}>{value}</div>
+      <div class={`metric-card-value${highlight ? " metric-card-value-highlight" : ""}`}>
+        {value}
+      </div>
       {sub && <div class="s-01282aa4">{sub}</div>}
     </div>
   );

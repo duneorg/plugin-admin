@@ -9,13 +9,7 @@ import { csrfTokenMatches, resolveCsrfSecret } from "../../auth/csrf.ts";
 
 // json()/serverError()/typed error classes live in ../../http.ts so the
 // public API (public-api.ts) and admin routes share one implementation.
-export {
-  json,
-  serverError,
-  ValidationError,
-  NotFoundError,
-  PermissionError,
-} from "../../http.ts";
+export { json, NotFoundError, PermissionError, serverError, ValidationError } from "../../http.ts";
 import { json, serverError } from "../../http.ts";
 
 function logAuthzDenial(
@@ -181,8 +175,8 @@ export function requireTsxWrite(
   formatOrPath: string,
 ): Response | null {
   if (!isTsxSource(formatOrPath)) return null;
-  const allowedRoles: string[] =
-    ctx.state.adminContext.config.system.content.allow_tsx_format ?? ["admin"];
+  const allowedRoles: string[] = ctx.state.adminContext.config.system.content.allow_tsx_format ??
+    ["admin"];
   const userRoles = ctx.state.auth?.user?.roles ?? [];
   if (allowedRoles.length === 0 || !userRoles.some((r) => allowedRoles.includes(r))) {
     return json({
@@ -296,7 +290,9 @@ export function validatePagePath(p: string): boolean {
  * themselves and record them as untrusted metadata.
  */
 export function getClientIp(ctx: FreshContext<AdminState>): string | null {
-  const ip = ctx.state.adminContext.services.security.clientIp(ctx.req, { trustForwardedFor: false });
+  const ip = ctx.state.adminContext.services.security.clientIp(ctx.req, {
+    trustForwardedFor: false,
+  });
   return ip === "unknown" ? null : ip;
 }
 

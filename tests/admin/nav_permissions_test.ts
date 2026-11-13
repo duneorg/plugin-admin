@@ -86,8 +86,7 @@ Deno.test("_middleware handler: authenticated request with no authz gets 403 (fa
       adminContext: {
         prefix: "/admin",
         auth: {
-          authenticate: () =>
-            Promise.resolve({ authenticated: true, user: { id: "u1" } }),
+          authenticate: () => Promise.resolve({ authenticated: true, user: { id: "u1" } }),
         },
         // authz deliberately undefined
       },
@@ -126,6 +125,8 @@ Deno.test("computeNavPermissions: a plugin permission authz cannot evaluate is d
       return Promise.resolve(args.canThey === "pages.read");
     },
   };
-  const result = await computeNavPermissions(authz as unknown as DuneAuthSystem, "u1", ["weird.action"]);
+  const result = await computeNavPermissions(authz as unknown as DuneAuthSystem, "u1", [
+    "weird.action",
+  ]);
   assertEquals(result, ["pages.read"]);
 });

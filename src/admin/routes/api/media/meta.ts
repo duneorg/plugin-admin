@@ -1,7 +1,7 @@
 /** PUT /admin/api/media/meta */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
+import { csrfCheck, json, requirePermission, serverError } from "../_utils.ts";
 import { dirname } from "@std/path";
 import { stringify as stringifyYaml } from "@std/yaml";
 import type { FreshContext } from "fresh";
@@ -33,9 +33,11 @@ export const handler = {
       }
 
       if (focal !== null && focal !== undefined) {
-        if (!Array.isArray(focal) || focal.length !== 2 ||
+        if (
+          !Array.isArray(focal) || focal.length !== 2 ||
           typeof focal[0] !== "number" || typeof focal[1] !== "number" ||
-          focal[0] < 0 || focal[0] > 100 || focal[1] < 0 || focal[1] > 100) {
+          focal[0] < 0 || focal[0] > 100 || focal[1] < 0 || focal[1] > 100
+        ) {
           return json({ error: "focal must be [x, y] with values 0–100" }, 400);
         }
       }
@@ -47,11 +49,18 @@ export const handler = {
         let existing: Record<string, unknown> = {};
         try {
           const raw = await storage.read(sidecarPath);
-          existing = (services.security.parseUserYaml(new TextDecoder().decode(raw)) as Record<string, unknown>) ?? {};
-        } catch { return json({ ok: true }); }
+          existing = (services.security.parseUserYaml(new TextDecoder().decode(raw)) as Record<
+            string,
+            unknown
+          >) ?? {};
+        } catch {
+          return json({ ok: true });
+        }
         delete existing.focal;
         if (Object.keys(existing).length === 0) {
-          try { await storage.delete(sidecarPath); } catch { /* already gone */ }
+          try {
+            await storage.delete(sidecarPath);
+          } catch { /* already gone */ }
         } else {
           await storage.write(sidecarPath, new TextEncoder().encode(stringifyYaml(existing)));
         }
@@ -59,7 +68,10 @@ export const handler = {
         let existing: Record<string, unknown> = {};
         try {
           const raw = await storage.read(sidecarPath);
-          existing = (services.security.parseUserYaml(new TextDecoder().decode(raw)) as Record<string, unknown>) ?? {};
+          existing = (services.security.parseUserYaml(new TextDecoder().decode(raw)) as Record<
+            string,
+            unknown
+          >) ?? {};
         } catch { /* new sidecar */ }
         existing.focal = focal;
         await storage.write(sidecarPath, new TextEncoder().encode(stringifyYaml(existing)));

@@ -12,24 +12,24 @@
 
 import { join } from "@std/path";
 import type {
+  ClientMsg,
+  ClientState,
   CollabManager,
   CollabManagerOptions,
   CollabSessionState,
-  ClientState,
-  ClientMsg,
   User,
 } from "./types.ts";
 import {
-  createCollabSession,
   addClient,
-  removeClient,
   applyClientOp,
-  getPresence,
-  sendToClient,
-  broadcastToSession,
   assignColorSlot,
+  broadcastToSession,
+  createCollabSession,
+  getPresence,
   PRESENCE_COLORS,
+  removeClient,
   SAVE_DELAY_MS,
+  sendToClient,
 } from "./session.ts";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -496,7 +496,9 @@ export function createCollabManager(options: CollabManagerOptions): CollabManage
               message: `Frame exceeds ${MAX_FRAME_BYTES} bytes`,
             }));
           } catch { /* ignore */ }
-          try { socket.close(1009, "Message too big"); } catch { /* ignore */ }
+          try {
+            socket.close(1009, "Message too big");
+          } catch { /* ignore */ }
           return;
         }
 

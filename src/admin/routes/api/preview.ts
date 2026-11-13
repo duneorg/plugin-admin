@@ -17,7 +17,7 @@
  */
 
 import type { AdminState } from "../../types.ts";
-import { requirePermission, serverError, csrfCheck } from "./_utils.ts";
+import { csrfCheck, requirePermission, serverError } from "./_utils.ts";
 import type { FreshContext } from "fresh";
 import type { PluginEngine } from "@dune/plugin-api";
 

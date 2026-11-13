@@ -13,7 +13,10 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { formatRawFrontmatter, unmanagedFrontmatterKeys } from "../../src/admin/islands/PageEditor.tsx";
+import {
+  formatRawFrontmatter,
+  unmanagedFrontmatterKeys,
+} from "../../src/admin/islands/PageEditor.tsx";
 
 Deno.test("unmanagedFrontmatterKeys: excludes the hardcoded sidebar fields", () => {
   const fm = {
@@ -51,7 +54,7 @@ Deno.test("formatRawFrontmatter: renders scalars as plain key: value lines", () 
 });
 
 Deno.test("formatRawFrontmatter: quotes strings that would otherwise read as YAML syntax", () => {
-  const out = formatRawFrontmatter({ note: "" , tricky: "a: b" });
+  const out = formatRawFrontmatter({ note: "", tricky: "a: b" });
   assertEquals(out, `note: ""\ntricky: "a: b"`);
 });
 

@@ -87,7 +87,9 @@ export function adminSettings(config: SettingsSource): AdminSettings {
   const provider = raw.auth_provider as { type?: unknown } | undefined;
   if (provider !== undefined && provider.type !== "local") {
     throw new Error(
-      `[dune] admin plugin config: auth_provider.type must be "local" (got ${JSON.stringify(provider.type)}); ` +
+      `[dune] admin plugin config: auth_provider.type must be "local" (got ${
+        JSON.stringify(provider.type)
+      }); ` +
         `LDAP and SAML were never implemented. Pass a custom provider to createAdminPlugin({ authProvider }) instead.`,
     );
   }

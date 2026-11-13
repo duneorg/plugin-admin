@@ -1,7 +1,7 @@
 /** POST /admin/api/i18n/translate-segment */
 
 import type { AdminState } from "../../../types.ts";
-import { json, serverError, csrfCheck, requirePermission } from "../_utils.ts";
+import { csrfCheck, json, requirePermission, serverError } from "../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -17,7 +17,10 @@ export const handler = {
     try {
       const body = await ctx.req.json();
       const { text, from, to } = body;
-      if (!text || typeof text !== "string" || !from || typeof from !== "string" || !to || typeof to !== "string") {
+      if (
+        !text || typeof text !== "string" || !from || typeof from !== "string" || !to ||
+        typeof to !== "string"
+      ) {
         return json({ error: "text, from, and to are required" }, 400);
       }
       let translation: string;

@@ -40,16 +40,27 @@ Deno.test("adminSettings: reads the plugin's own config", () => {
 
 Deno.test("adminSettings: a path that would desync the admin stops the boot", () => {
   for (const path of ["admin", "/", "/admin/", "/a b", "/admin?x", 7]) {
-    assertThrows(() => adminSettings({ plugins: { admin: { path } } }), Error, "path must start with");
+    assertThrows(
+      () => adminSettings({ plugins: { admin: { path } } }),
+      Error,
+      "path must start with",
+    );
   }
 });
 
 Deno.test("adminSettings: auth_provider other than local is refused", () => {
   for (const type of ["ldap", "saml", undefined]) {
-    assertThrows(() => adminSettings({ plugins: { admin: { auth_provider: { type } } } }), Error, "auth_provider.type");
+    assertThrows(
+      () => adminSettings({ plugins: { admin: { auth_provider: { type } } } }),
+      Error,
+      "auth_provider.type",
+    );
   }
 });
 
 Deno.test("adminSettings: another plugin's config is not the admin's", () => {
-  assertEquals(adminSettings({ plugins: { "dune-admin": { path: "/old" }, seo: { path: "/x" } } }).path, "/admin");
+  assertEquals(
+    adminSettings({ plugins: { "dune-admin": { path: "/old" }, seo: { path: "/x" } } }).path,
+    "/admin",
+  );
 });

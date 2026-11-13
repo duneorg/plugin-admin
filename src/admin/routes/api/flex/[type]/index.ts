@@ -1,7 +1,7 @@
 /** GET + POST /admin/api/flex/:type */
 
 import type { AdminState } from "../../../../types.ts";
-import { json, serverError, csrfCheck, requirePermission } from "../../_utils.ts";
+import { csrfCheck, json, requirePermission, serverError } from "../../_utils.ts";
 import type { FreshContext } from "fresh";
 
 const SAFE_SEGMENT_RE = /^[a-zA-Z0-9_-]{1,64}$/;
@@ -45,7 +45,9 @@ export const handler = {
       const record = await flex.create(type, schema, body);
       return json({ id: record._id, record }, 201);
     } catch (err) {
-      if (Array.isArray(err)) return json({ error: "Validation failed", validationErrors: err }, 422);
+      if (Array.isArray(err)) {
+        return json({ error: "Validation failed", validationErrors: err }, 422);
+      }
       return serverError(err);
     }
   },

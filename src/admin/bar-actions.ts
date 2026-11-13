@@ -35,7 +35,9 @@ export interface AdminBarContext {
  * so this plugin needs no dependency on the bar's package: two keys with one
  * name are one capability.
  */
-export const BAR_ACTIONS: CapabilityKey<(ctx: AdminBarContext) => AdminBarAction[]> = capabilityKey("bar.actions");
+export const BAR_ACTIONS: CapabilityKey<(ctx: AdminBarContext) => AdminBarAction[]> = capabilityKey(
+  "bar.actions",
+);
 
 /**
  * Script for the "Edit source" button: show the admin's page editor
@@ -54,7 +56,9 @@ function overlayScript(embeddedUrl: string): string {
     `c.style.cssText='background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:4px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit';` +
     `function hide(){o.style.display='none';}c.onclick=hide;b.appendChild(c);` +
     `var f=document.createElement('iframe');f.title='Edit source';f.style.cssText='flex:1;width:100%;border:none;background:#fff';` +
-    `f.src=${JSON.stringify(embeddedUrl)};o.appendChild(b);o.appendChild(f);document.body.appendChild(o);` +
+    `f.src=${
+      JSON.stringify(embeddedUrl)
+    };o.appendChild(b);o.appendChild(f);document.body.appendChild(o);` +
     `document.addEventListener('keydown',function(e){if(e.key==='Escape')hide();});})()`;
 }
 
@@ -65,7 +69,11 @@ export function adminBarActions(prefix: string, ctx: AdminBarContext): AdminBarA
   // `/pages/<path>` route).
   const editUrl = `${prefix}/pages/edit?path=${encodeURIComponent(ctx.page.sourcePath)}`;
   return [
-    { id: "admin:edit-source", label: "✎ Edit source", onClick: overlayScript(`${editUrl}&embedded=1`) },
+    {
+      id: "admin:edit-source",
+      label: "✎ Edit source",
+      onClick: overlayScript(`${editUrl}&embedded=1`),
+    },
     { id: "admin:open", label: "Open in admin →", href: editUrl },
   ];
 }

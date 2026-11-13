@@ -2,8 +2,8 @@
  * E2E: Page CRUD — create, edit, publish, delete.
  */
 
-import { test, expect } from "npm:@playwright/test@^1.45";
-import { ADMIN_URL, login, gotoPagesList } from "./support/helpers.ts";
+import { expect, test } from "npm:@playwright/test@^1.45";
+import { ADMIN_URL, gotoPagesList, login } from "./support/helpers.ts";
 
 test.describe("Page CRUD", () => {
   test.beforeEach(async ({ page }) => {
@@ -50,7 +50,9 @@ test.describe("Page CRUD", () => {
     await page.getByRole("button", { name: /save|update/i }).click();
 
     // Confirm the change is reflected.
-    await expect(page.getByText(/Home \(edited\)/i).or(page.locator('input[value*="Home (edited)"]'))).toBeVisible();
+    await expect(
+      page.getByText(/Home \(edited\)/i).or(page.locator('input[value*="Home (edited)"]')),
+    ).toBeVisible();
 
     // Revert to original title so other tests are not affected.
     await titleInput.clear();
@@ -67,7 +69,8 @@ test.describe("Page CRUD", () => {
 
     await page.getByLabel(/title/i).fill("To Be Deleted");
     await page.getByRole("button", { name: /save|create/i }).click();
-    await expect(page.getByText(/To Be Deleted/i).or(page.locator('input[value*="To Be Deleted"]'))).toBeVisible();
+    await expect(page.getByText(/To Be Deleted/i).or(page.locator('input[value*="To Be Deleted"]')))
+      .toBeVisible();
 
     // Navigate back and delete.
     await gotoPagesList(page);

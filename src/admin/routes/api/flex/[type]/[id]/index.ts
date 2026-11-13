@@ -1,7 +1,7 @@
 /** GET + PUT + DELETE /admin/api/flex/:type/:id */
 
 import type { AdminState } from "../../../../../types.ts";
-import { json, serverError, csrfCheck, requirePermission } from "../../../_utils.ts";
+import { csrfCheck, json, requirePermission, serverError } from "../../../_utils.ts";
 import type { FreshContext } from "fresh";
 
 const SAFE_SEGMENT_RE = /^[a-zA-Z0-9_-]{1,64}$/;
@@ -55,7 +55,9 @@ export const handler = {
       if (!record) return json({ error: "Record not found" }, 404);
       return json({ record });
     } catch (err) {
-      if (Array.isArray(err)) return json({ error: "Validation failed", validationErrors: err }, 422);
+      if (Array.isArray(err)) {
+        return json({ error: "Validation failed", validationErrors: err }, 422);
+      }
       return serverError(err);
     }
   },

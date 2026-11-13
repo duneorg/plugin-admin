@@ -4,7 +4,7 @@
  * and delete. Talks to /admin/api/users and /admin/api/users/:id.
  */
 
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 interface User {
   id: string;
@@ -53,7 +53,12 @@ export default function UserManager({ prefix }: Props) {
     setLoading(true);
     try {
       const res = await fetch(`${apiBase}/users`);
-      const d = await res.json() as { users: User[]; currentUserId: string; isAdmin: boolean; items?: User[] };
+      const d = await res.json() as {
+        users: User[];
+        currentUserId: string;
+        isAdmin: boolean;
+        items?: User[];
+      };
       setUsers(d.users ?? d.items ?? []);
       setCurrentUserId(d.currentUserId ?? "");
       setIsAdmin(d.isAdmin ?? false);
@@ -63,19 +68,28 @@ export default function UserManager({ prefix }: Props) {
   }
 
   function openCreate() {
-    setFUsername(""); setFName(""); setFEmail(""); setFRole("editor");
-    setFPassword(""); setFEnabled(true); setFormError("");
+    setFUsername("");
+    setFName("");
+    setFEmail("");
+    setFRole("editor");
+    setFPassword("");
+    setFEnabled(true);
+    setFormError("");
     setModal({ kind: "create" });
   }
 
   function openEdit(user: User) {
-    setFName(user.name); setFEmail(user.email); setFRole(user.roles[0] ?? "author");
-    setFEnabled(user.enabled); setFormError("");
+    setFName(user.name);
+    setFEmail(user.email);
+    setFRole(user.roles[0] ?? "author");
+    setFEnabled(user.enabled);
+    setFormError("");
     setModal({ kind: "edit", user });
   }
 
   function openPassword(userId: string, username: string) {
-    setFPassword(""); setFormError("");
+    setFPassword("");
+    setFormError("");
     setModal({ kind: "password", userId, username });
   }
 
@@ -89,8 +103,12 @@ export default function UserManager({ prefix }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
         body: JSON.stringify({
-          username: fUsername.trim(), name: fName.trim(), email: fEmail.trim(),
-          role: fRole, password: fPassword, enabled: fEnabled,
+          username: fUsername.trim(),
+          name: fName.trim(),
+          email: fEmail.trim(),
+          role: fRole,
+          password: fPassword,
+          enabled: fEnabled,
         }),
       });
       if (!res.ok) {
@@ -113,7 +131,12 @@ export default function UserManager({ prefix }: Props) {
       const res = await fetch(`${apiBase}/users/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
-        body: JSON.stringify({ name: fName.trim(), email: fEmail.trim(), role: fRole, enabled: fEnabled }),
+        body: JSON.stringify({
+          name: fName.trim(),
+          email: fEmail.trim(),
+          role: fRole,
+          enabled: fEnabled,
+        }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -172,12 +195,12 @@ export default function UserManager({ prefix }: Props) {
   return (
     <div>
       <div class="s-a4a6d1d8">
-        <button type="button" class="btn btn-primary btn-sm" onClick={openCreate}>+ New User</button>
+        <button type="button" class="btn btn-primary btn-sm" onClick={openCreate}>
+          + New User
+        </button>
       </div>
 
-      {loading ? (
-        <p class="s-4f77c842">Loading users…</p>
-      ) : (
+      {loading ? <p class="s-4f77c842">Loading users…</p> : (
         <table class="admin-table">
           <thead>
             <tr>
@@ -200,7 +223,8 @@ export default function UserManager({ prefix }: Props) {
                 <td>{u.email}</td>
                 <td>{u.roles.join(", ")}</td>
                 <td>
-                  <button type="button"
+                  <button
+                    type="button"
                     class={`btn btn-xs ${u.enabled ? "btn-enabled" : "btn-disabled"}`}
                     onClick={() => toggleEnabled(u.id, !u.enabled)}
                   >
@@ -208,10 +232,24 @@ export default function UserManager({ prefix }: Props) {
                   </button>
                 </td>
                 <td>
-                  <button type="button" class="btn btn-xs btn-outline" onClick={() => openEdit(u)}>Edit</button>
-                  <button type="button" class="btn btn-xs btn-outline" onClick={() => openPassword(u.id, u.username)}>Password</button>
+                  <button type="button" class="btn btn-xs btn-outline" onClick={() => openEdit(u)}>
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-xs btn-outline"
+                    onClick={() => openPassword(u.id, u.username)}
+                  >
+                    Password
+                  </button>
                   {u.id !== currentUserId && (
-                    <button type="button" class="btn btn-xs btn-danger" onClick={() => deleteUser(u.id, u.username)}>Delete</button>
+                    <button
+                      type="button"
+                      class="btn btn-xs btn-danger"
+                      onClick={() => deleteUser(u.id, u.username)}
+                    >
+                      Delete
+                    </button>
                   )}
                 </td>
               </tr>
@@ -229,19 +267,36 @@ export default function UserManager({ prefix }: Props) {
             <form onSubmit={handleCreate}>
               <div class="form-group">
                 <label>Username</label>
-                <input type="text" value={fUsername} onInput={(e) => setFUsername((e.target as HTMLInputElement).value)} required autoFocus />
+                <input
+                  type="text"
+                  value={fUsername}
+                  onInput={(e) => setFUsername((e.target as HTMLInputElement).value)}
+                  required
+                  autoFocus
+                />
               </div>
               <div class="form-group">
                 <label>Display name</label>
-                <input type="text" value={fName} onInput={(e) => setFName((e.target as HTMLInputElement).value)} />
+                <input
+                  type="text"
+                  value={fName}
+                  onInput={(e) => setFName((e.target as HTMLInputElement).value)}
+                />
               </div>
               <div class="form-group">
                 <label>Email</label>
-                <input type="email" value={fEmail} onInput={(e) => setFEmail((e.target as HTMLInputElement).value)} />
+                <input
+                  type="email"
+                  value={fEmail}
+                  onInput={(e) => setFEmail((e.target as HTMLInputElement).value)}
+                />
               </div>
               <div class="form-group">
                 <label>Role</label>
-                <select value={fRole} onChange={(e) => setFRole((e.target as HTMLSelectElement).value)}>
+                <select
+                  value={fRole}
+                  onChange={(e) => setFRole((e.target as HTMLSelectElement).value)}
+                >
                   <option value="admin">Admin</option>
                   <option value="editor">Editor</option>
                   <option value="author">Author</option>
@@ -249,12 +304,21 @@ export default function UserManager({ prefix }: Props) {
               </div>
               <div class="form-group">
                 <label>Password</label>
-                <input type="password" value={fPassword} onInput={(e) => setFPassword((e.target as HTMLInputElement).value)} required />
+                <input
+                  type="password"
+                  value={fPassword}
+                  onInput={(e) => setFPassword((e.target as HTMLInputElement).value)}
+                  required
+                />
               </div>
               {formError && <p class="form-error">{formError}</p>}
               <div class="form-actions">
-                <button type="button" class="btn btn-outline" onClick={() => setModal(null)}>Cancel</button>
-                <button type="submit" class="btn btn-primary" disabled={submitting}>{submitting ? "Creating…" : "Create"}</button>
+                <button type="button" class="btn btn-outline" onClick={() => setModal(null)}>
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" disabled={submitting}>
+                  {submitting ? "Creating…" : "Create"}
+                </button>
               </div>
             </form>
           </div>
@@ -270,16 +334,27 @@ export default function UserManager({ prefix }: Props) {
             <form onSubmit={(e) => handleEdit(e, modal.user.id)}>
               <div class="form-group">
                 <label>Display name</label>
-                <input type="text" value={fName} onInput={(e) => setFName((e.target as HTMLInputElement).value)} />
+                <input
+                  type="text"
+                  value={fName}
+                  onInput={(e) => setFName((e.target as HTMLInputElement).value)}
+                />
               </div>
               <div class="form-group">
                 <label>Email</label>
-                <input type="email" value={fEmail} onInput={(e) => setFEmail((e.target as HTMLInputElement).value)} />
+                <input
+                  type="email"
+                  value={fEmail}
+                  onInput={(e) => setFEmail((e.target as HTMLInputElement).value)}
+                />
               </div>
               {isAdmin && (
                 <div class="form-group">
                   <label>Role</label>
-                  <select value={fRole} onChange={(e) => setFRole((e.target as HTMLSelectElement).value)}>
+                  <select
+                    value={fRole}
+                    onChange={(e) => setFRole((e.target as HTMLSelectElement).value)}
+                  >
                     <option value="admin">Admin</option>
                     <option value="editor">Editor</option>
                     <option value="author">Author</option>
@@ -288,14 +363,22 @@ export default function UserManager({ prefix }: Props) {
               )}
               <div class="form-group">
                 <label>
-                  <input type="checkbox" checked={fEnabled} onChange={(e) => setFEnabled((e.target as HTMLInputElement).checked)} />{" "}
+                  <input
+                    type="checkbox"
+                    checked={fEnabled}
+                    onChange={(e) => setFEnabled((e.target as HTMLInputElement).checked)}
+                  />{" "}
                   Enabled
                 </label>
               </div>
               {formError && <p class="form-error">{formError}</p>}
               <div class="form-actions">
-                <button type="button" class="btn btn-outline" onClick={() => setModal(null)}>Cancel</button>
-                <button type="submit" class="btn btn-primary" disabled={submitting}>{submitting ? "Saving…" : "Save"}</button>
+                <button type="button" class="btn btn-outline" onClick={() => setModal(null)}>
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" disabled={submitting}>
+                  {submitting ? "Saving…" : "Save"}
+                </button>
               </div>
             </form>
           </div>
@@ -311,12 +394,22 @@ export default function UserManager({ prefix }: Props) {
             <form onSubmit={(e) => handlePassword(e, modal.userId)}>
               <div class="form-group">
                 <label>New password</label>
-                <input type="password" value={fPassword} onInput={(e) => setFPassword((e.target as HTMLInputElement).value)} required autoFocus />
+                <input
+                  type="password"
+                  value={fPassword}
+                  onInput={(e) => setFPassword((e.target as HTMLInputElement).value)}
+                  required
+                  autoFocus
+                />
               </div>
               {formError && <p class="form-error">{formError}</p>}
               <div class="form-actions">
-                <button type="button" class="btn btn-outline" onClick={() => setModal(null)}>Cancel</button>
-                <button type="submit" class="btn btn-primary" disabled={submitting}>{submitting ? "Saving…" : "Save"}</button>
+                <button type="button" class="btn btn-outline" onClick={() => setModal(null)}>
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" disabled={submitting}>
+                  {submitting ? "Saving…" : "Save"}
+                </button>
               </div>
             </form>
           </div>

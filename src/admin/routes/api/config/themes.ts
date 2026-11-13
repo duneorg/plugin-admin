@@ -1,7 +1,7 @@
 /** GET /admin/api/config/themes */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError } from "../_utils.ts";
+import { json, requirePermission, serverError } from "../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {

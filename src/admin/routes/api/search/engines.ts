@@ -5,7 +5,7 @@
 
 import type { FreshContext } from "fresh";
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, csrfCheck } from "../_utils.ts";
+import { csrfCheck, json, requirePermission } from "../_utils.ts";
 export const handler = {
   async GET(ctx: FreshContext<AdminState>) {
     const denied = await requirePermission(ctx, "config.read");
@@ -37,7 +37,9 @@ export const handler = {
     if (body.active !== undefined) {
       const registered = search.registeredEngineNames();
       if (!registered.includes(body.active)) {
-        return json({ error: `Engine "${body.active}" not registered. Available: ${registered.join(", ")}` }, 400);
+        return json({
+          error: `Engine "${body.active}" not registered. Available: ${registered.join(", ")}`,
+        }, 400);
       }
       search.setActiveEngine(body.active);
     }

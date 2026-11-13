@@ -6,17 +6,17 @@
  */
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { markdownToBlocks, blocksToMarkdown } from "../../src/admin/editor/serializer.ts";
+import { blocksToMarkdown, markdownToBlocks } from "../../src/admin/editor/serializer.ts";
 import { parseMarkdownToBlocks } from "../../src/admin/editor/parser.ts";
 import type {
   Block,
-  ParagraphBlock,
-  HeadingBlock,
-  ListBlock,
-  CodeBlock,
-  ImageBlock,
-  TableBlock,
   BlockquoteBlock,
+  CodeBlock,
+  HeadingBlock,
+  ImageBlock,
+  ListBlock,
+  ParagraphBlock,
+  TableBlock,
 } from "../../src/admin/editor/types.ts";
 
 // === Parsing: Markdown → Blocks ===
@@ -240,7 +240,7 @@ Deno.test("serializer: table block", () => {
 
 Deno.test("serializer: html block", () => {
   const blocks: Block[] = [
-    { id: "1", type: "html", html: "<div class=\"custom\">Content</div>" },
+    { id: "1", type: "html", html: '<div class="custom">Content</div>' },
   ];
   assertEquals(blocksToMarkdown(blocks), '<div class="custom">Content</div>');
 });
@@ -254,9 +254,12 @@ Deno.test("serializer: multiple blocks separated by blank lines", () => {
 });
 
 Deno.test("serializer: accepts BlockDocument", () => {
-  const doc = { version: 1 as const, blocks: [
-    { id: "1", type: "paragraph" as const, text: "Test" },
-  ] };
+  const doc = {
+    version: 1 as const,
+    blocks: [
+      { id: "1", type: "paragraph" as const, text: "Test" },
+    ],
+  };
   assertEquals(blocksToMarkdown(doc), "Test");
 });
 

@@ -109,7 +109,17 @@ export const handler = {
     const csrfDenied = csrfCheck(ctx);
     if (csrfDenied) return csrfDenied;
 
-    const { auth, users, sessions, prefix, auditLogger, authProvider, config, rateLimitStore, services } = ctx.state.adminContext;
+    const {
+      auth,
+      users,
+      sessions,
+      prefix,
+      auditLogger,
+      authProvider,
+      config,
+      rateLimitStore,
+      services,
+    } = ctx.state.adminContext;
     const adminConfig = adminSettings(config);
     const url = ctx.url;
 
@@ -154,7 +164,13 @@ export const handler = {
       );
       if (!allowed) {
         return ctx.render(
-          <LoginPage data={{ error: `Too many login attempts. Try again in ${retryAfter} seconds.`, next: `${prefix}/`, prefix }} />,
+          <LoginPage
+            data={{
+              error: `Too many login attempts. Try again in ${retryAfter} seconds.`,
+              next: `${prefix}/`,
+              prefix,
+            }}
+          />,
           { status: 429 },
         );
       }
@@ -163,7 +179,13 @@ export const handler = {
       if (!loginRateLimiter.check(ip)) {
         const retryAfter = loginRateLimiter.retryAfter(ip);
         return ctx.render(
-          <LoginPage data={{ error: `Too many login attempts. Try again in ${retryAfter} seconds.`, next: `${prefix}/`, prefix }} />,
+          <LoginPage
+            data={{
+              error: `Too many login attempts. Try again in ${retryAfter} seconds.`,
+              next: `${prefix}/`,
+              prefix,
+            }}
+          />,
           { status: 429 },
         );
       }
@@ -175,7 +197,10 @@ export const handler = {
     const next = (formData.get("next") as string) ?? `${prefix}/`;
 
     if (!username || !password) {
-      return ctx.render(<LoginPage data={{ error: "Username and password required", next, prefix }} />, { status: 400 });
+      return ctx.render(
+        <LoginPage data={{ error: "Username and password required", next, prefix }} />,
+        { status: 400 },
+      );
     }
 
     // Per-account lockout — independent from per-IP rate limit.
@@ -194,7 +219,9 @@ export const handler = {
         detail: { username, locked: true },
         outcome: "failure",
       }).catch(() => {});
-      return ctx.render(<LoginPage data={{ error: "Invalid credentials", next, prefix }} />, { status: 429 });
+      return ctx.render(<LoginPage data={{ error: "Invalid credentials", next, prefix }} />, {
+        status: 429,
+      });
     }
 
     let user!: import("../types.ts").User;
@@ -207,8 +234,18 @@ export const handler = {
         } else {
           recordAccountFailureFallback(username);
         }
-        void auditLogger?.log({ event: "auth.login_failed", actor: null, ip: ip === "unknown" ? null : ip, userAgent: ctx.req.headers.get("user-agent"), target: null, detail: { username }, outcome: "failure" }).catch(() => {});
-        return ctx.render(<LoginPage data={{ error: "Invalid credentials", next, prefix }} />, { status: 401 });
+        void auditLogger?.log({
+          event: "auth.login_failed",
+          actor: null,
+          ip: ip === "unknown" ? null : ip,
+          userAgent: ctx.req.headers.get("user-agent"),
+          target: null,
+          detail: { username },
+          outcome: "failure",
+        }).catch(() => {});
+        return ctx.render(<LoginPage data={{ error: "Invalid credentials", next, prefix }} />, {
+          status: 401,
+        });
       }
       user = await findOrProvisionUser(providerUser, users);
     } else {
@@ -221,8 +258,18 @@ export const handler = {
         } else {
           recordAccountFailureFallback(username);
         }
-        void auditLogger?.log({ event: "auth.login_failed", actor: null, ip: ip === "unknown" ? null : ip, userAgent: ctx.req.headers.get("user-agent"), target: null, detail: { username }, outcome: "failure" }).catch(() => {});
-        return ctx.render(<LoginPage data={{ error: "Invalid credentials", next, prefix }} />, { status: 401 });
+        void auditLogger?.log({
+          event: "auth.login_failed",
+          actor: null,
+          ip: ip === "unknown" ? null : ip,
+          userAgent: ctx.req.headers.get("user-agent"),
+          target: null,
+          detail: { username },
+          outcome: "failure",
+        }).catch(() => {});
+        return ctx.render(<LoginPage data={{ error: "Invalid credentials", next, prefix }} />, {
+          status: 401,
+        });
       }
       user = found;
       // Transparently upgrade legacy (low-iteration) hashes to current cost.
@@ -250,7 +297,15 @@ export const handler = {
       clearAccountFailuresFallback(username);
     }
 
-    void auditLogger?.log({ event: "auth.login", actor: actorFromAuth({ user }), ip: ip === "unknown" ? null : ip, userAgent: ctx.req.headers.get("user-agent"), target: null, detail: {}, outcome: "success" }).catch(() => {});
+    void auditLogger?.log({
+      event: "auth.login",
+      actor: actorFromAuth({ user }),
+      ip: ip === "unknown" ? null : ip,
+      userAgent: ctx.req.headers.get("user-agent"),
+      target: null,
+      detail: {},
+      outcome: "success",
+    }).catch(() => {});
 
     const safeNext = sanitizeNext(next, prefix, ctx.url);
     return new Response(null, {

@@ -2,7 +2,7 @@
  * Shared helpers and page objects for E2E specs.
  */
 
-import { type Page, expect } from "npm:@playwright/test@^1.45";
+import { expect, type Page } from "npm:@playwright/test@^1.45";
 
 export const BASE_URL = "http://localhost:8001";
 export const ADMIN_URL = `${BASE_URL}/admin`;

@@ -4,7 +4,11 @@
  */
 
 import { assertEquals } from "@std/assert";
-import { isAdminAccount, reconcileAdminTuples, type StoredAccount } from "../../src/admin/admin-tuples.ts";
+import {
+  isAdminAccount,
+  reconcileAdminTuples,
+  type StoredAccount,
+} from "../../src/admin/admin-tuples.ts";
 
 function fakeAuthz() {
   const seeded: Array<{ id: string; role: string }> = [];
@@ -12,16 +16,24 @@ function fakeAuthz() {
   return {
     seeded,
     revoked,
-    seedAdminTuples: (users: Array<{ id: string; role: string }>) => (seeded.push(...users), Promise.resolve()),
+    seedAdminTuples: (
+      users: Array<{ id: string; role: string }>,
+    ) => (seeded.push(...users), Promise.resolve()),
     revoke: (id: string, relation: string) => (revoked.push([id, relation]), Promise.resolve()),
   };
 }
 
-const account = (over: Partial<StoredAccount> & { id: string }): StoredAccount => ({ roles: [], ...over });
+const account = (over: Partial<StoredAccount> & { id: string }): StoredAccount => ({
+  roles: [],
+  ...over,
+});
 
 Deno.test("a password account is an admin account; OAuth, magic-link and invited ones are not", () => {
   assertEquals(isAdminAccount(account({ id: "a", provider: "local" })), true);
-  assertEquals(isAdminAccount(account({ id: "a", provider: "github", passwordHash: "pbkdf2:..." })), true);
+  assertEquals(
+    isAdminAccount(account({ id: "a", provider: "github", passwordHash: "pbkdf2:..." })),
+    true,
+  );
   for (const provider of ["github", "google", "magic", "invited", "external-jwt"]) {
     assertEquals(isAdminAccount(account({ id: "a", provider })), false, provider);
   }

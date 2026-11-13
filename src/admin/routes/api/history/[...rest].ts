@@ -11,7 +11,15 @@
  */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, requireTsxWrite, requireOwnedPage, json, serverError, csrfCheck, validatePagePath } from "../_utils.ts";
+import {
+  csrfCheck,
+  json,
+  requireOwnedPage,
+  requirePermission,
+  requireTsxWrite,
+  serverError,
+  validatePagePath,
+} from "../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import { announcePageEvent } from "../../../page-events.ts";
 import type { FreshContext } from "fresh";
@@ -109,7 +117,10 @@ export const handler = {
 
       await storage.write(filePath, new TextEncoder().encode(fullContent));
       await engine.rebuild();
-      announcePageEvent(ctx, { event: "onPageUpdate", payload: { sourcePath: pageIndex.sourcePath } });
+      announcePageEvent(ctx, {
+        event: "onPageUpdate",
+        payload: { sourcePath: pageIndex.sourcePath },
+      });
 
       return json({ restored: true, revision: revNum });
     } catch (err) {

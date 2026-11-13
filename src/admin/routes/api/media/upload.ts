@@ -1,9 +1,18 @@
 /** POST /admin/api/media/upload */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, requireOwnedPage, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../_utils.ts";
+import {
+  actorFromAuth,
+  csrfCheck,
+  getClientIp,
+  json,
+  requireOwnedPage,
+  requirePermission,
+  serverError,
+  validatePagePath,
+} from "../_utils.ts";
 import { dirname } from "@std/path";
-import { isMediaFile, dirPathToRoute, getMimeType, isDuneError } from "@dune/plugin-api";
+import { dirPathToRoute, getMimeType, isDuneError, isMediaFile } from "@dune/plugin-api";
 import type { FreshContext } from "fresh";
 import { adminSettings } from "../../../settings.ts";
 
@@ -24,14 +33,19 @@ export const handler = {
 
       // Also enforce via streaming counter — catches chunked uploads that
       // omit Content-Length and would otherwise bypass the pre-check above.
-      const formData = await new Response(services.security.limitedBody(ctx.req.body, maxBodyBytes), {
-        headers: { "content-type": ctx.req.headers.get("content-type") ?? "" },
-      }).formData();
+      const formData = await new Response(
+        services.security.limitedBody(ctx.req.body, maxBodyBytes),
+        {
+          headers: { "content-type": ctx.req.headers.get("content-type") ?? "" },
+        },
+      ).formData();
       const file = formData.get("file");
       const pagePath = formData.get("pagePath");
 
       if (!file || !(file instanceof File)) return json({ error: "file required" }, 400);
-      if (!pagePath || typeof pagePath !== "string") return json({ error: "pagePath required" }, 400);
+      if (!pagePath || typeof pagePath !== "string") {
+        return json({ error: "pagePath required" }, 400);
+      }
 
       const safeName = file.name
         .replace(/[/\\:*?"<>|]/g, "_")
@@ -66,7 +80,10 @@ export const handler = {
         outcome: "success",
       }).catch(() => {});
 
-      return json({ ok: true, item: { name: safeName, url, type: mimeType, size: bytes.length, pagePath } });
+      return json({
+        ok: true,
+        item: { name: safeName, url, type: mimeType, size: bytes.length, pagePath },
+      });
     } catch (err) {
       if (isDuneError(err, "body_too_large")) {
         return json({ error: "Request too large" }, 413);

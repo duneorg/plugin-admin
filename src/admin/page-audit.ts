@@ -21,7 +21,9 @@ import type { AuditEventType, AuditLogger } from "../audit/mod.ts";
  */
 export const FROM_ADMIN_ROUTE: unique symbol = Symbol("dune.admin.fromRoute");
 
-const EVENTS: Array<[event: "onPageCreate" | "onPageUpdate" | "onPageDelete", audit: AuditEventType]> = [
+const EVENTS: Array<
+  [event: "onPageCreate" | "onPageUpdate" | "onPageDelete", audit: AuditEventType]
+> = [
   ["onPageCreate", "page.create"],
   ["onPageUpdate", "page.update"],
   ["onPageDelete", "page.delete"],

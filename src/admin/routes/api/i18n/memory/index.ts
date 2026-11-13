@@ -1,7 +1,7 @@
 /** GET + POST + DELETE /admin/api/i18n/memory */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck } from "../../_utils.ts";
+import { csrfCheck, json, requirePermission, serverError } from "../../_utils.ts";
 import { loadTM, saveTM } from "../../../../tm.ts";
 import type { FreshContext } from "fresh";
 

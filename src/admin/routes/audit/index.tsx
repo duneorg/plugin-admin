@@ -86,9 +86,7 @@ export default function AuditRoute(
               <td class="s-c866c7be">{String(e.ip ?? "—")}</td>
               <td>
                 <span
-                  class={`badge ${
-                    e.outcome === "success" ? "badge-success" : "badge-failure"
-                  }`}
+                  class={`badge ${e.outcome === "success" ? "badge-success" : "badge-failure"}`}
                 >
                   {String(e.outcome ?? "")}
                 </span>

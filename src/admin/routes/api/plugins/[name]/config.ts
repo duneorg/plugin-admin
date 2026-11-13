@@ -1,7 +1,7 @@
 /** PUT /admin/api/plugins/:name/config */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck } from "../../_utils.ts";
+import { csrfCheck, json, requirePermission, serverError } from "../../_utils.ts";
 import type { BlueprintField } from "@dune/plugin-api";
 import type { FreshContext } from "fresh";
 
@@ -71,7 +71,9 @@ export const handler = {
             errors.push(field.label ?? key);
           }
         }
-        if (errors.length > 0) return json({ error: `Missing required fields: ${errors.join(", ")}` }, 422);
+        if (errors.length > 0) {
+          return json({ error: `Missing required fields: ${errors.join(", ")}` }, 422);
+        }
       }
 
       const dataDir = ctx.state.adminContext.services.paths.dataDir;

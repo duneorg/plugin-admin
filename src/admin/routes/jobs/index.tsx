@@ -4,7 +4,7 @@
 import type { AdminState } from "../../types.ts";
 import { checkPermission } from "../api/_utils.ts";
 import type { FreshContext } from "fresh";
-import type { JobState, JobScheduler } from "@dune/plugin-api";
+import type { JobScheduler, JobState } from "@dune/plugin-api";
 
 interface PageData {
   jobs: JobState[];
@@ -95,8 +95,8 @@ export default function JobsPage({ data }: { data: PageData }) {
       )}
 
       <p class="s-6059c7e1">
-        Jobs are triggered automatically by their cron schedule. "Run now" fires
-        the job immediately regardless of schedule.
+        Jobs are triggered automatically by their cron schedule. "Run now" fires the job immediately
+        regardless of schedule.
       </p>
     </div>
   );

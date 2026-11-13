@@ -6,29 +6,33 @@
  */
 
 import type {
-  PluginEngine,
-  StorageAdapter,
   DuneConfig,
-  WorkflowEngine,
-  Scheduler,
-  ScheduledAction,
-  HistoryEngine,
   FlexEngine,
+  HistoryEngine,
   HookRegistry,
-  StagingEngine,
   InlineEditManager,
   MetricsCollector,
-  RateLimitStore,
-  PluginServices,
+  PluginEngine,
   PluginSearch,
+  PluginServices,
+  RateLimitStore,
+  ScheduledAction,
+  Scheduler,
   SectionRegistry,
+  StagingEngine,
+  StorageAdapter,
+  WorkflowEngine,
 } from "@dune/plugin-api";
 import type { AuthMiddleware } from "./auth/middleware.ts";
 import type { UserManager } from "./auth/users.ts";
 import type { SessionManager } from "./auth/sessions.ts";
 import type { AuthProvider } from "./auth/provider.ts";
 import type { SubmissionManager } from "./submissions.ts";
-import type { AdminPageRegistration, AdminRouteRegistration, ContentEditorPlugin } from "./contributions.ts";
+import type {
+  AdminPageRegistration,
+  AdminRouteRegistration,
+  ContentEditorPlugin,
+} from "./contributions.ts";
 import type { CommentManager } from "./comments.ts";
 import type { CollabManager } from "../collab/mod.ts";
 import type { AuditLogger } from "../audit/mod.ts";

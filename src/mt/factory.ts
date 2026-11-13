@@ -20,9 +20,7 @@ export function createMachineTranslator(
   if (config.enabled === false) return null;
 
   const rawKey = config.api_key ?? "";
-  const key = rawKey.startsWith("$")
-    ? (Deno.env.get(rawKey.slice(1)) ?? rawKey)
-    : rawKey;
+  const key = rawKey.startsWith("$") ? (Deno.env.get(rawKey.slice(1)) ?? rawKey) : rawKey;
 
   switch (config.provider) {
     case "deepl":

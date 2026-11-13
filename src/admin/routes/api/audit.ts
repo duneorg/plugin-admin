@@ -2,7 +2,7 @@
 
 import type { AdminState } from "../../types.ts";
 import { json } from "./_utils.ts";
-import type { AuditQuery, AuditEventType } from "../../../audit/mod.ts";
+import type { AuditEventType, AuditQuery } from "../../../audit/mod.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {

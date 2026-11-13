@@ -39,12 +39,7 @@ import type { DuneConfig } from "@dune/plugin-api";
 import { checkPermission, type GuardedHandler, withGuards } from "./routes/api/_utils.ts";
 import { getAdminContext } from "./context.ts";
 import type { AdminPermission, AdminState } from "./types.ts";
-import {
-  adminIslands,
-  adminLayout,
-  adminMiddleware,
-  adminRoutes,
-} from "./manifest.gen.ts";
+import { adminIslands, adminLayout, adminMiddleware, adminRoutes } from "./manifest.gen.ts";
 import { adminSettings } from "./settings.ts";
 
 /**
@@ -166,11 +161,19 @@ export function mountPluginAdminRoutes(
   for (const route of routes) {
     const register = ROUTE_METHODS[route.method as keyof typeof ROUTE_METHODS];
     if (!register || typeof route.path !== "string" || !route.path.startsWith("/")) {
-      logger.warn("admin.routes.invalid", { method: route.method, path: route.path, reason: "unknown method or path without leading /" });
+      logger.warn("admin.routes.invalid", {
+        method: route.method,
+        path: route.path,
+        reason: "unknown method or path without leading /",
+      });
       continue;
     }
     if (typeof route.permission !== "string" || route.permission === "") {
-      logger.warn("admin.routes.invalid", { method: route.method, path: route.path, reason: "permission is required" });
+      logger.warn("admin.routes.invalid", {
+        method: route.method,
+        path: route.path,
+        reason: "permission is required",
+      });
       continue;
     }
     const guarded = withGuards(
@@ -268,11 +271,21 @@ export function mountAdminPanel(
     // honour the plugin-declared permission (if any) so plugin authors can
     // restrict access to a subset of admin roles.
     if (adminContext?.pluginRoutes?.length) {
-      mountPluginAdminRoutes(app, adminPrefix, adminContext.pluginRoutes, adminContext.services.logger);
+      mountPluginAdminRoutes(
+        app,
+        adminPrefix,
+        adminContext.pluginRoutes,
+        adminContext.services.logger,
+      );
     }
 
     if (adminContext?.pluginPages?.length) {
-      mountPluginAdminPages(app, adminPrefix, adminContext.pluginPages, adminContext.services.logger);
+      mountPluginAdminPages(
+        app,
+        adminPrefix,
+        adminContext.pluginPages,
+        adminContext.services.logger,
+      );
     }
   }
 }

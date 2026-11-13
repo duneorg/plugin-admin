@@ -1,7 +1,15 @@
 /** POST /admin/api/i18n/translate-page */
 
 import type { AdminState } from "../../../types.ts";
-import { json, serverError, csrfCheck, requirePermission, requireTsxWrite, requireOwnedPage, validatePagePath } from "../_utils.ts";
+import {
+  csrfCheck,
+  json,
+  requireOwnedPage,
+  requirePermission,
+  requireTsxWrite,
+  serverError,
+  validatePagePath,
+} from "../_utils.ts";
 import { announcePageEvent } from "../../../page-events.ts";
 import type { FreshContext } from "fresh";
 
@@ -24,7 +32,10 @@ export const handler = {
 
     try {
       const { sourcePath, targetLang } = await ctx.req.json();
-      if (!sourcePath || typeof sourcePath !== "string" || !targetLang || typeof targetLang !== "string") {
+      if (
+        !sourcePath || typeof sourcePath !== "string" || !targetLang ||
+        typeof targetLang !== "string"
+      ) {
         return json({ error: "sourcePath and targetLang required" }, 400);
       }
 
@@ -42,7 +53,9 @@ export const handler = {
       if (ownerDenied) return ownerDenied;
 
       const supported = config.system.languages?.supported ?? [];
-      if (!supported.includes(targetLang)) return json({ error: "Unsupported target language" }, 400);
+      if (!supported.includes(targetLang)) {
+        return json({ error: "Unsupported target language" }, 400);
+      }
 
       const defaultLang = config.system.languages?.default ?? "en";
       const contentDir = config.system.content.dir;
@@ -95,9 +108,17 @@ export const handler = {
         return json({ error: "Invalid computed target path" }, 400);
       }
 
-      await storage.write(`${contentDir}/${targetPath}`, new TextEncoder().encode(translatedFm + translatedBody));
-      announcePageEvent(ctx, { event: "onPageCreate", payload: { sourcePath: targetPath, title: pageIndex.title ?? "" } });
-      engine.rebuild().catch((err: unknown) => console.error("[dune] MT translate-page rebuild error:", err));
+      await storage.write(
+        `${contentDir}/${targetPath}`,
+        new TextEncoder().encode(translatedFm + translatedBody),
+      );
+      announcePageEvent(ctx, {
+        event: "onPageCreate",
+        payload: { sourcePath: targetPath, title: pageIndex.title ?? "" },
+      });
+      engine.rebuild().catch((err: unknown) =>
+        console.error("[dune] MT translate-page rebuild error:", err)
+      );
 
       return json({ ok: true, targetPath });
     } catch (err) {

@@ -38,7 +38,9 @@ async function withReceiver(run: (url: string, received: unknown[]) => Promise<v
 const security = { safeFetch: (url: string, init?: RequestInit) => fetch(url, init) };
 
 async function settle(received: unknown[], count: number) {
-  for (let i = 0; i < 100 && received.length < count; i++) await new Promise((r) => setTimeout(r, 20));
+  for (let i = 0; i < 100 && received.length < count; i++) {
+    await new Promise((r) => setTimeout(r, 20));
+  }
 }
 
 Deno.test("a page event fired by anyone is delivered, with its actor", async () => {
@@ -46,7 +48,11 @@ Deno.test("a page event fired by anyone is delivered, with its actor", async () 
   try {
     await withReceiver(async (url, received) => {
       const hooks = fakeHooks();
-      const endpoints: WebhookEndpointConfig[] = [{ url, events: ["onPageUpdate"], allow_private: true }];
+      const endpoints: WebhookEndpointConfig[] = [{
+        url,
+        events: ["onPageUpdate"],
+        allow_private: true,
+      }];
       listenForContentWebhooks({
         // deno-lint-ignore no-explicit-any
         hooks: hooks as any,
@@ -54,7 +60,13 @@ Deno.test("a page event fired by anyone is delivered, with its actor", async () 
         runtimeDir,
         security,
       });
-      assertEquals(hooks.events(), ["onPageCreate", "onPageDelete", "onPageMove", "onPageUpdate", "onWorkflowChange"]);
+      assertEquals(hooks.events(), [
+        "onPageCreate",
+        "onPageDelete",
+        "onPageMove",
+        "onPageUpdate",
+        "onWorkflowChange",
+      ]);
 
       // What plugin-inline-edit fires after a save.
       hooks.fire("onPageUpdate", { sourcePath: "about/default.md", actor: "alice" });

@@ -20,9 +20,15 @@ function createMemoryStorage() {
       if (!d) throw new Error(`Not found: ${path}`);
       return d;
     },
-    async write(path: string, data: Uint8Array) { files.set(path, data); },
-    async exists(path: string) { return files.has(path); },
-    async delete(path: string) { files.delete(path); },
+    async write(path: string, data: Uint8Array) {
+      files.set(path, data);
+    },
+    async exists(path: string) {
+      return files.has(path);
+    },
+    async delete(path: string) {
+      files.delete(path);
+    },
     async list(dir: string) {
       const entries: { name: string; isDirectory: boolean }[] = [];
       const prefix = dir.endsWith("/") ? dir : dir + "/";
@@ -209,8 +215,20 @@ Deno.test("UserManager: list returns all users", async () => {
   const storage = createMemoryStorage();
   const mgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
 
-  await mgr.create({ username: "u1", email: "u1@test.com", password: "p", role: "admin", name: "U1" });
-  await mgr.create({ username: "u2", email: "u2@test.com", password: "p", role: "editor", name: "U2" });
+  await mgr.create({
+    username: "u1",
+    email: "u1@test.com",
+    password: "p",
+    role: "admin",
+    name: "U1",
+  });
+  await mgr.create({
+    username: "u2",
+    email: "u2@test.com",
+    password: "p",
+    role: "editor",
+    name: "U2",
+  });
 
   const users = await mgr.list();
   assertEquals(users.length, 2);
@@ -286,7 +304,11 @@ Deno.test("UserManager: has no default-admin bootstrap (no admin is created impl
 
 Deno.test("AuthMiddleware: authenticate fails without cookie", async () => {
   const storage = createMemoryStorage();
-  const sessions = await createSessionManager({ services: makeServices(storage), sessionsDir: ".sess", lifetime: 3600 });
+  const sessions = await createSessionManager({
+    services: makeServices(storage),
+    sessionsDir: ".sess",
+    lifetime: 3600,
+  });
   const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
   const auth = createAuthMiddleware({ sessions, users, security: makeServices(null).security });
 
@@ -298,9 +320,21 @@ Deno.test("AuthMiddleware: authenticate fails without cookie", async () => {
 
 Deno.test("AuthMiddleware: authenticate succeeds with valid session", async () => {
   const storage = createMemoryStorage();
-  const sessions = await createSessionManager({ services: makeServices(storage), sessionsDir: ".sess", lifetime: 3600 });
-  const userMgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
-  const auth = createAuthMiddleware({ sessions, users: userMgr, security: makeServices(null).security });
+  const sessions = await createSessionManager({
+    services: makeServices(storage),
+    sessionsDir: ".sess",
+    lifetime: 3600,
+  });
+  const userMgr = createUserManager({
+    storage,
+    usersDir: ".users",
+    services: makeServices(storage),
+  });
+  const auth = createAuthMiddleware({
+    sessions,
+    users: userMgr,
+    security: makeServices(null).security,
+  });
 
   const user = await userMgr.create({
     username: "admin",
@@ -323,8 +357,16 @@ Deno.test("AuthMiddleware: authenticate succeeds with valid session", async () =
 
 Deno.test("AuthMiddleware: bound session fails when forwarded IP is omitted", async () => {
   const storage = createMemoryStorage();
-  const sessions = await createSessionManager({ services: makeServices(storage), sessionsDir: ".sess", lifetime: 3600 });
-  const userMgr = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
+  const sessions = await createSessionManager({
+    services: makeServices(storage),
+    sessionsDir: ".sess",
+    lifetime: 3600,
+  });
+  const userMgr = createUserManager({
+    storage,
+    usersDir: ".users",
+    services: makeServices(storage),
+  });
   const auth = createAuthMiddleware({
     sessions,
     users: userMgr,
@@ -361,7 +403,11 @@ Deno.test("AuthMiddleware: bound session fails when forwarded IP is omitted", as
 
 Deno.test("AuthMiddleware: createSessionCookie formats correctly", async () => {
   const storage = createMemoryStorage();
-  const sessions = await createSessionManager({ services: makeServices(storage), sessionsDir: ".sess", lifetime: 3600 });
+  const sessions = await createSessionManager({
+    services: makeServices(storage),
+    sessionsDir: ".sess",
+    lifetime: 3600,
+  });
   const users = createUserManager({ storage, usersDir: ".users", services: makeServices(storage) });
   const auth = createAuthMiddleware({ sessions, users, security: makeServices(null).security });
 

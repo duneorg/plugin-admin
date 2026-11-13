@@ -1,8 +1,7 @@
 /** POST /admin/api/editor/serialize — Blocks → Markdown */
 
-
 import type { AdminState } from "../../../types.ts";
-import { json, serverError, csrfCheck, requirePermission } from "../_utils.ts";
+import { csrfCheck, json, requirePermission, serverError } from "../_utils.ts";
 import { blocksToMarkdown } from "../../../../admin/editor/serializer.ts";
 import type { FreshContext } from "fresh";
 

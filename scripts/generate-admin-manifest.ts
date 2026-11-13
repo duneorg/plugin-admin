@@ -117,7 +117,7 @@ export async function generateManifest(): Promise<string> {
     "}",
     "",
     "export interface AdminRouteEntry {",
-    "  /** URL pattern relative to the admin prefix, e.g. \"/pages/:path\" */",
+    '  /** URL pattern relative to the admin prefix, e.g. "/pages/:path" */',
     "  pattern: string;",
     "  mod: AdminRouteModule;",
     "}",

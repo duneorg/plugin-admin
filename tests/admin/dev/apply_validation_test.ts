@@ -8,10 +8,7 @@
  * All filesystem operations are tested with dry_run:true so no files are written.
  */
 
-import {
-  assertEquals,
-  assertExists,
-} from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals, assertExists } from "https://deno.land/std@0.224.0/assert/mod.ts";
 
 // We test the validation helpers by importing and calling the route handler
 // with a fake FreshContext. The route uses Deno.cwd() + config.system.content.dir
@@ -66,7 +63,10 @@ async function callApply(
         config: {
           system: {
             debug: true, // dev mode
-            content: { dir: "content", markdown: { extra: false, auto_links: false, auto_url_links: false } },
+            content: {
+              dir: "content",
+              markdown: { extra: false, auto_links: false, auto_url_links: false },
+            },
           },
         },
       },
@@ -128,7 +128,10 @@ Deno.test("dev/apply: rejects path traversal attempt", async () => {
   });
   const results = res.results as { status: string; errors: string[] }[];
   assertEquals(results[0].status, "error");
-  assertEquals(results[0].errors.some((e: string) => e.includes("invalid") || e.includes("traversal")), true);
+  assertEquals(
+    results[0].errors.some((e: string) => e.includes("invalid") || e.includes("traversal")),
+    true,
+  );
 });
 
 Deno.test("dev/apply: rejects absolute path", async () => {

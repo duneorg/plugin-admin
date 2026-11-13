@@ -4,10 +4,10 @@
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
-  extractSegments,
   buildTMFromPages,
-  lookupSuggestions,
+  extractSegments,
   loadTM,
+  lookupSuggestions,
   saveTM,
 } from "../../src/admin/tm.ts";
 import type { StorageAdapter } from "jsr:@dune/core@0.37/storage";
@@ -187,21 +187,35 @@ function makeMemoryStorage(): StorageAdapter & { _files: Map<string, string> } {
       const text = typeof data === "string" ? data : new TextDecoder().decode(data);
       files.set(path, text);
     },
-    async exists(path) { return files.has(path); },
-    async delete(path) { files.delete(path); },
+    async exists(path) {
+      return files.has(path);
+    },
+    async delete(path) {
+      files.delete(path);
+    },
     async rename(o, n) {
       const v = files.get(o);
       if (!v) throw new Error("Not found");
       files.set(n, v);
       files.delete(o);
     },
-    async list(_path) { return []; },
-    async listRecursive(_path) { return []; },
-    async stat(_path) { return { size: 0, mtime: 0, isFile: true, isDirectory: false }; },
-    async getJSON(_key) { return null; },
+    async list(_path) {
+      return [];
+    },
+    async listRecursive(_path) {
+      return [];
+    },
+    async stat(_path) {
+      return { size: 0, mtime: 0, isFile: true, isDirectory: false };
+    },
+    async getJSON(_key) {
+      return null;
+    },
     async setJSON(_key, _value, _ttl) {},
     async deleteJSON(_key) {},
-    watch(_path, _cb) { return () => {}; },
+    watch(_path, _cb) {
+      return () => {};
+    },
   };
 }
 

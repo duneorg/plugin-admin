@@ -68,7 +68,9 @@ export const handler = {
     if (!user || !currentId) return new Response("Forbidden", { status: 403 });
 
     const { prefix, sessions, auditLogger } = ctx.state.adminContext;
-    if (!sessions.canList) return new Response("Not supported by this core version", { status: 501 });
+    if (!sessions.canList) {
+      return new Response("Not supported by this core version", { status: 501 });
+    }
 
     const form = await ctx.req.formData();
     const action = String(form.get("action") ?? "");
@@ -130,7 +132,11 @@ export default function AccountRoute({ data }: { data: AccountData }) {
       <h3>Signed-in sessions</h3>
       {notice && <p role="status">{notice}</p>}
       {!canList
-        ? <p>This version of Dune does not list sessions yet. Update @dune/core to manage them here.</p>
+        ? (
+          <p>
+            This version of Dune does not list sessions yet. Update @dune/core to manage them here.
+          </p>
+        )
         : (
           <>
             <table class="admin-table">
@@ -149,13 +155,15 @@ export default function AccountRoute({ data }: { data: AccountData }) {
                     <td>{when(s.expiresAt)}</td>
                     <td>{s.ip ?? "unknown"}</td>
                     <td>
-                      {s.current ? <strong>This session</strong> : (
-                        <form method="POST" action={`${prefix}/account`}>
-                          <input type="hidden" name="action" value="revoke" />
-                          <input type="hidden" name="handle" value={s.handle} />
-                          <button type="submit" class="btn btn-sm">Sign out</button>
-                        </form>
-                      )}
+                      {s.current
+                        ? <strong>This session</strong>
+                        : (
+                          <form method="POST" action={`${prefix}/account`}>
+                            <input type="hidden" name="action" value="revoke" />
+                            <input type="hidden" name="handle" value={s.handle} />
+                            <button type="submit" class="btn btn-sm">Sign out</button>
+                          </form>
+                        )}
                     </td>
                   </tr>
                 ))}

@@ -5,21 +5,37 @@
  */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, requireTsxWrite, requireOwnedPage, json, serverError, csrfCheck, validatePagePath } from "../../_utils.ts";
+import {
+  csrfCheck,
+  json,
+  requireOwnedPage,
+  requirePermission,
+  requireTsxWrite,
+  serverError,
+  validatePagePath,
+} from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import { announcePageEvent } from "../../../../page-events.ts";
 import type { FreshContext } from "fresh";
 import { adminSettings } from "../../../../settings.ts";
 
 async function maybeGitCommit(
-  filePath: string, sourcePath: string, author: string | undefined,
+  filePath: string,
+  sourcePath: string,
+  author: string | undefined,
   adminGitCommit: boolean | undefined,
 ): Promise<void> {
   if (!adminGitCommit) return;
   try {
-    const msg = author ? `Admin: update ${sourcePath} (by ${author})` : `Admin: update ${sourcePath}`;
+    const msg = author
+      ? `Admin: update ${sourcePath} (by ${author})`
+      : `Admin: update ${sourcePath}`;
     await new Deno.Command("git", { args: ["add", filePath], stderr: "inherit" }).output();
-    await new Deno.Command("git", { args: ["commit", "-m", msg], stderr: "inherit", stdout: "null" }).output();
+    await new Deno.Command("git", {
+      args: ["commit", "-m", msg],
+      stderr: "inherit",
+      stdout: "null",
+    }).output();
   } catch (err) {
     console.warn(`[dune] git commit failed: ${err instanceof Error ? err.message : err}`);
   }
@@ -67,10 +83,18 @@ export const handler = {
         });
       }
 
-      await maybeGitCommit(filePath, pagePath, authResult.user?.name, adminSettings(config).git_commit);
+      await maybeGitCommit(
+        filePath,
+        pagePath,
+        authResult.user?.name,
+        adminSettings(config).git_commit,
+      );
       await staging.discard(pagePath);
       await engine.rebuild();
-      announcePageEvent(ctx, { event: "onPageUpdate", payload: { sourcePath: pageIndex.sourcePath } });
+      announcePageEvent(ctx, {
+        event: "onPageUpdate",
+        payload: { sourcePath: pageIndex.sourcePath },
+      });
 
       return json({ published: true, sourcePath: pagePath });
     } catch (err) {

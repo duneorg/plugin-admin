@@ -4,7 +4,7 @@
  * Uses /admin/api/history/[...rest] catch-all endpoint.
  */
 
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 interface Revision {
   number: number;
@@ -93,9 +93,7 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
     <div class="revision-wrap s-ebdd5d0a">
       {/* Timeline */}
       <div class="revision-timeline s-6fe37944">
-        {revisions.length === 0 ? (
-          <p class="s-4f77c842">No revisions yet.</p>
-        ) : (
+        {revisions.length === 0 ? <p class="s-4f77c842">No revisions yet.</p> : (
           revisions.map((rev, idx) => {
             const date = new Date(rev.createdAt);
             const isLatest = idx === 0;
@@ -108,20 +106,23 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
                   <span class="revision-number">#{rev.number}</span>
                   {isLatest && <span class="badge badge-latest">Latest</span>}
                   <span class="revision-date">
-                    {date.toLocaleDateString()} {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {date.toLocaleDateString()}{" "}
+                    {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
                 {rev.message && <div class="revision-message">{rev.message}</div>}
                 {rev.author && <div class="revision-author">by {rev.author}</div>}
                 <div class="revision-actions">
-                  <button type="button"
+                  <button
+                    type="button"
                     class="btn btn-xs btn-outline"
                     onClick={() => loadView(rev.number)}
                   >
                     View
                   </button>
                   {!isLatest && (
-                    <button type="button"
+                    <button
+                      type="button"
                       class="btn btn-xs btn-outline"
                       onClick={() => loadDiff(rev.number)}
                     >
@@ -129,7 +130,8 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
                     </button>
                   )}
                   {!isLatest && (
-                    <button type="button"
+                    <button
+                      type="button"
                       class="btn btn-xs btn-outline"
                       onClick={() => restore(rev.number)}
                       disabled={restoring === rev.number}
@@ -146,19 +148,17 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
 
       {/* Content panel */}
       <div class="revision-content-panel s-89bd09bd">
-        {restoreMsg && (
-          <div class="alert alert-success s-9590f79e">{restoreMsg}</div>
-        )}
+        {restoreMsg && <div class="alert alert-success s-9590f79e">{restoreMsg}</div>}
 
         {viewRev && (
           <div>
             <div class="s-0f69679b">
               <h4 class="s-1386d503">Revision #{viewRev.number}</h4>
-              <button type="button" class="btn btn-xs btn-outline" onClick={() => setViewRev(null)}>Close</button>
+              <button type="button" class="btn btn-xs btn-outline" onClick={() => setViewRev(null)}>
+                Close
+              </button>
             </div>
-            <pre
-              class="s-4a1a0733"
-            >{viewRev.content}</pre>
+            <pre class="s-4a1a0733">{viewRev.content}</pre>
           </div>
         )}
 
@@ -166,11 +166,11 @@ export default function RevisionHistory({ pagePath, prefix }: Props) {
           <div>
             <div class="s-0f69679b">
               <h4 class="s-1386d503">Diff for revision #{diffRev.number}</h4>
-              <button type="button" class="btn btn-xs btn-outline" onClick={() => setDiffRev(null)}>Close</button>
+              <button type="button" class="btn btn-xs btn-outline" onClick={() => setDiffRev(null)}>
+                Close
+              </button>
             </div>
-            <pre
-              class="s-4a1a0733"
-            >
+            <pre class="s-4a1a0733">
               {diffRev.lines.map((line, i) => (
                 <span
                   key={i}

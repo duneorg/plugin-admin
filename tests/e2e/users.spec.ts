@@ -2,7 +2,7 @@
  * E2E: User management — create, change role, disable account.
  */
 
-import { test, expect } from "npm:@playwright/test@^1.45";
+import { expect, test } from "npm:@playwright/test@^1.45";
 import { ADMIN_URL, login } from "./support/helpers.ts";
 
 const TEST_USER = {

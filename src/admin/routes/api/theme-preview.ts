@@ -2,7 +2,7 @@
 
 import type { AdminState } from "../../types.ts";
 import { requirePermission, serverError } from "./_utils.ts";
-import { h, type ComponentType } from "preact";
+import { type ComponentType, h } from "preact";
 import { render as renderJsxToString } from "preact-render-to-string";
 import { buildPageTitle } from "@dune/plugin-api";
 import type { FreshContext } from "fresh";
@@ -18,7 +18,10 @@ function htmlResponse(html: string, status = 200): Response {
 }
 
 function escapeHtml(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(
+    /"/g,
+    "&quot;",
+  );
 }
 
 export const handler = {
@@ -33,7 +36,9 @@ export const handler = {
     const available = await engine.getAvailableThemes();
     if (!available.includes(themeName)) {
       return htmlResponse(
-        `<!DOCTYPE html><html><body><p>⚠ Theme <code>${escapeHtml(themeName)}</code> not found.</p></body></html>`,
+        `<!DOCTYPE html><html><body><p>⚠ Theme <code>${
+          escapeHtml(themeName)
+        }</code> not found.</p></body></html>`,
         404,
       );
     }
@@ -41,7 +46,9 @@ export const handler = {
     const pageIndex = engine.pages.find((p) => p.route === route && p.published && p.routable);
     if (!pageIndex) {
       return htmlResponse(
-        `<!DOCTYPE html><html><body><p>⚠ No published page at route <code>${escapeHtml(route)}</code>.</p></body></html>`,
+        `<!DOCTYPE html><html><body><p>⚠ No published page at route <code>${
+          escapeHtml(route)
+        }</code>.</p></body></html>`,
         404,
       );
     }
@@ -64,7 +71,13 @@ export const handler = {
 
       if (!template) {
         const pageTitle = buildPageTitle(page, engine.site.title);
-        return htmlResponse(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(pageTitle)}</title><style>body{font-family:system-ui;max-width:800px;margin:2rem auto;padding:0 1rem;line-height:1.6}img{max-width:100%}</style></head><body><h1>${escapeHtml(page.frontmatter.title ?? "")}</h1><div>${html}</div></body></html>`);
+        return htmlResponse(
+          `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${
+            escapeHtml(pageTitle)
+          }</title><style>body{font-family:system-ui;max-width:800px;margin:2rem auto;padding:0 1rem;line-height:1.6}img{max-width:100%}</style></head><body><h1>${
+            escapeHtml(page.frontmatter.title ?? "")
+          }</h1><div>${html}</div></body></html>`,
+        );
       }
 
       const layout = await previewLoader.loadLayout("layout");

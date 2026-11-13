@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/submissions — redirect to first form or show empty state */
 
-
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";
 import { requirePermission } from "../api/_utils.ts";
@@ -18,7 +17,10 @@ export const handler = {
     if (!submissions) return ctx.render(<SubmissionsRoute data={{ forms: [], prefix }} />);
     const forms = await submissions.listForms();
     if (forms.length > 0) {
-      return new Response(null, { status: 302, headers: { Location: `${prefix}/submissions/${forms[0]}` } });
+      return new Response(null, {
+        status: 302,
+        headers: { Location: `${prefix}/submissions/${forms[0]}` },
+      });
     }
     return ctx.render(<SubmissionsRoute data={{ forms, prefix }} />);
   },
@@ -29,7 +31,9 @@ export default function SubmissionsRoute(
 ) {
   return (
     <div>
-      <div class="section-header"><h2>Submissions</h2></div>
+      <div class="section-header">
+        <h2>Submissions</h2>
+      </div>
       <p class="s-17a730ae">No form submissions yet.</p>
     </div>
   );

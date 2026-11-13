@@ -21,7 +21,7 @@
  */
 
 import type { AdminState } from "../../types.ts";
-import { requirePermission, serverError, csrfCheck } from "./_utils.ts";
+import { csrfCheck, requirePermission, serverError } from "./_utils.ts";
 import type { FreshContext } from "fresh";
 import { parse as parseYaml } from "@std/yaml";
 import { Marked } from "marked";
@@ -89,7 +89,9 @@ export const handler = {
               warnings.push("Frontmatter is not a YAML object — ignoring");
             }
           } catch (err) {
-            warnings.push(`YAML frontmatter parse error: ${err instanceof Error ? err.message : String(err)}`);
+            warnings.push(
+              `YAML frontmatter parse error: ${err instanceof Error ? err.message : String(err)}`,
+            );
           }
         }
       }

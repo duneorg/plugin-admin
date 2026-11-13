@@ -1,8 +1,16 @@
 /** POST /admin/api/pages/translate */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, requireTsxWrite, requireOwnedPage, json, serverError, csrfCheck, validatePagePath } from "../_utils.ts";
-import { dirname, basename } from "@std/path";
+import {
+  csrfCheck,
+  json,
+  requireOwnedPage,
+  requirePermission,
+  requireTsxWrite,
+  serverError,
+  validatePagePath,
+} from "../_utils.ts";
+import { basename, dirname } from "@std/path";
 import { parseContentFilename } from "@dune/plugin-api";
 import { announcePageEvent } from "../../../page-events.ts";
 import type { FreshContext } from "fresh";
@@ -49,7 +57,10 @@ export const handler = {
 
       const sourceBytes = await storage.read(`${contentDir}/${pageIndex.sourcePath}`);
       await storage.write(`${contentDir}/${targetPath}`, sourceBytes);
-      announcePageEvent(ctx, { event: "onPageCreate", payload: { sourcePath: targetPath, title: pageIndex.title ?? "" } });
+      announcePageEvent(ctx, {
+        event: "onPageCreate",
+        payload: { sourcePath: targetPath, title: pageIndex.title ?? "" },
+      });
       await engine.rebuild();
 
       return json({ created: true, path: targetPath });

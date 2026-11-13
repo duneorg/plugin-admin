@@ -7,12 +7,12 @@
 
 export type {
   AuditActor,
-  AuditTarget,
-  AuditEventType,
   AuditEntry,
+  AuditEventType,
   AuditLogOptions,
   AuditQuery,
   AuditQueryResult,
+  AuditTarget,
 } from "./types.ts";
 
 export type { AuditTrailOptions } from "./trail.ts";

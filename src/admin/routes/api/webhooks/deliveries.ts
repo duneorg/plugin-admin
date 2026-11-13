@@ -1,11 +1,8 @@
 /** GET /admin/api/webhooks/deliveries */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, validatePagePath } from "../_utils.ts";
-import {
-  listDeliveryLogs,
-  toWorkflowDelivery,
-} from "../../../../admin/webhooks.ts";
+import { json, requirePermission, serverError, validatePagePath } from "../_utils.ts";
+import { listDeliveryLogs, toWorkflowDelivery } from "../../../../admin/webhooks.ts";
 import type { FreshContext } from "fresh";
 
 /**

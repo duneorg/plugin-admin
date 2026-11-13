@@ -1,9 +1,9 @@
 /** POST /admin/api/i18n/memory/rebuild */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck } from "../../_utils.ts";
-import { loadTM, saveTM, buildTMFromPages } from "../../../../tm.ts";
-import { dirname, basename } from "@std/path";
+import { csrfCheck, json, requirePermission, serverError } from "../../_utils.ts";
+import { buildTMFromPages, loadTM, saveTM } from "../../../../tm.ts";
+import { basename, dirname } from "@std/path";
 import { parseContentFilename } from "@dune/plugin-api";
 import type { FreshContext } from "fresh";
 
@@ -46,7 +46,10 @@ export const handler = {
           if (!sourceLoaded.rawContent || !targetLoaded.rawContent) continue;
           const pairs = buildTMFromPages(sourceLoaded.rawContent, targetLoaded.rawContent);
           for (const [src, tgt] of Object.entries(pairs)) {
-            if (!tm[src]) { tm[src] = tgt; added++; }
+            if (!tm[src]) {
+              tm[src] = tgt;
+              added++;
+            }
           }
         } catch { /* skip */ }
       }

@@ -1,7 +1,7 @@
 /** PUT /admin/api/config/theme */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
+import { csrfCheck, json, requirePermission, serverError } from "../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {

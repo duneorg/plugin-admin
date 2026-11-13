@@ -6,17 +6,23 @@
  * Collaboration operates on the page body only (content after frontmatter).
  */
 
-import type { StorageAdapter, PluginEngine, HistoryEngine } from "@dune/plugin-api";
+import type { HistoryEngine, PluginEngine, StorageAdapter } from "@dune/plugin-api";
 import type { User } from "../admin/types.ts";
 
 // ── Operations (Quill Delta format) ──────────────────────────────────────────
 
 /** Keep n characters unchanged. */
-export interface RetainOp { retain: number }
+export interface RetainOp {
+  retain: number;
+}
 /** Insert a string at the current position. */
-export interface InsertOp { insert: string }
+export interface InsertOp {
+  insert: string;
+}
 /** Delete n characters at the current position. */
-export interface DeleteOp { delete: number }
+export interface DeleteOp {
+  delete: number;
+}
 
 export type Op = RetainOp | InsertOp | DeleteOp;
 export type Delta = Op[];

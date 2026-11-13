@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/marketplace — plugin + theme marketplace */
 
-
 import type { AdminState } from "../../types.ts";
 import Marketplace from "../../islands/Marketplace.tsx";
 import type { FreshContext } from "fresh";
@@ -18,7 +17,9 @@ export default function MarketplaceRoute(
 ) {
   return (
     <div>
-      <div class="section-header"><h2>Marketplace</h2></div>
+      <div class="section-header">
+        <h2>Marketplace</h2>
+      </div>
       <Marketplace prefix={data.prefix} initialTab={data.tab} />
     </div>
   );

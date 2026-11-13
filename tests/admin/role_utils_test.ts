@@ -7,11 +7,7 @@
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { ADMIN_ROLE_RANK } from "jsr:@dune/core@0.37/auth/authz-schema";
-import {
-  highestValidRole,
-  ROLE_RANK,
-  VALID_ROLES,
-} from "../../src/admin/auth/role-utils.ts";
+import { highestValidRole, ROLE_RANK, VALID_ROLES } from "../../src/admin/auth/role-utils.ts";
 
 Deno.test("ROLE_RANK is @dune/core's ADMIN_ROLE_RANK, not a separate copy", () => {
   assertEquals(ROLE_RANK, ADMIN_ROLE_RANK);

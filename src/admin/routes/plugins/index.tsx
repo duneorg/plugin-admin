@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/plugins — installed plugins list */
 
-
 import type { AdminState } from "../../types.ts";
 import type { FreshContext } from "fresh";
 
@@ -33,11 +32,20 @@ export default function PluginsRoute(
         ? <p class="s-17a730ae">No plugins installed.</p>
         : (
           <table class="admin-table">
-            <thead><tr><th>Name</th><th>Version</th><th>Description</th><th>Hooks</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Version</th>
+                <th>Description</th>
+                <th>Hooks</th>
+              </tr>
+            </thead>
             <tbody>
               {data.plugins.map((p) => (
                 <tr key={String(p.name)}>
-                  <td><strong>{String(p.name)}</strong></td>
+                  <td>
+                    <strong>{String(p.name)}</strong>
+                  </td>
                   <td>{String(p.version ?? "—")}</td>
                   <td>{String(p.description ?? "—")}</td>
                   <td class="s-c866c7be">{(p.hooks as string[]).join(", ") || "—"}</td>

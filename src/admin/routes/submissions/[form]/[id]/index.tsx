@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/submissions/:form/:id — submission detail */
 
-
 import type { AdminState } from "../../../../types.ts";
 import type { FreshContext } from "fresh";
 import type { Submission } from "../../../../submissions.ts";
@@ -50,7 +49,13 @@ export default function SubmissionDetailRoute(
         <div>
           <h3 class="s-db27a9cf">Attachments</h3>
           {files.map((f) => (
-            <a key={f.name} href={`${data.prefix}/submissions/${data.form}/${s.id}/files/${encodeURIComponent(f.name)}`} class="btn btn-sm s-d109945c">
+            <a
+              key={f.name}
+              href={`${data.prefix}/submissions/${data.form}/${s.id}/files/${
+                encodeURIComponent(f.name)
+              }`}
+              class="btn btn-sm s-d109945c"
+            >
               {f.name}
             </a>
           ))}

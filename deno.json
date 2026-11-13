@@ -10,6 +10,11 @@
       "jsr:@dune/testing"
     ]
   },
+  "fmt": {
+    "lineWidth": 100,
+    "proseWrap": "preserve",
+    "exclude": ["deno.lock", "**/*.md", ".github/", "src/admin/manifest.gen.ts"]
+  },
   "exports": {
     ".": "./mod.ts",
     "./admin/mount": "./src/admin/mount.ts",
@@ -50,7 +55,7 @@
   },
   "tasks": {
     "test": "deno test -A tests/",
-    "check": "deno lint src/ && deno check mod.ts src/**/*.ts src/**/*.tsx",
+    "check": "deno fmt --check && deno lint src/ && deno check mod.ts src/**/*.ts src/**/*.tsx",
     "test:e2e": "deno run --allow-all --unstable-kv npm:playwright test --config playwright.config.ts",
     "test:e2e:install": "deno run --allow-all npm:playwright install chromium",
     "gen:admin-manifest": "deno run --allow-read --allow-write scripts/generate-admin-manifest.ts"

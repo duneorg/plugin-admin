@@ -39,7 +39,14 @@
 
 import type { FreshContext } from "fresh";
 import type { AdminState } from "../../../types.ts";
-import { json, requirePermission, requireTsxWrite, requireOwnedPage, csrfCheck, validatePagePath } from "../_utils.ts";
+import {
+  csrfCheck,
+  json,
+  requireOwnedPage,
+  requirePermission,
+  requireTsxWrite,
+  validatePagePath,
+} from "../_utils.ts";
 import { ValidationError } from "../../../http.ts";
 import { announcePageEvent } from "../../../page-events.ts";
 import { join } from "@std/path";
@@ -225,7 +232,9 @@ function validateChange(change: Change): string[] {
     if (typeof change.spec !== "string" || !change.spec.trim()) {
       errors.push("spec (string) is required for op=plugin.install");
     } else if (!PLUGIN_SPEC_RE.test(change.spec)) {
-      errors.push(`spec "${change.spec}" must be a pinned jsr: specifier (e.g. jsr:@scope/name@1.2.3)`);
+      errors.push(
+        `spec "${change.spec}" must be a pinned jsr: specifier (e.g. jsr:@scope/name@1.2.3)`,
+      );
     }
   }
 
@@ -382,7 +391,14 @@ export const handler = {
       const errors = validateChange(change);
 
       if (errors.length > 0) {
-        results.push({ op: change.op, path: change.path, key: change.key, spec: change.spec, status: "error", errors });
+        results.push({
+          op: change.op,
+          path: change.path,
+          key: change.key,
+          spec: change.spec,
+          status: "error",
+          errors,
+        });
         continue;
       }
 
@@ -441,7 +457,12 @@ export const handler = {
           await applyConfig(siteRoot, change.key!, change.value);
           results.push({ op: change.op, key: change.key, status: "updated", errors: [] });
         } catch (err) {
-          results.push({ op: change.op, key: change.key, status: "error", errors: [safeOpError(err)] });
+          results.push({
+            op: change.op,
+            key: change.key,
+            status: "error",
+            errors: [safeOpError(err)],
+          });
         }
         continue;
       }
@@ -454,9 +475,19 @@ export const handler = {
         }
         try {
           const added = await applyPluginInstall(siteRoot, change.spec!);
-          results.push({ op: change.op, spec: change.spec, status: added ? "created" : "skipped", errors: [] });
+          results.push({
+            op: change.op,
+            spec: change.spec,
+            status: added ? "created" : "skipped",
+            errors: [],
+          });
         } catch (err) {
-          results.push({ op: change.op, spec: change.spec, status: "error", errors: [safeOpError(err)] });
+          results.push({
+            op: change.op,
+            spec: change.spec,
+            status: "error",
+            errors: [safeOpError(err)],
+          });
         }
         continue;
       }
@@ -483,18 +514,25 @@ export const handler = {
       try {
         if (change.op === "delete") {
           await Deno.remove(absPath);
-          announcePageEvent(ctx, { event: "onPageDelete", payload: { sourcePath: change.path ?? "" } });
+          announcePageEvent(ctx, {
+            event: "onPageDelete",
+            payload: { sourcePath: change.path ?? "" },
+          });
           results.push({ op: change.op, path: change.path, status: "deleted", errors: [] });
         } else {
           const existed = await Deno.stat(absPath).then(() => true).catch(() => false);
-          await applyWrite(contentDir, change as Change & { op: "write" | "frontmatter"; path: string });
+          await applyWrite(
+            contentDir,
+            change as Change & { op: "write" | "frontmatter"; path: string },
+          );
           const sourcePath = change.path ?? "";
           const title = change.op === "frontmatter" ? change.patch?.title : undefined;
           announcePageEvent(
             ctx,
-            existed
-              ? { event: "onPageUpdate", payload: { sourcePath } }
-              : { event: "onPageCreate", payload: { sourcePath, title: typeof title === "string" ? title : "" } },
+            existed ? { event: "onPageUpdate", payload: { sourcePath } } : {
+              event: "onPageCreate",
+              payload: { sourcePath, title: typeof title === "string" ? title : "" },
+            },
           );
           results.push({
             op: change.op,

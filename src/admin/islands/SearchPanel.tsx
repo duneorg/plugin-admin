@@ -5,7 +5,7 @@
  * and toggles parallel mode. Talks to /admin/api/search/engines.
  */
 
-import { useState, useEffect, useCallback } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 
 function getCsrf(): string {
   return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? "";
@@ -44,7 +44,9 @@ export default function SearchPanel({ prefix }: Props) {
     }
   }, [apiUrl]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function patch(body: Partial<{ active: string; parallel: boolean }>) {
     setSaving(true);
@@ -84,13 +86,19 @@ export default function SearchPanel({ prefix }: Props) {
       <section class="s-df2a69f4">
         <h3 class="s-3c2db771">Active Engine</h3>
         {engines.length === 0
-          ? <p class="s-4f77c842">No search engines registered. Install a search plugin to enable full-text search.</p>
+          ? (
+            <p class="s-4f77c842">
+              No search engines registered. Install a search plugin to enable full-text search.
+            </p>
+          )
           : (
             <div class="s-516a4d34">
               {engines.map((name) => (
                 <label
                   key={name}
-                  style={`display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-radius:6px;cursor:pointer;border:1px solid ${name === active ? "#3182ce" : "#e2e8f0"};background:${name === active ? "#ebf8ff" : "#fff"}`}
+                  style={`display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-radius:6px;cursor:pointer;border:1px solid ${
+                    name === active ? "#3182ce" : "#e2e8f0"
+                  };background:${name === active ? "#ebf8ff" : "#fff"}`}
                 >
                   <input
                     type="radio"
@@ -112,7 +120,8 @@ export default function SearchPanel({ prefix }: Props) {
         <section>
           <h3 class="s-3c2db771">Parallel Mode</h3>
           <p class="s-3cf64e05">
-            When enabled, queries run against all registered engines simultaneously and results are merged.
+            When enabled, queries run against all registered engines simultaneously and results are
+            merged.
           </p>
           <label class="s-8d1a5c1d">
             <input

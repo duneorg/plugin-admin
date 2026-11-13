@@ -31,12 +31,21 @@ async function withSite(
   const root = await Deno.makeTempDir({ prefix: "dune_admin_events_" });
   try {
     await Deno.mkdir(join(root, "config"), { recursive: true });
-    await Deno.writeTextFile(join(root, "config", "site.yaml"), 'title: "Events"\nurl: "http://localhost:8000"\n');
+    await Deno.writeTextFile(
+      join(root, "config", "site.yaml"),
+      'title: "Events"\nurl: "http://localhost:8000"\n',
+    );
     for (const dir of ["01.alpha", "02.beta"]) {
       await Deno.mkdir(join(root, "content", dir), { recursive: true });
-      await Deno.writeTextFile(join(root, "content", dir, "default.md"), `---\ntitle: ${dir}\n---\n\nbody\n`);
+      await Deno.writeTextFile(
+        join(root, "content", dir, "default.md"),
+        `---\ntitle: ${dir}\n---\n\nbody\n`,
+      );
     }
-    const users = createLocalUserStore({ storage: createStorage({ rootDir: root }), usersDir: "data/users" });
+    const users = createLocalUserStore({
+      storage: createStorage({ rootDir: root }),
+      usersDir: "data/users",
+    });
     await users.create({
       email: "ed@example.test",
       username: "ed",
@@ -60,10 +69,13 @@ async function withSite(
         onPageMove: record("onPageMove"),
       } as DunePlugin["hooks"],
     };
-    const ctx = await bootstrap(root, { plugins: [createAdminPlugin({ root, dev: false }), recorder] });
+    const ctx = await bootstrap(root, {
+      plugins: [createAdminPlugin({ root, dev: false }), recorder],
+    });
     const { app } = await createDuneApp(ctx, { root, port: 0, dev: false });
     const handler = app.handler();
-    const req = (path: string, init?: RequestInit) => handler(new Request(new URL(path, ORIGIN), init));
+    const req = (path: string, init?: RequestInit) =>
+      handler(new Request(new URL(path, ORIGIN), init));
 
     const login = await req("/admin/login", {
       method: "POST",
@@ -96,11 +108,17 @@ Deno.test("admin page routes announce create, update, move and delete", async ()
   await withSite(async ({ seen, call }) => {
     let res = await call("POST", "/admin/api/pages", { path: "blog", title: "Hello" });
     assertEquals(res.ok, true);
-    assertEquals(seen.splice(0), [{ event: "onPageCreate", data: { sourcePath: "blog/default.md", title: "Hello", actor: "ed" } }]);
+    assertEquals(seen.splice(0), [{
+      event: "onPageCreate",
+      data: { sourcePath: "blog/default.md", title: "Hello", actor: "ed" },
+    }]);
 
     res = await call("PUT", "/admin/api/pages/blog/default.md", { content: "changed" });
     assertEquals(res.status, 200);
-    assertEquals(seen.splice(0), [{ event: "onPageUpdate", data: { sourcePath: "blog/default.md", actor: "ed" } }]);
+    assertEquals(seen.splice(0), [{
+      event: "onPageUpdate",
+      data: { sourcePath: "blog/default.md", actor: "ed" },
+    }]);
 
     // Move 02.beta before 01.alpha: both folders are renumbered.
     res = await call("POST", "/admin/api/pages/reorder", {
@@ -122,7 +140,10 @@ Deno.test("admin page routes announce create, update, move and delete", async ()
 
     res = await call("DELETE", "/admin/api/pages/blog/default.md");
     assertEquals(res.status, 200);
-    assertEquals(seen.splice(0), [{ event: "onPageDelete", data: { sourcePath: "blog/default.md", actor: "ed" } }]);
+    assertEquals(seen.splice(0), [{
+      event: "onPageDelete",
+      data: { sourcePath: "blog/default.md", actor: "ed" },
+    }]);
   });
 });
 
@@ -138,8 +159,14 @@ Deno.test("history restore announces onPageUpdate", async () => {
     const revisions = await history.getHistory("01.alpha/default.md");
     assertEquals(revisions.length, 1);
 
-    const res = await call("POST", `/admin/api/history/01.alpha/default.md/${revisions[0].number}/restore`);
+    const res = await call(
+      "POST",
+      `/admin/api/history/01.alpha/default.md/${revisions[0].number}/restore`,
+    );
     assertEquals(res.status, 200);
-    assertEquals(seen.splice(0), [{ event: "onPageUpdate", data: { sourcePath: "01.alpha/default.md", actor: "ed" } }]);
+    assertEquals(seen.splice(0), [{
+      event: "onPageUpdate",
+      data: { sourcePath: "01.alpha/default.md", actor: "ed" },
+    }]);
   });
 });

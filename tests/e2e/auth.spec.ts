@@ -2,8 +2,14 @@
  * E2E: Login and session management.
  */
 
-import { test, expect } from "npm:@playwright/test@^1.45";
-import { ADMIN_URL, ADMIN_USERNAME, ADMIN_PASSWORD, login, expectRedirectedToLogin } from "./support/helpers.ts";
+import { expect, test } from "npm:@playwright/test@^1.45";
+import {
+  ADMIN_PASSWORD,
+  ADMIN_URL,
+  ADMIN_USERNAME,
+  expectRedirectedToLogin,
+  login,
+} from "./support/helpers.ts";
 
 test.describe("Admin login", () => {
   test("login page renders", async ({ page }) => {

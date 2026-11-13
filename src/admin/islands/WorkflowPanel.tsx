@@ -5,7 +5,7 @@
  * Talks to /admin/api/workflow/*.
  */
 
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 interface Stage {
   id: string;
@@ -191,7 +191,8 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
               const targetStage = status.stages.find((s) => s.id === t.to);
               const tc = stageColor(targetStage, t.to);
               return (
-                <button type="button"
+                <button
+                  type="button"
                   key={t.to}
                   class="btn btn-sm"
                   style={`background:${tc};color:white;border:none`}
@@ -218,7 +219,10 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
               <span class="s-2a4cda41">⏰</span>
               <span>{sa.action}</span>
               <span class="s-4f77c842">{new Date(sa.scheduledAt).toLocaleString()}</span>
-              <button type="button" class="btn btn-xs btn-outline s-83456371" onClick={() => cancelSchedule(sa.id)}
+              <button
+                type="button"
+                class="btn btn-xs btn-outline s-83456371"
+                onClick={() => cancelSchedule(sa.id)}
               >
                 Cancel
               </button>
@@ -228,7 +232,10 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
       )}
 
       {/* Schedule button */}
-      <button type="button" class="btn btn-xs btn-outline s-3b2074de" onClick={() => setShowSchedule((v) => !v)}
+      <button
+        type="button"
+        class="btn btn-xs btn-outline s-3b2074de"
+        onClick={() => setShowSchedule((v) => !v)}
       >
         {showSchedule ? "Cancel" : "Schedule action…"}
       </button>
@@ -255,7 +262,8 @@ export default function WorkflowPanel({ pagePath, prefix }: Props) {
               min={new Date().toISOString().slice(0, 16)}
             />
           </div>
-          <button type="button"
+          <button
+            type="button"
             class="btn btn-sm btn-primary"
             onClick={scheduleAction_}
             disabled={scheduling || !scheduleDate}

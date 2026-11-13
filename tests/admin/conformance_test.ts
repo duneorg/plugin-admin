@@ -51,13 +51,19 @@ runAdminConformance({
   async createApp({ content, extraPlugins, withAdmin }) {
     const root = await Deno.makeTempDir({ prefix: "dune_admin_conformance_" });
     await Deno.mkdir(join(root, "config"), { recursive: true });
-    await Deno.writeTextFile(join(root, "config", "site.yaml"), 'title: "Conformance Site"\nurl: "http://localhost:8000"\n');
+    await Deno.writeTextFile(
+      join(root, "config", "site.yaml"),
+      'title: "Conformance Site"\nurl: "http://localhost:8000"\n',
+    );
     for (const [path, body] of Object.entries(content)) {
       await Deno.mkdir(join(root, "content", path, ".."), { recursive: true });
       await Deno.writeTextFile(join(root, "content", path), body);
     }
     if (withAdmin) {
-      const users = createLocalUserStore({ storage: createStorage({ rootDir: root }), usersDir: "data/users" });
+      const users = createLocalUserStore({
+        storage: createStorage({ rootDir: root }),
+        usersDir: "data/users",
+      });
       await users.create({
         email: "ed@example.test",
         username: "ed",
@@ -94,7 +100,9 @@ runAdminConformance({
       headers: { cookie, origin: ORIGIN, "content-type": "application/json" },
       body: JSON.stringify({ content: body }),
     });
-    if (res.status !== 200) throw new Error(`plugin-admin edit failed: ${res.status} ${await res.text()}`);
+    if (res.status !== 200) {
+      throw new Error(`plugin-admin edit failed: ${res.status} ${await res.text()}`);
+    }
   },
 
   async createPage(app, cookie, { sourcePath, title }) {
@@ -114,6 +122,8 @@ runAdminConformance({
       method: "DELETE",
       headers: { cookie, origin: ORIGIN },
     });
-    if (res.status !== 200) throw new Error(`plugin-admin delete failed: ${res.status} ${await res.text()}`);
+    if (res.status !== 200) {
+      throw new Error(`plugin-admin delete failed: ${res.status} ${await res.text()}`);
+    }
   },
 });

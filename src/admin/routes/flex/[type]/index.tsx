@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
 /** GET /admin/flex/:type — flex records list */
 
-
 import type { AdminState } from "../../../types.ts";
 import type { FreshContext } from "fresh";
 
@@ -27,12 +26,21 @@ export default function FlexTypeRoute(
         <a href={`${data.prefix}/flex/${data.type}/new`} class="btn btn-primary">New record</a>
       </div>
       <table class="admin-table">
-        <thead><tr><th>ID</th><th>Actions</th></tr></thead>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
         <tbody>
           {(data.records as Array<{ id: string }>).map((r) => (
             <tr key={r.id}>
-              <td><code>{r.id}</code></td>
-              <td><a href={`${data.prefix}/flex/${data.type}/${r.id}`} class="btn btn-sm">Edit</a></td>
+              <td>
+                <code>{r.id}</code>
+              </td>
+              <td>
+                <a href={`${data.prefix}/flex/${data.type}/${r.id}`} class="btn btn-sm">Edit</a>
+              </td>
             </tr>
           ))}
         </tbody>

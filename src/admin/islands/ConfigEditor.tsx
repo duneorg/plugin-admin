@@ -5,7 +5,7 @@
  * Talks to /admin/api/config.
  */
 
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 interface SiteConfig {
   title: string;
@@ -26,8 +26,12 @@ export default function ConfigEditor({ prefix }: Props) {
   const [loading, setLoading] = useState(true);
 
   const [config, setConfig] = useState<SiteConfig>({
-    title: "", description: "", url: "",
-    author: { name: "", email: "" }, metadata: {}, taxonomies: [],
+    title: "",
+    description: "",
+    url: "",
+    author: { name: "", email: "" },
+    metadata: {},
+    taxonomies: [],
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -92,7 +96,8 @@ export default function ConfigEditor({ prefix }: Props) {
               <input
                 type="text"
                 value={config.title}
-                onInput={(e) => setConfig((c) => ({ ...c, title: (e.target as HTMLInputElement).value }))}
+                onInput={(e) =>
+                  setConfig((c) => ({ ...c, title: (e.target as HTMLInputElement).value }))}
               />
             </div>
             <div class="form-group">
@@ -100,7 +105,8 @@ export default function ConfigEditor({ prefix }: Props) {
               <input
                 type="url"
                 value={config.url}
-                onInput={(e) => setConfig((c) => ({ ...c, url: (e.target as HTMLInputElement).value }))}
+                onInput={(e) =>
+                  setConfig((c) => ({ ...c, url: (e.target as HTMLInputElement).value }))}
               />
             </div>
           </div>
@@ -109,7 +115,8 @@ export default function ConfigEditor({ prefix }: Props) {
             <textarea
               rows={3}
               value={config.description}
-              onInput={(e) => setConfig((c) => ({ ...c, description: (e.target as HTMLTextAreaElement).value }))}
+              onInput={(e) =>
+                setConfig((c) => ({ ...c, description: (e.target as HTMLTextAreaElement).value }))}
             />
           </div>
         </div>
@@ -122,7 +129,11 @@ export default function ConfigEditor({ prefix }: Props) {
               <input
                 type="text"
                 value={config.author.name}
-                onInput={(e) => setConfig((c) => ({ ...c, author: { ...c.author, name: (e.target as HTMLInputElement).value } }))}
+                onInput={(e) =>
+                  setConfig((c) => ({
+                    ...c,
+                    author: { ...c.author, name: (e.target as HTMLInputElement).value },
+                  }))}
               />
             </div>
             <div class="form-group">
@@ -130,7 +141,11 @@ export default function ConfigEditor({ prefix }: Props) {
               <input
                 type="email"
                 value={config.author.email}
-                onInput={(e) => setConfig((c) => ({ ...c, author: { ...c.author, email: (e.target as HTMLInputElement).value } }))}
+                onInput={(e) =>
+                  setConfig((c) => ({
+                    ...c,
+                    author: { ...c.author, email: (e.target as HTMLInputElement).value },
+                  }))}
               />
             </div>
           </div>
@@ -142,7 +157,9 @@ export default function ConfigEditor({ prefix }: Props) {
             {config.taxonomies.map((t) => (
               <span key={t} class="badge s-6e0691e8">
                 {t}
-                <button type="button" class="s-4e407366" onClick={() => removeTaxonomy(t)}>×</button>
+                <button type="button" class="s-4e407366" onClick={() => removeTaxonomy(t)}>
+                  ×
+                </button>
               </span>
             ))}
           </div>
@@ -152,7 +169,12 @@ export default function ConfigEditor({ prefix }: Props) {
               value={taxInput}
               onInput={(e) => setTaxInput((e.target as HTMLInputElement).value)}
               placeholder="Add taxonomy (e.g. tags)"
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTaxonomy(); } }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addTaxonomy();
+                }
+              }}
               class="s-da5cd676"
             />
             <button type="button" class="btn btn-sm btn-outline" onClick={addTaxonomy}>Add</button>

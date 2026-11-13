@@ -1,7 +1,7 @@
 /** GET + PUT /admin/api/config/theme-config */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck } from "../_utils.ts";
+import { csrfCheck, json, requirePermission, serverError } from "../_utils.ts";
 import type { BlueprintField } from "@dune/plugin-api";
 import type { FreshContext } from "fresh";
 
@@ -40,11 +40,15 @@ export const handler = {
           } else if (field.type === "toggle") {
             body[key] = body[key] === true || body[key] === "true";
           }
-          if (field.required && (body[key] === undefined || body[key] === null || body[key] === "")) {
+          if (
+            field.required && (body[key] === undefined || body[key] === null || body[key] === "")
+          ) {
             errors.push(field.label ?? key);
           }
         }
-        if (errors.length > 0) return json({ error: `Missing required fields: ${errors.join(", ")}` }, 422);
+        if (errors.length > 0) {
+          return json({ error: `Missing required fields: ${errors.join(", ")}` }, 422);
+        }
 
         // Strip keys not declared in the schema to prevent arbitrary config
         // injection. An attacker with config.update permission could otherwise

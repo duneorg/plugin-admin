@@ -1,7 +1,16 @@
 /** GET /admin/api/media — list; DELETE /admin/api/media — delete */
 
 import type { AdminState } from "../../../types.ts";
-import { requirePermission, requireOwnedPage, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../_utils.ts";
+import {
+  actorFromAuth,
+  csrfCheck,
+  getClientIp,
+  json,
+  requireOwnedPage,
+  requirePermission,
+  serverError,
+  validatePagePath,
+} from "../_utils.ts";
 import { dirname } from "@std/path";
 import { isMediaFile } from "@dune/plugin-api";
 import type { FreshContext } from "fresh";
@@ -10,7 +19,9 @@ function mimeToCategory(mimeType: string): string {
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType.startsWith("video/")) return "video";
   if (mimeType.startsWith("audio/")) return "audio";
-  if (mimeType === "application/pdf" || mimeType.startsWith("text/") || mimeType === "application/zip") return "document";
+  if (
+    mimeType === "application/pdf" || mimeType.startsWith("text/") || mimeType === "application/zip"
+  ) return "document";
   return "other";
 }
 
@@ -22,15 +33,23 @@ export const handler = {
     const { engine } = ctx.state.adminContext;
     try {
       const items: Array<{
-        name: string; url: string; type: string; contentType: string;
-        size: number; page: string; focalX?: number; focalY?: number;
+        name: string;
+        url: string;
+        type: string;
+        contentType: string;
+        size: number;
+        page: string;
+        focalX?: number;
+        focalY?: number;
       }> = [];
 
       for (const pageIndex of engine.pages) {
         try {
           const page = await engine.loadPage(pageIndex.sourcePath);
           for (const media of page.media) {
-            const focal = Array.isArray(media.meta?.focal) ? media.meta.focal as [number, number] : null;
+            const focal = Array.isArray(media.meta?.focal)
+              ? media.meta.focal as [number, number]
+              : null;
             items.push({
               name: media.name,
               url: media.url,
@@ -65,7 +84,10 @@ export const handler = {
       if (!pagePath || typeof pagePath !== "string" || !name || typeof name !== "string") {
         return json({ error: "pagePath and name required" }, 400);
       }
-      if (!validatePagePath(pagePath) || name.includes("..") || name.includes("/") || name.includes("\\")) {
+      if (
+        !validatePagePath(pagePath) || name.includes("..") || name.includes("/") ||
+        name.includes("\\")
+      ) {
         return json({ error: "invalid path" }, 400);
       }
       const ownerDenied = await requireOwnedPage(ctx, pagePath);

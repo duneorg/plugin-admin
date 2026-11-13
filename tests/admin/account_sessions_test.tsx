@@ -17,7 +17,13 @@ function fakeSessions(canList = true) {
     store,
     canList,
     add(userId: string, ip = "10.0.0.1"): Session {
-      const s: Session = { id: `secret-session-id-${++n}`, userId, createdAt: 1_700_000_000_000 + n, expiresAt: 1_800_000_000_000, ip };
+      const s: Session = {
+        id: `secret-session-id-${++n}`,
+        userId,
+        createdAt: 1_700_000_000_000 + n,
+        expiresAt: 1_800_000_000_000,
+        ip,
+      };
       store.set(s.id, s);
       return s;
     },
@@ -32,7 +38,11 @@ function fakeSessions(canList = true) {
       return Promise.resolve();
     },
     listForUser: (userId: string) =>
-      Promise.resolve([...store.values()].filter((s) => s.userId === userId).sort((a, b) => b.createdAt - a.createdAt)),
+      Promise.resolve(
+        [...store.values()].filter((s) => s.userId === userId).sort((a, b) =>
+          b.createdAt - a.createdAt
+        ),
+      ),
     revokeOthers: (userId: string, keep: string) => {
       for (const [id, s] of store) if (s.userId === userId && id !== keep) store.delete(id);
       return Promise.resolve();
@@ -42,7 +52,12 @@ function fakeSessions(canList = true) {
 }
 
 // deno-lint-ignore no-explicit-any
-function ctxFor(sessions: any, current: Session, method: string, body?: Record<string, string>): any {
+function ctxFor(
+  sessions: any,
+  current: Session,
+  method: string,
+  body?: Record<string, string>,
+): any {
   const audit: unknown[] = [];
   let rendered: unknown = null;
   return {
@@ -52,7 +67,10 @@ function ctxFor(sessions: any, current: Session, method: string, body?: Record<s
     },
     req: new Request("https://cms.example.com/admin/account", {
       method,
-      headers: { origin: "https://cms.example.com", "content-type": "application/x-www-form-urlencoded" },
+      headers: {
+        origin: "https://cms.example.com",
+        "content-type": "application/x-www-form-urlencoded",
+      },
       body: body ? new URLSearchParams(body) : undefined,
     }),
     url: new URL("https://cms.example.com/admin/account"),
@@ -68,7 +86,11 @@ function ctxFor(sessions: any, current: Session, method: string, body?: Record<s
         csrfSecret: "s",
         services: { security: { clientIp: () => "10.0.0.9" } },
       },
-      auth: { authenticated: true, user: { id: current.userId, username: "polo" }, session: current },
+      auth: {
+        authenticated: true,
+        user: { id: current.userId, username: "polo" },
+        session: current,
+      },
     },
   };
 }
@@ -103,7 +125,10 @@ Deno.test("account POST revoke: signs out the session with that handle, audits i
   const sessions = fakeSessions();
   const mine = sessions.add("u1");
   const other = sessions.add("u1");
-  const ctx = ctxFor(sessions, mine, "POST", { action: "revoke", handle: await sessionHandle(other.id) });
+  const ctx = ctxFor(sessions, mine, "POST", {
+    action: "revoke",
+    handle: await sessionHandle(other.id),
+  });
   const res = await handler.POST(ctx);
   assertEquals(res.status, 303);
   assertEquals(res.headers.get("location"), "/admin/account?done=one");
@@ -117,11 +142,17 @@ Deno.test("account POST revoke: cannot touch another user's session or the curre
   const mine = sessions.add("u1");
   const theirs = sessions.add("u2");
 
-  const a = ctxFor(sessions, mine, "POST", { action: "revoke", handle: await sessionHandle(theirs.id) });
+  const a = ctxFor(sessions, mine, "POST", {
+    action: "revoke",
+    handle: await sessionHandle(theirs.id),
+  });
   assertEquals((await handler.POST(a)).headers.get("location"), "/admin/account?done=gone");
   assertEquals(sessions.store.has(theirs.id), true);
 
-  const b = ctxFor(sessions, mine, "POST", { action: "revoke", handle: await sessionHandle(mine.id) });
+  const b = ctxFor(sessions, mine, "POST", {
+    action: "revoke",
+    handle: await sessionHandle(mine.id),
+  });
   await handler.POST(b);
   assertEquals(sessions.store.has(mine.id), true);
   assertEquals(b.audit.length, 0);
@@ -149,7 +180,10 @@ Deno.test("account POST: cross-origin is rejected", async () => {
   const ctx = ctxFor(sessions, mine, "POST", { action: "revoke-others" });
   ctx.req = new Request("https://cms.example.com/admin/account", {
     method: "POST",
-    headers: { origin: "https://evil.example.com", "content-type": "application/x-www-form-urlencoded" },
+    headers: {
+      origin: "https://evil.example.com",
+      "content-type": "application/x-www-form-urlencoded",
+    },
     body: new URLSearchParams({ action: "revoke-others" }),
   });
   assertEquals((await handler.POST(ctx)).status, 403);
@@ -157,6 +191,8 @@ Deno.test("account POST: cross-origin is rejected", async () => {
 });
 
 Deno.test("account page: explains itself when core cannot list sessions", () => {
-  const html = render(<AccountRoute data={{ prefix: "/admin", canList: false, sessions: [], notice: null }} />);
+  const html = render(
+    <AccountRoute data={{ prefix: "/admin", canList: false, sessions: [], notice: null }} />,
+  );
   assertStringIncludes(html, "does not list sessions yet");
 });

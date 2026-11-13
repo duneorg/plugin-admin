@@ -10,7 +10,19 @@
  */
 
 import type { AdminState } from "../../../../types.ts";
-import { requirePermission, requireTsxWrite, requirePageOwner, requireOwnedPage, pageOwnerId, json, serverError, actorFromAuth, getClientIp, csrfCheck, validatePagePath } from "../../_utils.ts";
+import {
+  actorFromAuth,
+  csrfCheck,
+  getClientIp,
+  json,
+  pageOwnerId,
+  requireOwnedPage,
+  requirePageOwner,
+  requirePermission,
+  requireTsxWrite,
+  serverError,
+  validatePagePath,
+} from "../../_utils.ts";
 import { stringify as stringifyYaml } from "@std/yaml";
 import { announcePageEvent } from "../../../../page-events.ts";
 import type { PageFrontmatter } from "@dune/plugin-api";
@@ -18,15 +30,23 @@ import type { FreshContext } from "fresh";
 import { adminSettings } from "../../../../settings.ts";
 
 async function maybeGitCommit(
-  filePath: string, sourcePath: string, author: string | undefined,
+  filePath: string,
+  sourcePath: string,
+  author: string | undefined,
   config: import("../../../../context.ts").AdminContext["config"],
 ): Promise<void> {
   if (!adminSettings(config).git_commit) return;
   try {
-    const msg = author ? `Admin: update ${sourcePath} (by ${author})` : `Admin: update ${sourcePath}`;
+    const msg = author
+      ? `Admin: update ${sourcePath} (by ${author})`
+      : `Admin: update ${sourcePath}`;
     const add = new Deno.Command("git", { args: ["add", filePath], stderr: "inherit" });
     await add.output();
-    const commit = new Deno.Command("git", { args: ["commit", "-m", msg], stderr: "inherit", stdout: "null" });
+    const commit = new Deno.Command("git", {
+      args: ["commit", "-m", msg],
+      stderr: "inherit",
+      stdout: "null",
+    });
     await commit.output();
   } catch (err) {
     console.warn(`[dune] git commit failed: ${err instanceof Error ? err.message : err}`);
@@ -53,8 +73,12 @@ export const handler = {
       // does, rather than sending the raw unresolved definition.
       const blueprint = ctx.state.adminContext.services.blueprints.resolve(page.template);
       return json({
-        sourcePath: page.sourcePath, route: page.route, format: page.format,
-        template: page.template, frontmatter: page.frontmatter, rawContent: page.rawContent,
+        sourcePath: page.sourcePath,
+        route: page.route,
+        format: page.format,
+        template: page.template,
+        frontmatter: page.frontmatter,
+        rawContent: page.rawContent,
         media: page.media.map((m) => ({ name: m.name, url: m.url, type: m.type, size: m.size })),
         blueprint,
         // The site's taxonomies and the terms already in use, for the

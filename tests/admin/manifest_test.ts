@@ -11,7 +11,12 @@
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { generateManifest } from "../../scripts/generate-admin-manifest.ts";
-import { adminIslands, adminLayout, adminMiddleware, adminRoutes } from "../../src/admin/manifest.gen.ts";
+import {
+  adminIslands,
+  adminLayout,
+  adminMiddleware,
+  adminRoutes,
+} from "../../src/admin/manifest.gen.ts";
 
 Deno.test("admin manifest is up to date with src/admin/routes and islands", async () => {
   const expected = await generateManifest();
@@ -54,12 +59,14 @@ Deno.test("staging and workflow status/scheduled routes are wildcard, not single
   // content-root pages) and were renamed to [...path] to match
   // /api/pages/:path* — see the comment in each route file.
   const patterns = adminRoutes.map((r) => r.pattern);
-  for (const required of [
-    "/api/staging/:path*",
-    "/api/staging/:path*/publish",
-    "/api/workflow/status/:path*",
-    "/api/workflow/scheduled/:path*",
-  ]) {
+  for (
+    const required of [
+      "/api/staging/:path*",
+      "/api/staging/:path*/publish",
+      "/api/workflow/status/:path*",
+      "/api/workflow/scheduled/:path*",
+    ]
+  ) {
     assertEquals(patterns.includes(required), true, `missing wildcard route pattern ${required}`);
   }
 });
@@ -75,7 +82,11 @@ Deno.test("admin manifest registers a wildcard's longer sub-routes before the ba
     ["/api/pages/:path*/comments/:id/resolve", "/api/pages/:path*/comments/:id"],
   ];
   for (const [first, second] of order) {
-    assertEquals(patterns.indexOf(first) < patterns.indexOf(second), true, `${first} must precede ${second}`);
+    assertEquals(
+      patterns.indexOf(first) < patterns.indexOf(second),
+      true,
+      `${first} must precede ${second}`,
+    );
   }
 });
 

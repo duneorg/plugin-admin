@@ -1,7 +1,13 @@
 /** GET + POST /admin/api/pages/:path/comments */
 
 import type { AdminState } from "../../../../../types.ts";
-import { requirePermission, json, serverError, csrfCheck, validatePagePath } from "../../../_utils.ts";
+import {
+  csrfCheck,
+  json,
+  requirePermission,
+  serverError,
+  validatePagePath,
+} from "../../../_utils.ts";
 import type { FreshContext } from "fresh";
 
 export const handler = {
@@ -34,7 +40,11 @@ export const handler = {
     if (!validatePagePath(pagePath)) return json({ error: "Invalid path" }, 400);
 
     try {
-      const body = await ctx.req.json() as { body?: unknown; parentId?: unknown; blockId?: unknown };
+      const body = await ctx.req.json() as {
+        body?: unknown;
+        parentId?: unknown;
+        blockId?: unknown;
+      };
       if (!body.body || typeof body.body !== "string") return json({ error: "Missing body" }, 400);
       const newComment = await comments.create(
         pagePath,
